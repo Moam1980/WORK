@@ -20,3 +20,6 @@ project/plugins/project/
 # IntelliJ-IDE specific
 .idea
 edm-core.iml
+
+# GIT
+*.orig
