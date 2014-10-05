@@ -1,3 +1,6 @@
+/*
+ * TODO: License goes here!
+ */
 
 import sbt._
 import Keys._
@@ -28,7 +31,7 @@ object EdmCoreBuild extends Build {
     settings(ScoverageSbtPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings: _*)
-    aggregate(complete, common, cell)
+    aggregate(complete, common, model)
     )
 
   lazy val common = (Project(id = projectId("common"), base = file("common"))
@@ -38,7 +41,7 @@ object EdmCoreBuild extends Build {
     settings(Defaults.itSettings : _*)
     )
 
-  lazy val cell = (Project(id = projectId("cell"), base = file("cell"))
+  lazy val model = (Project(id = projectId("model"), base = file("model"))
     settings(ScoverageSbtPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
@@ -56,6 +59,6 @@ object EdmCoreBuild extends Build {
     settings(edmCoreAssembly: _*)
     settings(Defaults.itSettings: _*)
     dependsOn(common % "compile->compile;test->test")
-    dependsOn(cell % "compile->compile;test->test")
+    dependsOn(model % "compile->compile;test->test")
     )
 }
