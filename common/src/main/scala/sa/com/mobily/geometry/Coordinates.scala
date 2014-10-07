@@ -22,7 +22,7 @@ case class UtmCoordinates(
     epsg: String = Coordinates.SaudiArabiaUtmEpsg) {
 
   def latLongCoordinates(destGeodeticEpsg: String = Coordinates.Wgs84GeodeticEpsg): LatLongCoordinates = {
-    val geomFactory = new GeometryFactory()
+    val geomFactory = new GeometryFactory
     val mathTransform = CRS.findMathTransform(CRS.decode(epsg), CRS.decode(destGeodeticEpsg))
     JTS.transform(geomFactory.createPoint(new Coordinate(x, y)), mathTransform) match {
       case p: Point => LatLongCoordinates(p.getX, p.getY, destGeodeticEpsg)
@@ -47,7 +47,7 @@ case class UtmCoordinates(
 case class LatLongCoordinates(lat: Double, long: Double, epsg: String = Coordinates.Wgs84GeodeticEpsg) {
 
   def utmCoordinates(destUtmEpsg: String = Coordinates.SaudiArabiaUtmEpsg): UtmCoordinates = {
-    val geomFactory = new GeometryFactory()
+    val geomFactory = new GeometryFactory
     val mathTransform = CRS.findMathTransform(CRS.decode(epsg), CRS.decode(destUtmEpsg))
     JTS.transform(geomFactory.createPoint(new Coordinate(lat, long)), mathTransform) match {
       case p: Point => UtmCoordinates(p.getX, p.getY, destUtmEpsg)
