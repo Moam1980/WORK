@@ -21,22 +21,19 @@ case class UtmCoordinates(
     y: Double,
     epsg: String = Coordinates.SaudiArabiaUtmEpsg) {
 
+  require(!x.isNaN && !y.isNaN)
+
   def latLongCoordinates(destGeodeticEpsg: String = Coordinates.Wgs84GeodeticEpsg): LatLongCoordinates = {
-    val geomFactory = new GeometryFactory
+    val geomFactory = GeomUtils.geomFactory(srid, Coordinates.UtmPrecisionModel)
     val mathTransform = CRS.findMathTransform(CRS.decode(epsg), CRS.decode(destGeodeticEpsg))
-    JTS.transform(geomFactory.createPoint(new Coordinate(x, y)), mathTransform) match {
-      case p: Point => LatLongCoordinates(p.getX, p.getY, destGeodeticEpsg)
-    }
+    val coord = JTS.transform(geomFactory.createPoint(new Coordinate(x, y)), mathTransform).getCoordinate
+    Coordinates.LatLongPrecisionModel.makePrecise(coord)
+    LatLongCoordinates(coord.x, coord.y, destGeodeticEpsg)
   }
 
-  def roundCoords: UtmCoordinates = UtmCoordinates(EdmCoreUtils.roundAt1(x), EdmCoreUtils.roundAt1(y), epsg)
+  def srid: Int = Coordinates.srid(epsg)
 
-  def srid: Int = epsg.substring(epsg.indexOf(Coordinates.AuthoritySridSep) + 1).toInt
-
-  def geometry: Point = {
-    val geomFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), srid)
-    geomFactory.createPoint(new Coordinate(x, y))
-  }
+  def geometry: Point = GeomUtils.geomFactory(Coordinates.srid(epsg)).createPoint(new Coordinate(x, y))
 }
 
 /** Point in geodetic coordinate system (WGS84 ellipsoid) - EPSG:4326
@@ -46,13 +43,17 @@ case class UtmCoordinates(
   */
 case class LatLongCoordinates(lat: Double, long: Double, epsg: String = Coordinates.Wgs84GeodeticEpsg) {
 
+  require(!lat.isNaN && !long.isNaN)
+
   def utmCoordinates(destUtmEpsg: String = Coordinates.SaudiArabiaUtmEpsg): UtmCoordinates = {
-    val geomFactory = new GeometryFactory
+    val geomFactory = GeomUtils.geomFactory(srid, Coordinates.LatLongPrecisionModel)
     val mathTransform = CRS.findMathTransform(CRS.decode(epsg), CRS.decode(destUtmEpsg))
-    JTS.transform(geomFactory.createPoint(new Coordinate(lat, long)), mathTransform) match {
-      case p: Point => UtmCoordinates(p.getX, p.getY, destUtmEpsg)
-    }
+    val coord = JTS.transform(geomFactory.createPoint(new Coordinate(lat, long)), mathTransform).getCoordinate
+    Coordinates.UtmPrecisionModel.makePrecise(coord)
+    UtmCoordinates(coord.x, coord.y, destUtmEpsg)
   }
+
+  def srid: Int = Coordinates.srid(epsg)
 }
 
 object Coordinates {
@@ -60,4 +61,10 @@ object Coordinates {
   val SaudiArabiaUtmEpsg = "EPSG:32638" // UTM zone 38N
   val Wgs84GeodeticEpsg = "EPSG:4326"
   val AuthoritySridSep = ":"
+  val OneDecimalScale = 10
+  val SevenDecimalsScale = 1e7
+  val UtmPrecisionModel = new PrecisionModel(OneDecimalScale)
+  val LatLongPrecisionModel = new PrecisionModel(SevenDecimalsScale)
+
+  def srid(epsg: String): Int = epsg.substring(epsg.indexOf(Coordinates.AuthoritySridSep) + 1).toInt
 }
