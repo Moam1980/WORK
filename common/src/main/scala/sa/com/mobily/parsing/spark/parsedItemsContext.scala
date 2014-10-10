@@ -11,10 +11,10 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 
-class ParsedItemsUnwrapFunctions[T](self: RDD[ParsedItem[T]]) {
+class ParsedItemsUnwrapFunctions[T:ClassTag](self: RDD[ParsedItem[T]]) {
 
-  def values[T:ClassTag]: RDD[T] = self.flatMap(_.value match {
-    case Some(v) => Seq(v.asInstanceOf[T])
+  def values: RDD[T] = self.flatMap(_.value match {
+    case Some(v) => Seq(v)
     case _ => Seq.empty
   })
 
@@ -26,7 +26,8 @@ class ParsedItemsUnwrapFunctions[T](self: RDD[ParsedItem[T]]) {
 
 trait ParsedItemsContext {
 
-  implicit def parsedItemsUnwrapFunctions[T](wrappedItems: RDD[ParsedItem[T]]): ParsedItemsUnwrapFunctions[T] =
+  implicit def parsedItemsUnwrapFunctions[T:ClassTag](
+      wrappedItems: RDD[ParsedItem[T]]): ParsedItemsUnwrapFunctions[T] =
     new ParsedItemsUnwrapFunctions[T](wrappedItems)
 }
 
