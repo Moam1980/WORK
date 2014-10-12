@@ -10,6 +10,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 import sbtassembly.Plugin.{PathList, MergeStrategy}
 import sbtunidoc.Plugin._
 import scoverage._
+import scoverage.ScoverageSbtPlugin._
 
 object EdmCoreBuild extends Build {
 
@@ -23,6 +24,8 @@ object EdmCoreBuild extends Build {
     case _ => MergeStrategy.first
   }
 
+  lazy val testParallelSettings = Seq(parallelExecution in ScoverageTest := false, parallelExecution in Test := false)
+
   lazy val edmCoreAssembly = assemblySettings ++ edmCoreMergeStrategy
   lazy val AcceptanceTest = config("acceptance") extend(Test)
 
@@ -31,6 +34,7 @@ object EdmCoreBuild extends Build {
     settings(ScoverageSbtPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings: _*)
+    settings(testParallelSettings: _*)
     aggregate(complete, common, model)
     )
 
@@ -39,12 +43,14 @@ object EdmCoreBuild extends Build {
     settings(ScalastylePlugin.Settings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
+    settings(testParallelSettings: _*)
     )
 
   lazy val model = (Project(id = projectId("model"), base = file("model"))
     settings(ScoverageSbtPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
+    settings(testParallelSettings: _*)
     dependsOn(common % "compile->compile;test->test")
     )
 
@@ -58,6 +64,7 @@ object EdmCoreBuild extends Build {
     configs(IntegrationTest)
     settings(edmCoreAssembly: _*)
     settings(Defaults.itSettings: _*)
+    settings(testParallelSettings: _*)
     dependsOn(common % "compile->compile;test->test")
     dependsOn(model % "compile->compile;test->test")
     )
