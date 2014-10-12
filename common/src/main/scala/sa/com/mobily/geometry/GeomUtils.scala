@@ -6,29 +6,29 @@ package sa.com.mobily.geometry
 
 import scala.math._
 
-import org.geotools.geometry.jts.JTSFactoryFinder
-import com.vividsolutions.jts.geom.{Coordinate, Geometry, Point}
-import com.vividsolutions.jts.io.WKTReader
+import com.vividsolutions.jts.geom._
+import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.util.GeometricShapeFactory
 
 object GeomUtils {
 
   val DefaultNumPoints = 50
 
-  def parseWkt(wkt: String, srid: Integer): Geometry = {
-    val geomFactory = JTSFactoryFinder.getGeometryFactory
-    val wktReader = new WKTReader(geomFactory)
-    val geom = wktReader.read(wkt)
-    geom.setSRID(srid)
-    geom
+  def geomFactory(srid: Integer, precisionModel: PrecisionModel = Coordinates.UtmPrecisionModel): GeometryFactory =
+    new GeometryFactory(precisionModel, srid)
+
+  def parseWkt(
+      wkt: String,
+      srid: Integer,
+      precisionModel: PrecisionModel = Coordinates.UtmPrecisionModel): Geometry = {
+    val factory = geomFactory(srid, precisionModel)
+    new WKTReader(factory).read(wkt)
   }
 
-  def circle(centre: Point, radius: Double, numPoints: Int = DefaultNumPoints): Geometry = {
-    val factory = geomShapeFactory(centre, radius, numPoints)
-    val circle = factory.createCircle
-    circle.setSRID(centre.getSRID)
-    circle
-  }
+  def wkt(geom: Geometry): String = new WKTWriter().write(geom)
+
+  def circle(centre: Point, radius: Double, numPoints: Int = DefaultNumPoints): Geometry =
+    geomShapeFactory(centre, radius, numPoints).createCircle
 
   /** Creates a circular sector polygon
     *
@@ -40,11 +40,8 @@ object GeomUtils {
       beamwidth: Double,
       radius: Double,
       numPoints: Int = DefaultNumPoints): Geometry = {
-    val factory = geomShapeFactory(position, radius, numPoints)
     val directionRad = toRadians(azimuthToAngle(azimuth % 360) - (beamwidth / 2))
-    val poly = factory.createArcPolygon(directionRad, toRadians(beamwidth))
-    poly.setSRID(position.getSRID)
-    poly
+    geomShapeFactory(position, radius, numPoints).createArcPolygon(directionRad, toRadians(beamwidth))
   }
 
   /** Creates a hippopede
@@ -72,7 +69,7 @@ object GeomUtils {
     val xCoords = location.getX +: xSeq :+ location.getX
     val yCoords = location.getY +: ySeq :+ location.getY
 
-    buildShape(xCoords, yCoords, location.getSRID)
+    buildShape(xCoords, yCoords, location.getSRID, location.getPrecisionModel)
   }
 
   /** Creates a conchoid
@@ -100,29 +97,30 @@ object GeomUtils {
     val xCoords = location.getX +: xSeq :+ location.getX
     val yCoords = location.getY +: ySeq :+ location.getY
 
-    buildShape(xCoords, yCoords, location.getSRID)
+    buildShape(xCoords, yCoords, location.getSRID, location.getPrecisionModel)
   }
 
-  def addBackLobe(mainLobe: Geometry, cellLocation: Point, range: Double, backLobeRatio: Double): Geometry = {
-    val geomUnion = mainLobe.union(GeomUtils.circle(cellLocation, range * backLobeRatio))
-    geomUnion.setSRID(mainLobe.getSRID)
-    geomUnion
-  }
+  def addBackLobe(mainLobe: Geometry, cellLocation: Point, range: Double, backLobeRatio: Double): Geometry =
+    mainLobe.union(GeomUtils.circle(cellLocation, range * backLobeRatio))
 
   def azimuthToAngle(azimuth: Double): Double = 90 - azimuth
 
-  private def buildShape(xCoords: List[Double], yCoords: List[Double], srid: Int): Geometry = {
-    val coordinates = xCoords.zip(yCoords).map(xYCoord => new Coordinate(xYCoord._1, xYCoord._2)).toArray
-    val poly = JTSFactoryFinder.getGeometryFactory.createPolygon(coordinates)
-    poly.setSRID(srid)
-    poly
+  private def buildShape(
+      xCoords: List[Double],
+      yCoords: List[Double],
+      srid: Int,
+      precisionModel: PrecisionModel): Geometry = {
+    val coordinates = xCoords.zip(yCoords).map { xYCoord =>
+      new Coordinate(precisionModel.makePrecise(xYCoord._1), precisionModel.makePrecise(xYCoord._2))
+    }.toArray
+    geomFactory(srid, precisionModel).createPolygon(coordinates)
   }
 
   private def geomShapeFactory(centre: Point, radius: Double, numPoints: Int): GeometricShapeFactory = {
-    val geomShapeFactory = new GeometricShapeFactory
-    geomShapeFactory.setCentre(centre.getCoordinate)
-    geomShapeFactory.setSize(2 * radius)
-    geomShapeFactory.setNumPoints(numPoints)
-    geomShapeFactory
+    val factory = new GeometricShapeFactory(geomFactory(centre.getSRID, centre.getPrecisionModel))
+    factory.setCentre(centre.getCoordinate)
+    factory.setSize(2 * radius)
+    factory.setNumPoints(numPoints)
+    factory
   }
 }
