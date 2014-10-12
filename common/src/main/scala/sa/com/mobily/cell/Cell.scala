@@ -111,20 +111,15 @@ object Cell {
     }
   }
 
-  private def parseCgi(cgiText: String) = {
-    require(cgiText.length == 15)
-    cgiText
-  }
-
-  private def parseTechnology(techText: String) = techText.toUpperCase match {
+  def parseTechnology(techText: String): Technology = techText.trim.toUpperCase match {
     case TwoG.identifier => TwoG
     case ThreeG.identifier => ThreeG
     case FourGFdd.identifier => FourGFdd
     case FourGTdd.identifier => FourGTdd
   }
 
-  private def parseCellType(cellTypeText: String) = // scalastyle:ignore cyclomatic.complexity
-    cellTypeText.toUpperCase match {
+  def parseCellType(cellTypeText: String): CellType = // scalastyle:ignore cyclomatic.complexity
+    cellTypeText.trim.toUpperCase match {
       case Rdu.value => Rdu
       case Crane.value => Crane
       case Macro.value => Macro
@@ -138,4 +133,10 @@ object Cell {
       case Outlet.value => Outlet
       case Parking.value => Parking
     }
+
+  private def parseCgi(cgiText: String) = {
+    val trimmedCgi = cgiText.trim
+    require(trimmedCgi.length == 15)
+    trimmedCgi
+  }
 }
