@@ -16,6 +16,6 @@ libraryDependencies in ThisBuild ++= Seq(
   "com.twitter" % "parquet-avro" % "1.6.0rc3" % "compile,test,it,provided",
   "org.apache.avro" % "avro" % "1.7.7" % "compile,test,it,provided",
   "org.apache.avro" % "avro-mapred" % "1.7.7" % "compile,test,it,provided",
-  "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "compile,test,it,provided",
+  "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "compile,test,it,provided" exclude("javax.servlet", "servlet-api"),
   "org.scalatest" %% "scalatest" % "2.0" % "test,it"
 )

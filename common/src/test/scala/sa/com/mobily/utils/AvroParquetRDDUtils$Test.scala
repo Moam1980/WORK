@@ -46,15 +46,17 @@ class AvroParquetRDDUtils$Test extends FunSuite with BeforeAndAfterEach {
       Event.fromCsv.fromFields(line.split(","))
     })
 
+    // for write to parquet in local
+    sqc.createSchemaRDD(map).saveAsParquetFile("file:///tmp/parquet" + System.currentTimeMillis())
 
-    //sqc.applySchema(sqc.createSchemaRDD(map), StructType(Event.getFields())).saveAsParquetFile("/tmp/test/file" + System.currentTimeMillis())
+    // for write to parquet in HDFS
+    // sqc.createSchemaRDD(map).saveAsParquetFile("hdfs://10.200.0.49:8020/user/rsaez/parquet" + System.currentTimeMillis())
 
-    sqc.createSchemaRDD(map).saveAsParquetFile("file:///tmp/parquet_only" + System.currentTimeMillis())
-    //sqc.createSchemaRDD(map).saveAsParquetFile("hdfs://10.200.0.49:8020/user/rsaez/parquet_only" + System.currentTimeMillis())
-    println("####### JOB 1 FINISHED")
+    // for write to avro + parquet in local
+    AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "file:///tmp/avro_parquet" + System.currentTimeMillis())
 
-    //    AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "hdfs://10.200.0.49:8020/user/rsaez/parquet" + System.currentTimeMillis())
-    //    println("####### JOB 2 FINISHED")
+    // for write to avro + parquet in HDFS
+    // AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "hdfs://10.200.0.49:8020/user/rsaez/avro_parquet" + System.currentTimeMillis())
 
   }
 
