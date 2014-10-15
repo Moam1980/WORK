@@ -2,11 +2,9 @@
  * TODO: License goes here!
  */
 
-package sa.com.mobily.parsing.spark
+package sa.com.mobily.cell.spark
 
 import org.scalatest.{FlatSpec, ShouldMatchers}
-
-import sa.com.mobily.cell.spark.CellContext
 import sa.com.mobily.utils.LocalSparkContext
 
 class CellContextTest extends FlatSpec with ShouldMatchers with LocalSparkContext {

@@ -24,4 +24,26 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   it should "round numbers up with one decimal" in new WithManyDecimalNumbers {
     EdmCoreUtils.roundAt1(roundUpNumber) should be (roundedUpNumber)
   }
+
+  it should "convert to double" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseDouble("3.14") should be (Some(3.14))
+  }
+
+  it should "detect badly formatted doubles" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseDouble("This is not a number") should be (None)
+  }
+
+  it should "convert to integer" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseInt("139482") should be (Some(139482))
+  }
+
+  it should "detect badly formatted integers" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseInt("3.14") should be (None)
+  }
+
+  it should "remove any kind of quotes around a text field" in new WithManyDecimalNumbers {
+    EdmCoreUtils.removeQuotes("\"2.7183\"") should be ("2.7183")
+    EdmCoreUtils.removeQuotes("'2.7183'") should be ("2.7183")
+    EdmCoreUtils.removeQuotes("\"'2.7183'\"") should be ("2.7183")
+  }
 }
