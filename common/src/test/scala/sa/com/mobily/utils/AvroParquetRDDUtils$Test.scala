@@ -4,14 +4,12 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
-import sa.com.mobily.event.{CsEvent, Event}
+import sa.com.mobily.event.{PsEvent, CsEvent, Event}
 
 /**
  * Created by rsaez on 13/10/14.
  */
 class AvroParquetRDDUtils$Test extends FunSuite with BeforeAndAfterEach {
-
-  val csvFile: String = "file:///home/rsaez/tmp/kk.csv"
 
   @transient var sqc: SQLContext = _
 
@@ -40,24 +38,69 @@ class AvroParquetRDDUtils$Test extends FunSuite with BeforeAndAfterEach {
     resetSparkContext()
   }
 
-  test("Read from CSV and Write to Parquet") {
+
+  test("Read CsEvents from CSV and Write to Parquet") {
+
+    val csvFile: String = "file:///path/cs_events.csv"
 
     val map: RDD[CsEvent] = sqc.sparkContext.textFile(csvFile).map(line => {
-      Event.fromCsv.fromFields(line.split(","))
+      CsEvent.fromCsv.fromFields(line.split(","))
     })
-
     // for write to parquet in local
     sqc.createSchemaRDD(map).saveAsParquetFile("file:///tmp/parquet" + System.currentTimeMillis())
 
     // for write to parquet in HDFS
-    // sqc.createSchemaRDD(map).saveAsParquetFile("hdfs://10.200.0.49:8020/user/rsaez/parquet" + System.currentTimeMillis())
+    // sqc.createSchemaRDD(map).saveAsParquetFile("hdfs://host_hdfs:8020/user/root/parquet" + System.currentTimeMillis())
 
     // for write to avro + parquet in local
-    AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "file:///tmp/avro_parquet" + System.currentTimeMillis())
+    AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), CsEvent.SCHEMA$, "file:///tmp/avro_parquet" + System.currentTimeMillis())
 
     // for write to avro + parquet in HDFS
-    // AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "hdfs://10.200.0.49:8020/user/rsaez/avro_parquet" + System.currentTimeMillis())
+    // AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "hdfs://host_hdfs:8020/user/root/avro_parquet" + System.currentTimeMillis())
 
+  }
+
+  test("Read PsEvents from CSV and Write to Parquet") {
+
+    val csvFile: String = "file:///path/ps_events.csv"
+
+    val map: RDD[PsEvent] = sqc.sparkContext.textFile(csvFile).map(line => {
+      PsEvent.fromCsv.fromFields(line.split(","))
+    })
+    // for write to parquet in local
+    sqc.createSchemaRDD(map).saveAsParquetFile("file:///tmp/parquet" + System.currentTimeMillis())
+
+    // for write to parquet in HDFS
+    // sqc.createSchemaRDD(map).saveAsParquetFile("hdfs://host_hdfs:8020/user/root/parquet" + System.currentTimeMillis())
+
+    // for write to avro + parquet in local
+    AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, PsEvent)](event => (null, event)), PsEvent.SCHEMA$, "file:///tmp/avro_parquet" + System.currentTimeMillis())
+
+    // for write to avro + parquet in HDFS
+    // AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "hdfs://host_hdfs:8020/user/root/avro_parquet" + System.currentTimeMillis())
+
+  }
+
+  test("Join CsEvents with PsEvents and write to Parquet") {
+
+/*    val csCsvFile: String = "file:///path/cs_events.csv"
+    val psCsvFile: String = "file:///path/ps_events.csv"
+
+    val map: RDD[PsEvent] = sqc.sparkContext.textFile(csvFile).map(line => {
+      PsEvent.fromCsv.fromFields(line.split(","))
+    })
+    // for write to parquet in local
+    sqc.createSchemaRDD(map).saveAsParquetFile("file:///tmp/parquet" + System.currentTimeMillis())
+
+    // for write to parquet in HDFS
+    // sqc.createSchemaRDD(map).saveAsParquetFile("hdfs://host_hdfs:8020/user/root/parquet" + System.currentTimeMillis())
+
+    // for write to avro + parquet in local
+    AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, PsEvent)](event => (null, event)), PsEvent.SCHEMA$, "file:///tmp/avro_parquet" + System.currentTimeMillis())
+
+    // for write to avro + parquet in HDFS
+    // AvroParquetRDDUtils.writeParquetRDD(sqc.sparkContext, map.map[(Void, CsEvent)](event => (null, event)), Event.SCHEMA$, "hdfs://host_hdfs:8020/user/root/avro_parquet" + System.currentTimeMillis())
+*/
   }
 
 }
