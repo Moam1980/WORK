@@ -12,7 +12,11 @@ class CsvParserTest extends FlatSpec with ShouldMatchers {
 
     case class Cell(cellId: Long)
 
+    final val lineCsvParserObject = new OpenCsvParser(separator = ',')
+
     implicit val csvParser = new CsvParser[Cell] {
+
+      override def lineCsvParser = lineCsvParserObject
 
       def fromFields(fields: Array[String]): Cell = {
         val Array(lac, sac) = fields

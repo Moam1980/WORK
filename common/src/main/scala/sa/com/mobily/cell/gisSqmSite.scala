@@ -5,7 +5,7 @@
 package sa.com.mobily.cell
 
 import sa.com.mobily.geometry.{LatLongCoordinates, UtmCoordinates}
-import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 
 case class PoolInfo(
     mscPool: String,
@@ -40,9 +40,11 @@ case class GisSqmSite(
 
 object GisSqmSite {
 
+  final val lineCsvParserObject = new OpenCsvParser
+
   implicit val fromCsv = new CsvParser[GisSqmSite] {
 
-    override val delimiter: String = "\\|"
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): GisSqmSite = {
       val (firstChunk, secondChunk) = fields.splitAt(10) // scalastyle:ignore magic.number

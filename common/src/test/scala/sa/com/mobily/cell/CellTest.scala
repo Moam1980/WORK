@@ -123,6 +123,10 @@ class CellTest extends FlatSpec with ShouldMatchers {
     fromCsv.fromFields(fields.updated(4, "Parking")) should be (cell.copy(cellType = Parking))
   }
 
+  it should "be built from CSV with PICO type" in new WithCell {
+    fromCsv.fromFields(fields.updated(4, "PICO")) should be (cell.copy(cellType = Pico))
+  }
+
   it should "provide MCC from CGI" in new WithCell {
     cell.mcc should be ("420")
   }

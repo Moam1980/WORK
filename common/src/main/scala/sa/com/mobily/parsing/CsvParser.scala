@@ -4,6 +4,8 @@
 
 package sa.com.mobily.parsing
 
+import sa.com.mobily.utils.EdmCoreUtils
+
 import scala.util.{Failure, Success, Try}
 
 case class ParsingError(line: String, error: Throwable)
@@ -15,7 +17,7 @@ case class ParsedItem[T](value: Option[T], parsingError: Option[ParsingError] = 
 
 abstract class CsvParser[T] extends Serializable {
 
-  val delimiter: String = ","
+  def lineCsvParser : OpenCsvParser
 
   def fromFields(fields: Array[String]): T
 }
@@ -23,7 +25,7 @@ abstract class CsvParser[T] extends Serializable {
 object CsvParser {
 
   def fromLine[T](line: String)(implicit csvParser: CsvParser[T]): ParsedItem[T] =
-    Try(csvParser.fromFields(line.split(csvParser.delimiter, -1))) match {
+    Try(csvParser.fromFields(csvParser.lineCsvParser.parseLine(line))) match {
       case Success(v) => ParsedItem(Some(v))
       case Failure(e) => ParsedItem(value = None, parsingError = Some(ParsingError(line, e)))
     }

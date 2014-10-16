@@ -11,9 +11,6 @@ import scala.util.Try
  */
 object EdmCoreUtils {
 
-  val DoubleQuotesCharacter = "\""
-  val SingleQuotesCharacter = "'"
-
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
     val s = math.pow(10, p)
@@ -27,11 +24,4 @@ object EdmCoreUtils {
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
-  def removeQuotes(s: String): String = {
-    if (s.startsWith(DoubleQuotesCharacter) || s.startsWith(SingleQuotesCharacter))
-      removeQuotes(s.substring(1))
-    else if (s.endsWith(DoubleQuotesCharacter) || s.endsWith(SingleQuotesCharacter))
-      removeQuotes(s.substring(0, s.length - 1))
-    else s
-  }
 }
