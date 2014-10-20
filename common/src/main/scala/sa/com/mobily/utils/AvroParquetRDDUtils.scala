@@ -44,7 +44,7 @@ object AvroParquetRDDUtils {
   }
 
   def writeParquetRDD[T <% SpecificRecord](sc: SparkContext, rdd: RDD[(Void, T)], schema: org.apache.avro.Schema, parquetDir: String)(implicit tag: ClassTag[T]) = {
-    val jobConf= new Job(sc.hadoopConfiguration)
+    val jobConf= Job.getInstance(sc.hadoopConfiguration)
     // Configure the ParquetOutputFormat to use Avro as the serialization format
     ParquetOutputFormat.setWriteSupportClass(jobConf, classOf[AvroWriteSupport])
     // You need to pass the schema to AvroParquet when you are writing objects but not when you
