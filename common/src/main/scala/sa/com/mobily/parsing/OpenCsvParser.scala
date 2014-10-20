@@ -5,7 +5,6 @@
 package sa.com.mobily.parsing
 
 import au.com.bytecode.opencsv.CSVParser
-import sa.com.mobily.utils.EdmCoreUtils
 
 /** Parser for CSV files.
   *

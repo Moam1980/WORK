@@ -4,12 +4,22 @@
 
 package sa.com.mobily.utils
 
+import scala.collection.JavaConverters._
 import scala.util.Try
+
+import com.google.i18n.phonenumbers.PhoneNumberUtil
+import org.joda.time.{DateTime, DateTimeZone}
+import org.joda.time.format.DateTimeFormat
 
 /**
  * Generic utility class for External Data Monetization
  */
 object EdmCoreUtils {
+
+  val outputDateTimeFormat = "yyyy/MM/dd HH:mm:ss"
+  final val TimeZoneSaudiArabia = DateTimeZone.forID("Asia/Riyadh")
+  final val fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+  final val phoneNumberUtil = PhoneNumberUtil.getInstance
 
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
@@ -24,4 +34,12 @@ object EdmCoreUtils {
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
+  def getCountryCode(s: String): Int = phoneNumberUtil.parse(s, "").getCountryCode
+
+  def getRegionCodesForCountryCode(s: String): String =
+    phoneNumberUtil.getRegionCodesForCountryCode(getCountryCode(s)).asScala.mkString(":")
+
+  def parseTimestampToSaudiDate(timestamp: Long): String = fmt.print(timestamp)
+
+  def roundTimestampHourly(timestamp: Long): Long = new DateTime(timestamp).hourOfDay.roundFloorCopy.getMillis
 }

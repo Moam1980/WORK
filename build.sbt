@@ -12,5 +12,6 @@ javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7")
 
 libraryDependencies in ThisBuild ++= Seq(
   "org.apache.spark" %% "spark-core" % "1.1.0" % "compile,test,it,provided",
+  "com.github.nscala-time" %% "nscala-time" % "1.4.0",
   "org.scalatest" %% "scalatest" % "2.0" % "test,it"
 )
