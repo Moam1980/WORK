@@ -5,7 +5,7 @@
 package sa.com.mobily.cell
 
 import sa.com.mobily.geometry.{UtmCoordinates, LatLongCoordinates}
-import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class SqmCell(
@@ -30,30 +30,38 @@ case class SqmCell(
 
 object SqmCell {
 
-  implicit val fromCsv = new CsvParser[SqmCell] {
+  final val lineCsvParserObject = new OpenCsvParser(separator = ',', quote = '"')
 
-    override val delimiter: String = ","
+  implicit val fromCsv = new CsvParser[SqmCell]() {
+
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): SqmCell = {
       val Array(cellNameText, cellIdText, nodeIdText, ciText, nodeNameText, lacTacText, latitudeText, longitudeText,
-      vendorText, techText, cellTypeText, heightText, azimuthText, bscRncNmeText, regionText, antennaTypeText,
-      bspwrPcpichPmaxText, accminRxlevminText, bandText) = fields
+          vendorText, techText, cellTypeText, heightText, azimuthText, bscRncNmeText, regionText, antennaTypeText,
+          bspwrPcpichPmaxText, accminRxlevminText, bandText) = fields
 
-      val coords = LatLongCoordinates(EdmCoreUtils.removeQuotes(latitudeText).toDouble,
-        EdmCoreUtils.removeQuotes(longitudeText).toDouble).utmCoordinates()
+      val coords = LatLongCoordinates(latitudeText.toDouble, longitudeText.toDouble).utmCoordinates()
 
-      SqmCell(EdmCoreUtils.removeQuotes(cellIdText), EdmCoreUtils.removeQuotes(ciText),
-        EdmCoreUtils.removeQuotes(cellNameText), EdmCoreUtils.removeQuotes(nodeIdText),
-        EdmCoreUtils.removeQuotes(nodeNameText), EdmCoreUtils.removeQuotes(lacTacText), coords,
-        EdmCoreUtils.removeQuotes(vendorText), Cell.parseTechnology(EdmCoreUtils.removeQuotes(techText)),
-        Cell.parseCellType(EdmCoreUtils.removeQuotes(cellTypeText)),
-        EdmCoreUtils.parseDouble(EdmCoreUtils.removeQuotes(heightText)).getOrElse(0.0),
-        EdmCoreUtils.parseDouble(EdmCoreUtils.removeQuotes(azimuthText)).getOrElse(0.0),
-        EdmCoreUtils.removeQuotes(bscRncNmeText), EdmCoreUtils.removeQuotes(regionText),
-        EdmCoreUtils.removeQuotes(antennaTypeText),
-        EdmCoreUtils.parseDouble(bspwrPcpichPmaxText).getOrElse(0.0),
-        EdmCoreUtils.parseInt(accminRxlevminText).getOrElse(0),
-        EdmCoreUtils.parseInt(EdmCoreUtils.removeQuotes(bandText)).getOrElse(0))
+      SqmCell(
+          cellIdText,
+          ciText,
+          cellNameText,
+          nodeIdText,
+          nodeNameText,
+          lacTacText,
+          coords,
+          vendorText,
+          Cell.parseTechnology(techText),
+          Cell.parseCellType(cellTypeText),
+          EdmCoreUtils.parseDouble(heightText).getOrElse(0.0),
+          EdmCoreUtils.parseDouble(azimuthText).getOrElse(0.0),
+          bscRncNmeText,
+          regionText,
+          antennaTypeText,
+          EdmCoreUtils.parseDouble(bspwrPcpichPmaxText).getOrElse(0.0),
+          EdmCoreUtils.parseInt(accminRxlevminText).getOrElse(0),
+          EdmCoreUtils.parseInt(bandText).getOrElse(0))
     }
   }
 }

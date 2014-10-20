@@ -4,7 +4,7 @@
 
 package sa.com.mobily.cell
 
-import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class EgCellCodeDesc(
@@ -46,9 +46,11 @@ object EgCell {
 
   val DefaultTilt = 0.0
 
+  final val lineCsvParserObject = new OpenCsvParser(quote = '"')
+
   implicit val fromCsv = new CsvParser[EgCell] {
 
-    override val delimiter: String = "\\|"
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): EgCell = {
       val (egCellInfo, codeDescInfo) = fields.splitAt(21) // scalastyle:ignore magic.number
@@ -59,37 +61,37 @@ object EgCell {
 
       val (latitude, longitude) = latLongFromGeomBlob(shapeText)
       EgCell(
-        btsId = EdmCoreUtils.removeQuotes(btsId.trim),
-        cellCode = EdmCoreUtils.removeQuotes(code.trim),
-        direction = EdmCoreUtils.removeQuotes(direction).toDouble,
-        height = EdmCoreUtils.removeQuotes(height).toDouble,
-        lac = EdmCoreUtils.removeQuotes(lac.trim),
-        cellName = EdmCoreUtils.removeQuotes(name1.trim),
-        descInArabic = EdmCoreUtils.removeQuotes(name2.trim),
-        onAirDate = EdmCoreUtils.removeQuotes(onAirDate.trim),
-        remarks = EdmCoreUtils.removeQuotes(remarks.trim),
-        serviceDistance = EdmCoreUtils.removeQuotes(serviceDistance.trim),
-        sgsn = EdmCoreUtils.removeQuotes(sgsn.trim),
-        status = EdmCoreUtils.removeQuotes(status.trim),
-        tilt = EdmCoreUtils.parseDouble(EdmCoreUtils.removeQuotes(tilt)).getOrElse(DefaultTilt),
-        cellType = EdmCoreUtils.removeQuotes(cellType.trim),
+        btsId = btsId.trim,
+        cellCode = code.trim,
+        direction = direction.toDouble,
+        height = height.toDouble,
+        lac = lac.trim,
+        cellName = name1.trim,
+        descInArabic = name2.trim,
+        onAirDate = onAirDate.trim,
+        remarks = remarks.trim,
+        serviceDistance = serviceDistance.trim,
+        sgsn = sgsn.trim,
+        status = status.trim,
+        tilt = EdmCoreUtils.parseDouble(tilt).getOrElse(DefaultTilt),
+        cellType = cellType.trim,
         shape = shapeText,
         lat = latitude,
         long = longitude,
         codeDesc = EgCellCodeDesc(
-          vendor = EdmCoreUtils.removeQuotes(vendor.trim),
-          btsCodeType = EdmCoreUtils.removeQuotes(btsCodeType.trim),
-          btsCodeId = EdmCoreUtils.removeQuotes(btsCodeId.trim),
-          btsCodeValue = EdmCoreUtils.removeQuotes(btsCodeValue.trim),
-          btsCodeDescription = EdmCoreUtils.removeQuotes(btsCodeDescription.trim),
-          btsStatusId = EdmCoreUtils.removeQuotes(btsStatusId.trim),
-          btsStatusCode = EdmCoreUtils.removeQuotes(btsStatusCode.trim),
-          btsStatusName1 = EdmCoreUtils.removeQuotes(btsStatusName1.trim),
-          btsStatusName2 = EdmCoreUtils.removeQuotes(btsStatusName2.trim),
-          cellVendorId = EdmCoreUtils.removeQuotes(cellVendorId.trim),
-          cellVendorCode = EdmCoreUtils.removeQuotes(cellVendorCode.trim),
-          cellVendorName1 = EdmCoreUtils.removeQuotes(cellVendorName1.trim),
-          cellVendorName2 = EdmCoreUtils.removeQuotes(cellVendorName2.trim)))
+          vendor = vendor.trim,
+          btsCodeType = btsCodeType.trim,
+          btsCodeId = btsCodeId.trim,
+          btsCodeValue = btsCodeValue.trim,
+          btsCodeDescription = btsCodeDescription.trim,
+          btsStatusId = btsStatusId.trim,
+          btsStatusCode = btsStatusCode.trim,
+          btsStatusName1 = btsStatusName1.trim,
+          btsStatusName2 = btsStatusName2.trim,
+          cellVendorId = cellVendorId.trim,
+          cellVendorCode = cellVendorCode.trim,
+          cellVendorName1 = cellVendorName1.trim,
+          cellVendorName2 = cellVendorName2.trim))
     }
   }
 

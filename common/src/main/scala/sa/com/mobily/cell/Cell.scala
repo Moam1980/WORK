@@ -7,7 +7,7 @@ package sa.com.mobily.cell
 import com.vividsolutions.jts.geom.Geometry
 
 import sa.com.mobily.geometry._
-import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 
 /** Technology of the cell */
 sealed trait Technology { val identifier: String }
@@ -32,6 +32,7 @@ case object Rds extends CellType { override val value = "RDS" }
 case object PalmTree extends CellType { override val value = "PALM TREE" }
 case object Outlet extends CellType { override val value = "OUTLET" }
 case object Parking extends CellType { override val value = "PARKING" }
+case object Pico extends CellType { override val value = "PICO" }
 
 /** Cell information */
 case class Cell(
@@ -76,9 +77,11 @@ object Cell {
   val CellIdStartIndex2g3g = 10
   val CellIdStartIndex4g = 11
 
+  final val lineCsvParserObject = new OpenCsvParser
+
   implicit val fromCsv = new CsvParser[Cell] {
 
-    override val delimiter: String = "\\|"
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): Cell = {
       val (cellInfo, cellGeometry) = fields.splitAt(10) // scalastyle:ignore magic.number
@@ -132,6 +135,7 @@ object Cell {
       case PalmTree.value => PalmTree
       case Outlet.value => Outlet
       case Parking.value => Parking
+      case Pico.value => Pico
     }
 
   private def parseCgi(cgiText: String) = {

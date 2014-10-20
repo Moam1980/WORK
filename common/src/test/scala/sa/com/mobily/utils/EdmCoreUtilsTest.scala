@@ -40,10 +40,4 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   it should "detect badly formatted integers" in new WithManyDecimalNumbers {
     EdmCoreUtils.parseInt("3.14") should be (None)
   }
-
-  it should "remove any kind of quotes around a text field" in new WithManyDecimalNumbers {
-    EdmCoreUtils.removeQuotes("\"2.7183\"") should be ("2.7183")
-    EdmCoreUtils.removeQuotes("'2.7183'") should be ("2.7183")
-    EdmCoreUtils.removeQuotes("\"'2.7183'\"") should be ("2.7183")
-  }
 }

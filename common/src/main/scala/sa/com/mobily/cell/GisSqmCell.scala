@@ -4,7 +4,7 @@
 
 package sa.com.mobily.cell
 
-import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class GisSqmCell(
@@ -23,9 +23,11 @@ case class GisSqmCell(
 
 object GisSqmCell {
 
+  final val lineCsvParserObject = new OpenCsvParser
+
   implicit val fromCsv = new CsvParser[GisSqmCell] {
 
-    override val delimiter: String = "\\|"
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): GisSqmCell = {
       val Array(cgiText, cellIdText, cellNameText, nodeIdText, accMinText, antennaTypeText, powerCellText,
