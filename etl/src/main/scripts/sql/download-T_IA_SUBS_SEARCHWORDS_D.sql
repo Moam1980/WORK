@@ -1,0 +1,1 @@
+SELECT '"' || DATA_DAY || '"|"' || SUBS_ID || '"|"' || KEYWORD || '"|"' || DOMAIN_NAME || '"|"' || VISIT_DT || '"|"' || ENGINE_NAME || '"|"' || CAT_NAME || '"|"' || LOC_ID || '"|"' || BE_ID || '"' FROM ia.T_IA_SUBS_SEARCHWORDS_D

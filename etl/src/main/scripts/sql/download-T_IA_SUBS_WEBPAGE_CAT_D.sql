@@ -1,0 +1,1 @@
+SELECT '"' || DATA_DAY || '"|"' || SUBS_ID || '"|"' || CAT_ID || '"|"' || VISIT_CNT || '"|"' || UPLOAD_VOL || '"|"' || DNLOAD_VOL || '"|"' || TOT_VOL || '"|"' || LOC_ID || '"|"' || BE_ID || '"' FROM ia.T_IA_SUBS_WEBPAGE_CAT_D
