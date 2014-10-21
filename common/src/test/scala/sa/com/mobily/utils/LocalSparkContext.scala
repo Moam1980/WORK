@@ -14,7 +14,7 @@ trait LocalSparkContext extends BeforeAndAfterAll { self: FlatSpec =>
 
   override def beforeAll {
     Logger.getRootLogger.setLevel(Level.ERROR)
-    sc = LocalSparkContext.getNewLocalSparkContext("test")
+    sc = LocalSparkContext.getNewLocalSparkContext(1, "test")
   }
 
   override def afterAll {
@@ -25,5 +25,5 @@ trait LocalSparkContext extends BeforeAndAfterAll { self: FlatSpec =>
 
 object LocalSparkContext {
 
-  def getNewLocalSparkContext(title: String): SparkContext = new SparkContext("local", title)
+  def getNewLocalSparkContext(pll: Int = 1, title: String): SparkContext = new SparkContext("local[" + pll + "]", title)
 }

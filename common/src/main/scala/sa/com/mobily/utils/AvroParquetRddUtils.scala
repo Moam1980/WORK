@@ -4,10 +4,9 @@
 
 package sa.com.mobily.utils
 
-import java.io.File
+import scala.reflect.ClassTag
 
-import org.apache.avro.file.DataFileWriter
-import org.apache.avro.specific.{SpecificDatumWriter, SpecificRecord}
+import org.apache.avro.specific.SpecificRecord
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
@@ -16,13 +15,10 @@ import org.apache.spark.rdd.RDD
 import parquet.avro.{AvroParquetOutputFormat, AvroReadSupport, AvroWriteSupport}
 import parquet.hadoop.{ParquetInputFormat, ParquetOutputFormat}
 
-import scala.reflect.ClassTag
-
 /**
  * Generic utility class for Avro Parquet
  */
-object AvroParquetRDDUtils {
-
+object AvroParquetRddUtils {
 
   /**
    * Read in a parquet file containing Avro data and return the result as an RDD.
@@ -31,7 +27,7 @@ object AvroParquetRDDUtils {
    * @param parquetFile The Parquet input file assumed to contain Avro objects
    * @return An RDD that contains the data of the file
    */
-  def readParquetRDD[T <% SpecificRecord](sc: SparkContext, parquetFile: String)(implicit tag: ClassTag[T]): RDD[T] = {
+  def readParquetRdd[T <% SpecificRecord](sc: SparkContext, parquetFile: String)(implicit tag: ClassTag[T]): RDD[T] = {
     val jobConf = new JobConf(sc.hadoopConfiguration)
     ParquetInputFormat.setReadSupportClass(jobConf, classOf[AvroReadSupport[T]])
     sc.newAPIHadoopFile(
@@ -43,8 +39,12 @@ object AvroParquetRDDUtils {
       .map(_._2.asInstanceOf[T])
   }
 
-  def writeParquetRDD[T <% SpecificRecord](sc: SparkContext, rdd: RDD[(Void, T)], schema: org.apache.avro.Schema, parquetDir: String)(implicit tag: ClassTag[T]) = {
-    val jobConf= Job.getInstance(sc.hadoopConfiguration)
+  def writeParquetRdd[T <% SpecificRecord](
+    sc: SparkContext,
+    rdd: RDD[(Void, T)],
+    schema: org.apache.avro.Schema,
+    parquetDir: String)(implicit tag: ClassTag[T]) = {
+    val jobConf = Job.getInstance(sc.hadoopConfiguration)
     // Configure the ParquetOutputFormat to use Avro as the serialization format
     ParquetOutputFormat.setWriteSupportClass(jobConf, classOf[AvroWriteSupport])
     // You need to pass the schema to AvroParquet when you are writing objects but not when you
@@ -54,7 +54,5 @@ object AvroParquetRDDUtils {
 
     rdd.saveAsNewAPIHadoopFile(parquetDir, classOf[Void], tag.runtimeClass.asInstanceOf[Class[T]],
       classOf[ParquetOutputFormat[T]], jobConf.getConfiguration)
-
   }
-
 }

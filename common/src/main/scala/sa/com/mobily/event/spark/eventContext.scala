@@ -4,12 +4,13 @@
 
 package sa.com.mobily.event.spark
 
+import scala.language.implicitConversions
+
 import org.apache.spark.rdd.RDD
+
 import sa.com.mobily.event.{CsEvent, Event, PsEvent}
 import sa.com.mobily.parsing.spark.{ParsedItemsContext, SparkCsvParser}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
-
-import scala.language.implicitConversions
 
 class EventReader(csEvents: RDD[CsEvent], psEvents: RDD[PsEvent]) {
 
@@ -18,11 +19,13 @@ class EventReader(csEvents: RDD[CsEvent], psEvents: RDD[PsEvent]) {
   }
 
   def fromCsEventToEvent: RDD[Event] = {
-    csEvents.map(c => Event(c.beginTime, c.ci, c.eci, c.endTime, c.eventType, c.imei, c.imsi, c.ixc, c.lac, c.mcc, c.mnc, c.msisdn, c.rac, c.rat, c.sac, c.tac))
+    csEvents.map(c => Event(c.beginTime, c.ci, c.eci, c.endTime, c.eventType, c.imei, c.imsi, c.ixc, c.lac, c.mcc,
+      c.mnc, c.msisdn, c.rac, c.rat, c.sac, c.tac))
   }
 
   def fromPsEventToEvent: RDD[Event] = {
-    psEvents.map(p => Event(p.beginTime, p.ci, p.eci, p.endTime, p.eventType, p.imei, p.imsi, p.ixc, p.lac, p.mcc, p.mnc, p.msisdn, p.rac, p.rat, p.sac, p.tac))
+    psEvents.map(p => Event(p.beginTime, p.ci, p.eci, p.endTime, p.eventType, p.imei, p.imsi, p.ixc, p.lac, p.mcc,
+      p.mnc, p.msisdn, p.rac, p.rat, p.sac, p.tac))
   }
 
 }
@@ -51,7 +54,8 @@ class PsEventReader(self: RDD[String]) {
 
 trait EventContext {
 
-  implicit def eventReader(csEvents: RDD[CsEvent], psEvents: RDD[PsEvent]): EventReader = new EventReader(csEvents, psEvents)
+  implicit def eventReader(csEvents: RDD[CsEvent], psEvents: RDD[PsEvent]): EventReader = new EventReader(csEvents,
+    psEvents)
 }
 
 trait CsEventContext {
