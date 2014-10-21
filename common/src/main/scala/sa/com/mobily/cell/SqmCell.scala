@@ -14,7 +14,7 @@ case class SqmCell(
     cellName: String,
     nodeId: String,
     nodeName: String,
-    lacTac: String,
+    lacTac: Int,
     basePlanarCoords: UtmCoordinates,
     vendor: String,
     technology: Technology,
@@ -38,30 +38,30 @@ object SqmCell {
 
     override def fromFields(fields: Array[String]): SqmCell = {
       val Array(cellNameText, cellIdText, nodeIdText, ciText, nodeNameText, lacTacText, latitudeText, longitudeText,
-          vendorText, techText, cellTypeText, heightText, azimuthText, bscRncNmeText, regionText, antennaTypeText,
-          bspwrPcpichPmaxText, accminRxlevminText, bandText) = fields
+        vendorText, techText, cellTypeText, heightText, azimuthText, bscRncNmeText, regionText, antennaTypeText,
+        bspwrPcpichPmaxText, accminRxlevminText, bandText) = fields
 
       val coords = LatLongCoordinates(latitudeText.toDouble, longitudeText.toDouble).utmCoordinates()
 
       SqmCell(
-          cellIdText,
-          ciText,
-          cellNameText,
-          nodeIdText,
-          nodeNameText,
-          lacTacText,
-          coords,
-          vendorText,
-          Cell.parseTechnology(techText),
-          Cell.parseCellType(cellTypeText),
-          EdmCoreUtils.parseDouble(heightText).getOrElse(0.0),
-          EdmCoreUtils.parseDouble(azimuthText).getOrElse(0.0),
-          bscRncNmeText,
-          regionText,
-          antennaTypeText,
-          EdmCoreUtils.parseDouble(bspwrPcpichPmaxText).getOrElse(0.0),
-          EdmCoreUtils.parseInt(accminRxlevminText).getOrElse(0),
-          EdmCoreUtils.parseInt(bandText).getOrElse(0))
+        cellIdText,
+        ciText,
+        cellNameText,
+        nodeIdText,
+        nodeNameText,
+        lacTacText.toInt,
+        coords,
+        vendorText,
+        Cell.parseTechnology(techText),
+        Cell.parseCellType(cellTypeText),
+        EdmCoreUtils.parseDouble(heightText).getOrElse(0.0),
+        EdmCoreUtils.parseDouble(azimuthText).getOrElse(0.0),
+        bscRncNmeText,
+        regionText,
+        antennaTypeText,
+        EdmCoreUtils.parseDouble(bspwrPcpichPmaxText).getOrElse(0.0),
+        EdmCoreUtils.parseInt(accminRxlevminText).getOrElse(0),
+        EdmCoreUtils.parseInt(bandText).getOrElse(0))
     }
   }
 }
