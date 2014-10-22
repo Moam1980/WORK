@@ -7,9 +7,9 @@ package sa.com.mobily.roaming.spark
 import org.scalatest._
 import sa.com.mobily.utils.LocalSparkContext
 
-class WelcomeEventContextTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class WelcomeEventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
-  import WelcomeContext._
+  import WelcomeDsl._
 
   trait WithWelcomeEventsText {
 

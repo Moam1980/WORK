@@ -8,9 +8,9 @@ import org.scalatest._
 
 import sa.com.mobily.utils.LocalSparkContext
 
-class EgContextTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class EgDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
-  import EgContext._
+  import EgDsl._
 
   trait WithEgCellsText {
 

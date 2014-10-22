@@ -10,11 +10,11 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.SqmCell
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsContext}
+import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
 
 class SqmCellReader(self: RDD[String]) {
 
-  import ParsedItemsContext._
+  import ParsedItemsDsl._
 
   def toParsedSqmCell: RDD[ParsedItem[SqmCell]] = SparkCsvParser.fromCsv[SqmCell](self)
 
@@ -23,9 +23,9 @@ class SqmCellReader(self: RDD[String]) {
   def toSqmCellErrors: RDD[ParsingError] = toParsedSqmCell.errors
 }
 
-trait SqmCellContext {
+trait SqmCellDsl {
 
   implicit def sqmCellReader(csv: RDD[String]): SqmCellReader = new SqmCellReader(csv)
 }
 
-object SqmContext extends SqmCellContext with ParsedItemsContext
+object SqmDsl extends SqmCellDsl with ParsedItemsDsl

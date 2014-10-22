@@ -10,11 +10,11 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{EgBts, EgCell}
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsContext}
+import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
 
 class EgCellReader(self: RDD[String]) {
 
-  import ParsedItemsContext._
+  import ParsedItemsDsl._
 
   def toParsedEgCell: RDD[ParsedItem[EgCell]] = SparkCsvParser.fromCsv[EgCell](self)
 
@@ -23,14 +23,14 @@ class EgCellReader(self: RDD[String]) {
   def toEgCellErrors: RDD[ParsingError] = toParsedEgCell.errors
 }
 
-trait EgCellContext {
+trait EgCellDsl {
 
   implicit def egCellReader(csv: RDD[String]): EgCellReader = new EgCellReader(csv)
 }
 
 class EgBtsReader(self: RDD[String]) {
 
-  import ParsedItemsContext._
+  import ParsedItemsDsl._
 
   def toParsedEgBts: RDD[ParsedItem[EgBts]] = SparkCsvParser.fromCsv[EgBts](self)
 
@@ -39,9 +39,9 @@ class EgBtsReader(self: RDD[String]) {
   def toEgBtsErrors: RDD[ParsingError] = toParsedEgBts.errors
 }
 
-trait EgBtsContext {
+trait EgBtsDsl {
 
   implicit def egBtsReader(csv: RDD[String]): EgBtsReader = new EgBtsReader(csv)
 }
 
-object EgContext extends EgCellContext with EgBtsContext with ParsedItemsContext
+object EgDsl extends EgCellDsl with EgBtsDsl with ParsedItemsDsl
