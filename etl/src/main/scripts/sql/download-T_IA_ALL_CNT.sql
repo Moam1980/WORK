@@ -1,0 +1,1 @@
+SELECT '"' || DATA_DAY || '"|"' || SUBS_CNT || '"|"' || URL_VALID_CNT || '"|"' || URL_CRAWL_CNT || '"|"' || URL_INDEX_CNT || '"|"' || UPLOAD_VOL || '"|"' || DNLOAD_VOL || '"|"' || TOT_VOL || '"|"' || KEYWORD_SEARCH_CNT || '"|"' || KEYWORD_CONT_CNT || '"|"' || BE_ID || '"' FROM ia.T_IA_ALL_CNT

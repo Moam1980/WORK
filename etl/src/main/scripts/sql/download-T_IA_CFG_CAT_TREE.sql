@@ -1,0 +1,1 @@
+SELECT '"' || CAT_ID || '"|"' || CAT_CD || '"|"' || CAT_FULL_CD || '"|"' || PRT_CAT_ID || '"|"' || BYS_NAME || '"|"' || DETL_FLAG || '"|"' || SYS_FLAG || '"|"' || IMG_PATH || '"|"' || CAT_DESC || '"' FROM ia.T_IA_CFG_CAT_TREE

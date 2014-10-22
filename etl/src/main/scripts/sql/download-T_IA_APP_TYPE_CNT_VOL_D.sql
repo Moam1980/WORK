@@ -1,0 +1,1 @@
+SELECT '"' || DATA_DAY || '"|"' || SUBS_ID || '"|"' || APP_TYPE || '"|"' || VISIT_CNT || '"|"' || UPLOAD_VOL || '"|"' || DNLOAD_VAL || '"|"' || TOT_VOL || '"|"' || LOC_ID || '"|"' || BE_ID || '"' FROM ia.T_IA_APP_TYPE_CNT_VOL_D

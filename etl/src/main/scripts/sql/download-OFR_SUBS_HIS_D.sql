@@ -1,0 +1,1 @@
+SELECT '"' || subs_id || '"|"' || serv_no  || '"' FROM ckm.ofr_subs_his_d WHERE data_date=(SELECT last_data_date FROM common.T_COM_META_TABLE WHERE table_name ='OFR_SUBS_HIS_D')
