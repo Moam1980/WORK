@@ -104,4 +104,52 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   it should "return correct region code for british phone number" in new WithPhones {
     EdmCoreUtils.getRegionCodesForCountryCode(britishPhoneNumber) should be (britishRegionCodes)
   }
+
+  it should "return true when string Y when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("Y") should be (Some(true))
+  }
+
+  it should "return true when string y when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("y") should be (Some(true))
+  }
+
+  it should "return true when string YES when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("YES") should be (Some(true))
+  }
+
+  it should "return true when string yes when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("yes") should be (Some(true))
+  }
+
+  it should "return true when string Yes when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("Yes") should be (Some(true))
+  }
+
+  it should "return true when string YeS when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("YeS") should be (Some(true))
+  }
+
+  it should "return false when string N when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("N") should be (Some(false))
+  }
+
+  it should "return false when string n when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("n") should be (Some(false))
+  }
+
+  it should "return false when string NO when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("NO") should be (Some(false))
+  }
+
+  it should "return false when string no when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("no") should be (Some(false))
+  }
+
+  it should "return false when string No when parseBoolean" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("No") should be (Some(false))
+  }
+
+  it should "return None if the format of the string to parse as boolean is incorrect" in new WithPhones {
+    EdmCoreUtils.parseYesNoBoolean("Not a correct string") should be (None)
+  }
 }
