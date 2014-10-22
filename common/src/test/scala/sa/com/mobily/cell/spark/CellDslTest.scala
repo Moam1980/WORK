@@ -7,9 +7,9 @@ package sa.com.mobily.cell.spark
 import org.scalatest.{FlatSpec, ShouldMatchers}
 import sa.com.mobily.utils.LocalSparkContext
 
-class CellContextTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
-  import CellContext._
+  import CellDsl._
 
   trait WithCellsText {
 

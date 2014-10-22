@@ -10,11 +10,11 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{GisSqmSite, GisSqmCell}
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsContext}
+import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
 
 class GisSqmCellReader(self: RDD[String]) {
 
-  import ParsedItemsContext._
+  import ParsedItemsDsl._
 
   def toParsedGisSqmCell: RDD[ParsedItem[GisSqmCell]] = SparkCsvParser.fromCsv[GisSqmCell](self)
 
@@ -25,7 +25,7 @@ class GisSqmCellReader(self: RDD[String]) {
 
 class GisSqmSiteReader(self: RDD[String]) {
 
-  import ParsedItemsContext._
+  import ParsedItemsDsl._
 
   def toParsedGisSqmSite: RDD[ParsedItem[GisSqmSite]] = SparkCsvParser.fromCsv[GisSqmSite](self)
 
@@ -34,14 +34,14 @@ class GisSqmSiteReader(self: RDD[String]) {
   def toGisSqmSiteErrors: RDD[ParsingError] = toParsedGisSqmSite.errors
 }
 
-trait GisSqmCellContext {
+trait GisSqmCellDsl {
 
   implicit def gisSqmCellReader(csv: RDD[String]): GisSqmCellReader = new GisSqmCellReader(csv)
 }
 
-trait GisSqmSiteContext {
+trait GisSqmSiteDsl {
 
   implicit def gisSqmSiteReader(csv: RDD[String]): GisSqmSiteReader = new GisSqmSiteReader(csv)
 }
 
-object GisSqmContext extends GisSqmCellContext with GisSqmSiteContext with ParsedItemsContext
+object GisSqmDsl extends GisSqmCellDsl with GisSqmSiteDsl with ParsedItemsDsl

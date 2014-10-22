@@ -7,9 +7,9 @@ package sa.com.mobily.cell.spark
 import org.scalatest._
 import sa.com.mobily.utils.LocalSparkContext
 
-class GisSqmContextTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class GisSqmDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
-  import GisSqmContext._
+  import GisSqmDsl._
 
   trait WithCellsText {
 

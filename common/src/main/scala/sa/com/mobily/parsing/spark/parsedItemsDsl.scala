@@ -24,11 +24,11 @@ class ParsedItemsUnwrapFunctions[T:ClassTag](self: RDD[ParsedItem[T]]) {
   })
 }
 
-trait ParsedItemsContext {
+trait ParsedItemsDsl {
 
   implicit def parsedItemsUnwrapFunctions[T:ClassTag](
       wrappedItems: RDD[ParsedItem[T]]): ParsedItemsUnwrapFunctions[T] =
     new ParsedItemsUnwrapFunctions[T](wrappedItems)
 }
 
-object ParsedItemsContext extends ParsedItemsContext
+object ParsedItemsDsl extends ParsedItemsDsl
