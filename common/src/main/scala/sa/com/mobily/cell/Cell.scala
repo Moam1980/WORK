@@ -36,46 +36,31 @@ case object Pico extends CellType { override val value = "PICO" }
 
 /** Cell information */
 case class Cell(
-    cgi: String,
+    cellId: String,
+    lac: Int,
     planarCoords: UtmCoordinates,
     technology: Technology,
     cellType: CellType,
     height: Double,
     azimuth: Double,
-    tilt: Double,
-    power: Double,
     beamwidth: Double,
-    coverageWkt: String) {
-
-  require(cgi.length == Cell.CgiLength)
-
-  lazy val mcc: String = cgi.substring(Cell.MccStartIndex, Cell.MncStartIndex)
-
-  lazy val mnc: String = cgi.substring(Cell.MncStartIndex, Cell.LacStartIndex)
-
-  lazy val lac: String = technology match {
-    case TwoG => cgi.substring(Cell.LacStartIndex, Cell.CellIdStartIndex2g3g)
-    case ThreeG => cgi.substring(Cell.LacStartIndex, Cell.CellIdStartIndex2g3g)
-    case _ => cgi.substring(Cell.LacStartIndex, Cell.CellIdStartIndex4g)
-  }
-
-  lazy val cellId: String = technology match {
-    case TwoG => cgi.substring(Cell.CellIdStartIndex2g3g)
-    case ThreeG => cgi.substring(Cell.CellIdStartIndex2g3g)
-    case _ => cgi.substring(Cell.CellIdStartIndex4g)
-  }
+    range: Double,
+    coverageWkt: String,
+    mcc: String = Cell.SaudiArabiaMcc,
+    mnc: String = Cell.MobilyMnc) {
 
   lazy val coverageGeom: Geometry = GeomUtils.parseWkt(coverageWkt, planarCoords.srid)
 }
 
 object Cell {
 
-  val CgiLength = 15
   val MccStartIndex = 0
   val MncStartIndex = 3
-  val LacStartIndex = 6
-  val CellIdStartIndex2g3g = 10
-  val CellIdStartIndex4g = 11
+  val LacStartIndexMnc2Digits = 5
+  val LacStartIndexMnc3Digits = 6
+
+  private val SaudiArabiaMcc = "420"
+  private val MobilyMnc = "03"
 
   final val lineCsvParserObject = new OpenCsvParser
 
@@ -84,33 +69,22 @@ object Cell {
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): Cell = {
-      val (cellInfo, cellGeometry) = fields.splitAt(10) // scalastyle:ignore magic.number
-      require(cellGeometry.isEmpty || (cellGeometry.length == 1))
-      val Array(cgiText, latText, longText, techText, cellTypeText, heightText,
-        azimuthText, tiltText, powerText, beamwidthText) = cellInfo
+      val Array(mccText, mncText, cellIdText, lacText, planarXText, planarYText, utmEpsg, techText, cellTypeText,
+        heightText, azimuthText, beamwidthText, rangeText, geomText) = fields
 
-      val cgi = parseCgi(cgiText)
-      val coords = LatLongCoordinates(latText.toDouble, longText.toDouble).utmCoordinates()
-      val tech = parseTechnology(techText)
-      val cellType = parseCellType(cellTypeText)
-      val height = heightText.toDouble
-      val azimuth = azimuthText.toDouble
-      val tilt = tiltText.toDouble
-      val power = powerText.toDouble
-      val beamwidth = beamwidthText.toDouble
-      val coverageWkt =
-        if (cellGeometry.isEmpty)
-          GeomUtils.wkt(
-            CellCoverage.cellShape(
-              cellLocation = coords.geometry,
-              height = height,
-              azimuth = azimuth,
-              beamwidth = beamwidth,
-              tilt = tilt,
-              technology = tech))
-        else cellGeometry.head
-
-      Cell(cgi, coords, tech, cellType, height, azimuth, tilt, power, beamwidth, coverageWkt)
+      Cell(
+        cellId = cellIdText,
+        lac = lacText.toInt,
+        planarCoords = UtmCoordinates(planarXText.toDouble, planarYText.toDouble, utmEpsg),
+        technology = parseTechnology(techText),
+        cellType = parseCellType(cellTypeText),
+        height = heightText.toDouble,
+        azimuth = azimuthText.toDouble,
+        beamwidth = beamwidthText.toDouble,
+        range = rangeText.toDouble,
+        coverageWkt = geomText,
+        mcc = mccText,
+        mnc = mncText)
     }
   }
 
@@ -138,9 +112,21 @@ object Cell {
       case Pico.value => Pico
     }
 
-  private def parseCgi(cgiText: String) = {
-    val trimmedCgi = cgiText.trim
-    require(trimmedCgi.length == 15)
-    trimmedCgi
+  def toFields(cell: Cell): Array[String] = {
+    Array[String](
+      cell.mcc,
+      cell.mnc,
+      cell.cellId,
+      cell.lac.toString,
+      cell.planarCoords.x.toString,
+      cell.planarCoords.y.toString,
+      cell.planarCoords.epsg,
+      cell.technology.identifier,
+      cell.cellType.value,
+      cell.height.toString,
+      cell.azimuth.toString,
+      cell.beamwidth.toString,
+      cell.range.toString,
+      cell.coverageWkt)
   }
 }

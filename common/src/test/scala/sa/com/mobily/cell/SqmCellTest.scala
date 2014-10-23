@@ -32,6 +32,6 @@ class SqmCellTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be discarded when the CSV format is wrong" in new WithSqmCell {
-    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(10, "WrongTech"))
+    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(10, "WrongCellType"))
   }
 }

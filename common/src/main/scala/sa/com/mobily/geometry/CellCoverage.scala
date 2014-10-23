@@ -29,13 +29,10 @@ object CellCoverage {
 
   def cellShape(
       cellLocation: Point,
-      height: Double,
       azimuth: Double,
       beamwidth: Double,
-      tilt: Double,
-      technology: Technology,
+      range: Double,
       coverageModel: CoverageModel = Petals): Geometry = {
-    val range = cellRange(tilt, height, technology)
     if (beamwidth < 360) {
       // Directional antenna
       val mainLobe = coverageModel match {
