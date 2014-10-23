@@ -4,8 +4,6 @@
 
 package sa.com.mobily.parsing
 
-import sa.com.mobily.utils.EdmCoreUtils
-
 import scala.util.{Failure, Success, Try}
 
 case class ParsingError(line: String, error: Throwable)
@@ -17,7 +15,7 @@ case class ParsedItem[T](value: Option[T], parsingError: Option[ParsingError] = 
 
 abstract class CsvParser[T] extends Serializable {
 
-  def lineCsvParser : OpenCsvParser
+  def lineCsvParser: OpenCsvParser
 
   def fromFields(fields: Array[String]): T
 }
