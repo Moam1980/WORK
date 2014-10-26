@@ -17,7 +17,7 @@ function usageHelp ()
 }
 
 # Default values for optional parameters
-PROPERTIES_FILE="${BASE_DIR}/properties/etl.properties"
+PROPERTIES_FILE="${BASE_DIR}/properties/config-etl.sh"
 
 # Check if number of parameters is the expected
 if [ $# -ge 4 -a $# -le 8 ]; then
@@ -67,7 +67,6 @@ fi
 # Load properties file
 loadPropertiesFile ${PROPERTIES_FILE}
 
-
 # Check that output file doesn't exists
 checkNotExistsFile ${ISOP_OUTPUT_FILE_PATH}/${OUTPUT_FILE}
 
@@ -111,7 +110,7 @@ SQL_QUERY=$(<${SQL_FILE})
 
 # Get a timestamp to generate SQL file
 TIMESTAMP=`date +%s`
-TMP_SQL_FILE=${FILE_TO_EXECUTE}.tmp_${TIMESTAMP}.sql
+TMP_SQL_FILE=${FILE_TO_EXECUTE}.tmp_${OUTPUT_FILE}_${TIMESTAMP}.sql
 
 # Get file to run and modify with parameters passed
 sed "s|%%OUTPUT_FILE%%|${CSV_FILE}|g" ${FILE_TO_EXECUTE} > ${TMP_SQL_FILE}

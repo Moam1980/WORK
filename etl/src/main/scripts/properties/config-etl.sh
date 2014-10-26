@@ -4,7 +4,7 @@
 LINE_SIZE=3250
 
 # Output directories
-OUTPUT_FILE_PATH=~/Mobily-Data
+OUTPUT_FILE_PATH=/Volumes/Users/Mobily-Data
 ISOP_OUTPUT_FILE_PATH=${OUTPUT_FILE_PATH}/isop
 
 # Log directory

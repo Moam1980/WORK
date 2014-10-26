@@ -20,7 +20,7 @@ function usageHelp ()
 }
 
 # Default values for optional parameters
-PROPERTIES_FILE="${BASE_DIR}/properties/etl.properties"
+PROPERTIES_FILE="${BASE_DIR}/properties/config-etl.sh"
 
 # Check if number of parameters is the expected
 if [ $# -ge 4 -a $# -le 6 ]; then
