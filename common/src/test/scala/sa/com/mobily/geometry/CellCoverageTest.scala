@@ -58,18 +58,18 @@ class CellCoverageTest extends FlatSpec with ShouldMatchers with EdmCustomMatche
         "45.3 5.7, 45.7 0))",
       sridPlanar)
     val expectedHippopedeWithBackLobe = GeomUtils.parseWkt(
-      "POLYGON ((-1.4 -45.6, -3.6 -114.4, -10.2 -161.4, -18.6 -196.8, -28.5 -225.9, -39.7 -250.7, -51.9 -272.2, " +
+      "POLYGON ((-1.4 -45.6, -3.6 -114.4, -10.2 -161.4, -18.6 -196.8, -28.5 -226, -39.7 -250.7, -51.9 -272.2, " +
         "-65 -290.8, -78.8 -307, -93.3 -321, -108.2 -333, -123.5 -343.1, -139.1 -351.3, -154.9 -357.9, " +
         "-170.7 -362.7, -186.5 -366, -202.2 -367.7, -217.6 -368, -232.8 -366.8, -247.5 -364.2, -261.8 -360.3, " +
         "-275.5 -355.1, -288.5 -348.8, -300.8 -341.2, -312.3 -332.6, -322.9 -322.9, -332.6 -312.3, -341.2 -300.8, " +
         "-348.8 -288.5, -355.1 -275.5, -360.3 -261.8, -364.2 -247.5, -366.8 -232.8, -368 -217.6, -367.7 -202.2, " +
         "-366 -186.5, -362.7 -170.7, -357.9 -154.9, -351.3 -139.1, -343.1 -123.5, -333 -108.2, -321 -93.3, " +
-        "-307 -78.8, -290.8 -65, -272.2 -51.9, -250.7 -39.7, -225.9 -28.5, -196.8 -18.6, -161.4 -10.2, " +
-        "-114.4 -3.6, -45.6 -1.4, -45.7 0, -45.3 5.7, -44.2 11.4, -42.5 16.8, -40 22, -36.9 26.8, -33.3 31.3, " +
-        "-29.1 35.2, -24.5 38.6, -19.4 41.3, -14.1 43.4, -8.6 44.9, -2.9 45.6, 2.9 45.6, 8.6 44.9, 14.1 43.4, " +
-        "19.4 41.3, 24.5 38.6, 29.1 35.2, 33.3 31.3, 36.9 26.8, 40 22, 42.5 16.8, 44.2 11.4, 45.3 5.7, 45.7 0, " +
-        "45.3 -5.7, 44.2 -11.4, 42.5 -16.8, 40 -22, 36.9 -26.8, 33.3 -31.3, 29.1 -35.2, 24.5 -38.6, 19.4 -41.3, " +
-        "14.1 -43.4, 8.6 -44.9, 2.9 -45.6, -1.4 -45.6))",
+        "-307 -78.8, -290.8 -65, -272.2 -51.9, -250.7 -39.7, -226 -28.5, -196.8 -18.6, -161.4 -10.2, -114.4 -3.6, " +
+        "-45.6 -1.4, -45.7 0, -45.3 5.7, -44.2 11.4, -42.5 16.8, -40 22, -36.9 26.8, -33.3 31.3, -29.1 35.2, " +
+        "-24.5 38.6, -19.4 41.3, -14.1 43.4, -8.6 44.9, -2.9 45.6, 2.9 45.6, 8.6 44.9, 14.1 43.4, 19.4 41.3, " +
+        "24.5 38.6, 29.1 35.2, 33.3 31.3, 36.9 26.8, 40 22, 42.5 16.8, 44.2 11.4, 45.3 5.7, 45.7 0, 45.3 -5.7, " +
+        "44.2 -11.4, 42.5 -16.8, 40 -22, 36.9 -26.8, 33.3 -31.3, 29.1 -35.2, 24.5 -38.6, 19.4 -41.3, 14.1 -43.4, " +
+        "8.6 -44.9, 2.9 -45.6, -1.4 -45.6))",
       sridPlanar)
     val expectedConchoidWithBackLobe = GeomUtils.parseWkt(
       "POLYGON ((-23.6 -39.1, -25.8 -42, -43.9 -60.5, -65.3 -76.4, -89.4 -89.4, -115.8 -98.9, -144.1 -104.7, " +
@@ -101,29 +101,23 @@ class CellCoverageTest extends FlatSpec with ShouldMatchers with EdmCustomMatche
   }
 
   it should "build the coverage geometry for omnidirectional antennas" in new WithCellCoverageShapes {
-    CellCoverage.cellShape(position, height, 0, 360, tilt, tech) should equalGeometry (expectedCircle)
+    CellCoverage.cellShape(position, 0, 360, rangeThreeGFourGFdd) should equalGeometry (expectedCircle)
   }
 
   it should "build the coverage geometry for directional antennas (circular sectors)" in new WithCellCoverageShapes {
-    CellCoverage.cellShape(
-      position,
-      height,
-      azimuthCirSect,
-      beamwidthCirSect,
-      tilt,
-      tech,
+    CellCoverage.cellShape(position, azimuthCirSect, beamwidthCirSect, rangeThreeGFourGFdd,
       CoverageModel.CircularSectors) should equalGeometry (expectedCirSect)
   }
 
   it should "build the coverage geometry for directional antennas (petals, beamwidth < 180)" in
     new WithCellCoverageShapes {
-      CellCoverage.cellShape(position, height, azimuthHippopede, beamwidthLt180, tilt, tech) should
+      CellCoverage.cellShape(position, azimuthHippopede, beamwidthLt180, rangeThreeGFourGFdd) should
         equalGeometry (expectedHippopedeWithBackLobe)
     }
 
   it should "build the coverage geometry for directional antennas (petals, beamwidth >= 180)" in
     new WithCellCoverageShapes {
-      CellCoverage.cellShape(position, height, azimuthConchoid, beamwidthGe180, tilt, tech) should
+      CellCoverage.cellShape(position, azimuthConchoid, beamwidthGe180, rangeThreeGFourGFdd) should
         equalGeometry (expectedConchoidWithBackLobe)
   }
 }
