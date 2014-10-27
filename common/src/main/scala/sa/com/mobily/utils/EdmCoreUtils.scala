@@ -22,6 +22,7 @@ object EdmCoreUtils {
   final val TimeZoneSaudiArabia = DateTimeZone.forID("Asia/Riyadh")
   final val fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
   final val phoneNumberUtil = PhoneNumberUtil.getInstance
+  val BaseForHexadecimal: Int = 16
 
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
@@ -32,13 +33,17 @@ object EdmCoreUtils {
 
   def roundAt1(n: Double): Double = roundAt(1)(n)
 
+  def hexToDecimal(s: String): Option[Int] = Try { Integer.parseInt(s, BaseForHexadecimal) }.toOption
+
   def parseDouble(s: String): Option[Double] = Try { s.toDouble }.toOption
+
+  def parseFloat(s: String): Option[Float] = Try { s.toFloat }.toOption
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
   def parseLong(s: String): Option[Long] = Try { s.toLong }.toOption
 
-  def parseFloat(s: String): Option[Float] = Try { s.toFloat }.toOption
+  def parseShort(s: String): Option[Short] = Try { s.toShort }.toOption
 
   def getCountryCode(msisdn: String): Int = phoneNumberUtil.parse(msisdn, "").getCountryCode
 
