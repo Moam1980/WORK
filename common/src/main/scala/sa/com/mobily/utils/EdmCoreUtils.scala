@@ -34,10 +34,13 @@ object EdmCoreUtils {
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
-  def getCountryCode(s: String): Int = phoneNumberUtil.parse(s, "").getCountryCode
+  def getCountryCode(msisdn: String): Int = phoneNumberUtil.parse(msisdn, "").getCountryCode
 
-  def getRegionCodesForCountryCode(s: String): String =
-    phoneNumberUtil.getRegionCodesForCountryCode(getCountryCode(s)).asScala.mkString(":")
+  def getRegionCodesForCountryCodeList(msisdn: String): List[String] =
+    phoneNumberUtil.getRegionCodesForCountryCode(getCountryCode(msisdn)).asScala.toList
+
+  def getRegionCodesForCountryCode(msisdn: String): String =
+    getRegionCodesForCountryCodeList(msisdn).mkString(":")
 
   def parseTimestampToSaudiDate(timestamp: Long): String = fmt.print(timestamp)
 

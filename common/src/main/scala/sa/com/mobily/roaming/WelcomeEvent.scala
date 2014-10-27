@@ -26,11 +26,14 @@ case class WelcomeEvent(
     scenario: Scenario,
     numberShortSmsSent: Int)
 
-object WelcomeEvent {
+trait WelcomeEventParser {
 
   val inputDateTimeFormat = "dd.MM.yyyy HH:mm:ss"
   final val fmt = DateTimeFormat.forPattern(inputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
   final val lineCsvParserObject = new OpenCsvParser(separator = ' ')
+}
+
+object WelcomeEvent extends WelcomeEventParser {
 
   implicit val fromCsv = new CsvParser[WelcomeEvent] {
 
@@ -40,20 +43,19 @@ object WelcomeEvent {
       val Array(dateText, timeText, msisdnText, imsiText, callingNumberText, scenarioText,
         numberShortSmsSentText) = fields
 
-      // Calculate timestamp
-      val timestamp = parseSaudiDateToTimestamp(dateText + " " + timeText)
-
       // Try to get region for msisdn and calling number
       EdmCoreUtils.getRegionCodesForCountryCode(msisdnText)
       EdmCoreUtils.getRegionCodesForCountryCode("+" + callingNumberText)
 
-      WelcomeEvent(timestamp.getMillis, msisdnText.toLong, imsiText.toLong, callingNumberText.toLong,
-        WelcomeEvent.parseScenario(scenarioText), numberShortSmsSentText.toInt)
+      WelcomeEvent(
+        timestamp = fmt.parseDateTime(dateText + " " + timeText).getMillis,
+        msisdn = msisdnText.toLong,
+        imsi = imsiText.toLong,
+        callingNumber = callingNumberText.toLong,
+        scenario = WelcomeEvent.parseScenario(scenarioText),
+        numberShortSmsSent = numberShortSmsSentText.toInt)
     }
   }
-
-  // Get millis always return UTC that's the reason we are adding timezone to formatter
-  def parseSaudiDateToTimestamp(s: String): DateTime = fmt.parseDateTime(s)
 
   def parseScenario(scenarioText: String): Scenario = scenarioText.toInt match {
     case OutboundSms.identifier => OutboundSms

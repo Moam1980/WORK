@@ -18,6 +18,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   trait WithDates {
+    
     val timestamp = 1412171413000L
     val timestampRoundFLoorHour = 1412168400000L
 
@@ -27,17 +28,21 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   trait WithPhones {
+    
     val phoneNumber = "+966000000000"
     val wrongPhoneNumber = "966000000000"
-    val code = 966
-    val regionCodes = "SA"
+    val saudiCode = 966
+    val saudiRegionCodesList = List("SA")
+    val saudiRegionCodes = "SA"
 
     val spanishPhoneNumber = "+34630000000"
     val spanishCode = 34
+    val spanishRegionCodesList = List("ES")
     val spanishRegionCodes = "ES"
 
     val britishPhoneNumber = "+44780000000"
     val britishCode = 44
+    val britishRegionCodesList = List("GB", "GG", "IM", "JE")
     val britishRegionCodes = "GB:GG:IM:JE"
   }
 
@@ -78,7 +83,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   "EdmCoreUtils" should "return correct country code for saudi phone number" in new WithPhones {
-    EdmCoreUtils.getCountryCode(phoneNumber) should be (code)
+    EdmCoreUtils.getCountryCode(phoneNumber) should be (saudiCode)
   }
 
   it should "throw an exception if the format of the phone number is incorrect" in new WithPhones {
@@ -86,7 +91,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return correct region code for saudi phone number" in new WithPhones {
-    EdmCoreUtils.getRegionCodesForCountryCode(phoneNumber) should be (regionCodes)
+    EdmCoreUtils.getRegionCodesForCountryCode(phoneNumber) should be (saudiRegionCodes)
   }
 
   it should "return correct country code for spanish phone number" in new WithPhones {
@@ -103,6 +108,18 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "return correct region code for british phone number" in new WithPhones {
     EdmCoreUtils.getRegionCodesForCountryCode(britishPhoneNumber) should be (britishRegionCodes)
+  }
+
+  it should "return correct region code list for saudi phone number" in new WithPhones {
+    EdmCoreUtils.getRegionCodesForCountryCodeList(phoneNumber) should be (saudiRegionCodesList)
+  }
+
+  it should "return correct region code list for spanish phone number" in new WithPhones {
+    EdmCoreUtils.getRegionCodesForCountryCodeList(spanishPhoneNumber) should be (spanishRegionCodesList)
+  }
+
+  it should "return correct region code list for british phone number" in new WithPhones {
+    EdmCoreUtils.getRegionCodesForCountryCodeList(britishPhoneNumber) should be (britishRegionCodesList)
   }
 
   it should "return true when string Y when parseBoolean" in new WithPhones {

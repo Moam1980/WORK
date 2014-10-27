@@ -5,6 +5,7 @@
 package sa.com.mobily.roaming
 
 import org.scalatest.{FlatSpec, ShouldMatchers}
+
 import sa.com.mobily.parsing.CsvParser
 
 
@@ -31,7 +32,7 @@ class WelcomeEventTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return correct UTC in milliseconds for a Saudi date time string" in new WithWelcomeEvent {
-    WelcomeEvent.parseSaudiDateToTimestamp("01.10.2014 16:50:13").getMillis should be (timestamp)
+    WelcomeEvent.fmt.parseDateTime("01.10.2014 16:50:13").getMillis should be (timestamp)
   }
 
   it should "return correct input format for Saudi dates" in new WithWelcomeEvent {
@@ -39,7 +40,7 @@ class WelcomeEventTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "throw an exception if the format of the date is incorrect" in new WithWelcomeEvent {
-    an [IllegalArgumentException] should be thrownBy WelcomeEvent.parseSaudiDateToTimestamp("01/10/2014 16:50:13")
+    an [IllegalArgumentException] should be thrownBy WelcomeEvent.fmt.parseDateTime("01/10/2014 16:50:13")
   }
 
   it should "be built from CSV with OutboundSms scenario" in new WithWelcomeEvent {
