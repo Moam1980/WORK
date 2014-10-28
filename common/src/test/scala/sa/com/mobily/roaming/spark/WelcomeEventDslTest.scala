@@ -5,6 +5,7 @@
 package sa.com.mobily.roaming.spark
 
 import org.scalatest._
+
 import sa.com.mobily.utils.LocalSparkContext
 
 class WelcomeEventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
@@ -20,15 +21,15 @@ class WelcomeEventDslTest extends FlatSpec with ShouldMatchers with LocalSparkCo
     val welcomeEvents = sc.parallelize(List(welcomeEvent1, welcomeEvent2, welcomeEvent3))
   }
 
-  "SqmContext" should "get correctly parsed Sqm cells" in new WithWelcomeEventsText {
+  "WelcomeEventDsl" should "get correctly parsed welcome event" in new WithWelcomeEventsText {
     welcomeEvents.toWelcomeEvent.count should be (2)
   }
 
-  it should "get errors when parsing Sqm cells" in new WithWelcomeEventsText {
+  it should "get errors when parsing welcome event" in new WithWelcomeEventsText {
     welcomeEvents.toWelcomeEventErrors.count should be (1)
   }
 
-  it should "get both correctly and wrongly parsed Sqm cells" in new WithWelcomeEventsText {
+  it should "get both correctly and wrongly parsed welcome event" in new WithWelcomeEventsText {
     welcomeEvents.toParsedWelcomeEvent.count should be (3)
   }
 }
