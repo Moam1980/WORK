@@ -122,6 +122,18 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.getRegionCodesForCountryCodeList(britishPhoneNumber) should be (britishRegionCodesList)
   }
 
+  it should "return correct country calling code for saudi phone number" in new WithPhones {
+    EdmCoreUtils.getCountryCallingCode(phoneNumber.toLong) should be (saudiCode)
+  }
+
+  it should "return correct country calling code for spain phone number" in new WithPhones {
+    EdmCoreUtils.getCountryCallingCode(spanishPhoneNumber.toLong) should be (spanishCode)
+  }
+
+  it should "return correct country calling code for british phone number" in new WithPhones {
+    EdmCoreUtils.getCountryCallingCode(britishPhoneNumber.toLong) should be (britishCode)
+  }
+
   it should "return true when string Y when parseBoolean" in new WithPhones {
     EdmCoreUtils.parseYesNoBoolean("Y") should be (Some(true))
   }

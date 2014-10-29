@@ -4,7 +4,6 @@
 
 package sa.com.mobily.roaming
 
-import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
 import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}

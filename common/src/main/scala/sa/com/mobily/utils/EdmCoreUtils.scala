@@ -11,6 +11,8 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormat
 
+import sa.com.mobily.roaming.CountryCallingCode
+
 /**
  * Generic utility class for External Data Monetization
  */
@@ -41,6 +43,18 @@ object EdmCoreUtils {
 
   def getRegionCodesForCountryCode(msisdn: String): String =
     getRegionCodesForCountryCodeList(msisdn).mkString(":")
+
+  def getCountryCallingCode(msisdn: Long): Int = {
+    if (msisdn.toString.length > CountryCallingCode.maxLengthCountryCallingCode) {
+      getCountryCallingCode(msisdn.toString.substring(0, CountryCallingCode.maxLengthCountryCallingCode).toLong)
+    } else {
+      if (CountryCallingCode.CountryCallingCodeLookup.contains(msisdn.toInt) || (msisdn.toString.length == 1)) {
+        msisdn.toInt
+      } else {
+        getCountryCallingCode(msisdn.toString.substring(0, msisdn.toString.length - 1).toLong)
+      }
+    }
+  }
 
   def parseTimestampToSaudiDate(timestamp: Long): String = fmt.print(timestamp)
 
