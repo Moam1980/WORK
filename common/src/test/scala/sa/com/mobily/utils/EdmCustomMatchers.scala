@@ -30,6 +30,8 @@ trait EdmCustomMatchers {
   }
 
   def equalGeometry(expectedGeom: Geometry) = new EqualGeometry(expectedGeom)
+
+  def equalGeometry(expectedGeom: Geometry, tolerance: Double) = new EqualGeometry(expectedGeom, tolerance)
 }
 
 object EdmCustomMatchers extends EdmCustomMatchers

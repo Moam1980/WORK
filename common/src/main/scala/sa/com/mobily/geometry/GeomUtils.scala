@@ -9,6 +9,8 @@ import scala.math._
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.util.GeometricShapeFactory
+import org.geotools.geometry.jts.JTS
+import org.geotools.referencing.CRS
 
 object GeomUtils {
 
@@ -26,6 +28,26 @@ object GeomUtils {
   }
 
   def wkt(geom: Geometry): String = new WKTWriter().write(geom)
+
+  /**
+   * @param longitudeFirst Whether to force for a projection with order (longitude, latitude). This projection order
+   *                       (longitude, latitude) is not the standard in WGS84 (EPSG:4326) for instance, but most
+   *                       GIS tools and systems (like QGIS and PostGIS) use it to make it similar to the cartesian
+   *                       projection (x, y).
+   */
+  def transformGeom(
+      geom: Geometry,
+      destSrid: Int,
+      destPrecisionModel: PrecisionModel,
+      longitudeFirst: Boolean): Geometry = {
+    val mathTransform = CRS.findMathTransform(
+      CRS.decode(Coordinates.epsg(geom.getSRID)),
+      CRS.decode(Coordinates.epsg(destSrid), longitudeFirst))
+    val geomWithDestPrecisionModel = geomFactory(geom.getSRID, destPrecisionModel).createGeometry(geom)
+    val transformedGeom = JTS.transform(geomWithDestPrecisionModel, mathTransform)
+    transformedGeom.setSRID(destSrid)
+    transformedGeom
+  }
 
   def circle(centre: Point, radius: Double, numPoints: Int = DefaultNumPoints): Geometry =
     geomShapeFactory(centre, radius, numPoints).createCircle

@@ -58,13 +58,18 @@ case class LatLongCoordinates(lat: Double, long: Double, epsg: String = Coordina
 
 object Coordinates {
 
-  val SaudiArabiaUtmEpsg = "EPSG:32638" // UTM zone 38N
-  val Wgs84GeodeticEpsg = "EPSG:4326"
+  val EpsgAuthority = "EPSG"
   val AuthoritySridSep = ":"
+  val SaudiArabiaUtmSrid = 32638
+  val Wgs84GeodeticSrid = 4326
+  val SaudiArabiaUtmEpsg = epsg(SaudiArabiaUtmSrid) // UTM zone 38N
+  val Wgs84GeodeticEpsg = epsg(Wgs84GeodeticSrid)
   val OneDecimalScale = 10
   val SevenDecimalsScale = 1e7
   val UtmPrecisionModel = new PrecisionModel(OneDecimalScale)
   val LatLongPrecisionModel = new PrecisionModel(SevenDecimalsScale)
 
   def srid(epsg: String): Int = epsg.substring(epsg.indexOf(Coordinates.AuthoritySridSep) + 1).toInt
+
+  def epsg(srid: Int): String = s"$EpsgAuthority$AuthoritySridSep$srid"
 }
