@@ -70,7 +70,7 @@ object Cell {
 
     override def fromFields(fields: Array[String]): Cell = {
       val Array(mccText, mncText, cellIdText, lacText, planarXText, planarYText, utmEpsg, techText, cellTypeText,
-        heightText, azimuthText, beamwidthText, rangeText, geomText) = fields
+        heightText, azimuthText, beamwidthText, rangeText, geomText, _) = fields
 
       Cell(
         cellId = cellIdText,
@@ -113,6 +113,13 @@ object Cell {
     }
 
   def toFields(cell: Cell): Array[String] = {
+    val coverageWktWgs84 =
+      GeomUtils.wkt(
+        GeomUtils.transformGeom(
+          cell.coverageGeom,
+          Coordinates.Wgs84GeodeticSrid,
+          Coordinates.LatLongPrecisionModel,
+          true)) // Use longitude first (format recognized by QGIS and PostGIS, but it's not standard!)
     Array[String](
       cell.mcc,
       cell.mnc,
@@ -127,6 +134,7 @@ object Cell {
       cell.azimuth.toString,
       cell.beamwidth.toString,
       cell.range.toString,
-      cell.coverageWkt)
+      cell.coverageWkt,
+      coverageWktWgs84)
   }
 }
