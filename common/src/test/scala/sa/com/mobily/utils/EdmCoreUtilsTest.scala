@@ -70,6 +70,22 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.parseInt("3.14") should be (None)
   }
 
+  it should "convert to long" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseLong("139482") should be (Some(139482L))
+  }
+
+  it should "detect badly formatted long" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseLong("3.14") should be (None)
+  }
+
+  it should "convert to float" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseFloat("3.14") should be (Some(3.14F))
+  }
+
+  it should "detect badly formatted float" in new WithManyDecimalNumbers {
+    EdmCoreUtils.parseFloat("This is not a number") should be (None)
+  }
+
   "EdmCoreUtils" should "return correct string date for timestamp" in new WithDates {
     EdmCoreUtils.parseTimestampToSaudiDate(timestamp) should be (dateString)
   }
@@ -134,51 +150,107 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.getCountryCallingCode(britishPhoneNumber.toLong) should be (britishCode)
   }
 
+  it should "return true when string Y when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("Y") should be (Some(true))
+  }
+
+  it should "return true when string y when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("y") should be (Some(true))
+  }
+
+  it should "return true when string YES when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("YES") should be (Some(true))
+  }
+
+  it should "return true when string yes when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("yes") should be (Some(true))
+  }
+
+  it should "return true when string Yes when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("Yes") should be (Some(true))
+  }
+
+  it should "return true when string YeS when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("YeS") should be (Some(true))
+  }
+
+  it should "return false when string N when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("N") should be (Some(false))
+  }
+
+  it should "return false when string n when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("n") should be (Some(false))
+  }
+
+  it should "return false when string NO when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("NO") should be (Some(false))
+  }
+
+  it should "return false when string no when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("no") should be (Some(false))
+  }
+
+  it should "return false when string No when parseYesNoBooleanOption" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("No") should be (Some(false))
+  }
+
+  it should "return None if the format of the string to parseYesNoBooleanOption is incorrect" in new WithPhones {
+    EdmCoreUtils.parseYesNoBooleanOption("Not a correct string") should be (None)
+  }
+
   it should "return true when string Y when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("Y") should be (Some(true))
+    EdmCoreUtils.parseYesNoBoolean("Y") should be (true)
   }
 
   it should "return true when string y when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("y") should be (Some(true))
+    EdmCoreUtils.parseYesNoBoolean("y") should be (true)
   }
 
   it should "return true when string YES when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("YES") should be (Some(true))
+    EdmCoreUtils.parseYesNoBoolean("YES") should be (true)
   }
 
   it should "return true when string yes when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("yes") should be (Some(true))
+    EdmCoreUtils.parseYesNoBoolean("yes") should be (true)
   }
 
   it should "return true when string Yes when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("Yes") should be (Some(true))
+    EdmCoreUtils.parseYesNoBoolean("Yes") should be (true)
   }
 
   it should "return true when string YeS when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("YeS") should be (Some(true))
+    EdmCoreUtils.parseYesNoBoolean("YeS") should be (true)
   }
 
   it should "return false when string N when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("N") should be (Some(false))
+    EdmCoreUtils.parseYesNoBoolean("N") should be (false)
   }
 
   it should "return false when string n when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("n") should be (Some(false))
+    EdmCoreUtils.parseYesNoBoolean("n") should be (false)
   }
 
   it should "return false when string NO when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("NO") should be (Some(false))
+    EdmCoreUtils.parseYesNoBoolean("NO") should be (false)
   }
 
   it should "return false when string no when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("no") should be (Some(false))
+    EdmCoreUtils.parseYesNoBoolean("no") should be (false)
   }
 
   it should "return false when string No when parseBoolean" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("No") should be (Some(false))
+    EdmCoreUtils.parseYesNoBoolean("No") should be (false)
   }
 
-  it should "return None if the format of the string to parse as boolean is incorrect" in new WithPhones {
-    EdmCoreUtils.parseYesNoBoolean("Not a correct string") should be (None)
+  it should "throw an exception if the format of the string to parse as boolean is incorrect" in new WithPhones {
+    an [MatchError] should be thrownBy EdmCoreUtils.parseYesNoBoolean("Not a correct string")
+  }
+
+  it should "return string when string is not $null$" in new WithPhones {
+    EdmCoreUtils.parseNullString("no") should be ("no")
+  }
+
+  it should "return empty string when string is $null$" in new WithPhones {
+    EdmCoreUtils.parseNullString("$null$") should be ("")
   }
 }

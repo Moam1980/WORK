@@ -13,18 +13,20 @@ class SubscriberHajjDslTest extends FlatSpec with ShouldMatchers with LocalSpark
   
   trait WithSubscriberHajjText {
 
-    val subscriberHajj1 = "200540000000,N/A,20AUG_10OCT_14,Y,Saudi Arabia,N,Y,0.000,INTERNAL,Consumer,Prepaid," +
-      "Connect 5G Pre,Connect,TENURE_GRT90 = \"Y\" and MAKKAH_MADINAH_L3M = \"N\",INTERNAL"
-    val subscriberHajj2 = "200540000001,N/A,20AUG_10OCT_14,N,Saudi Arabia,N,Y,0.000,EXTERNAL,Consumer,Prepaid," +
-      "Connect 5G Pre,Connect,TENURE_GRT90 = \"Y\" and MAKKAH_MADINAH_L3M = \"N\",EXTERNAL"
-    val subscriberHajj3 = "200540000000A,N/A,20AUG_10OCT_14,Y,Saudi Arabia,N,Y,0.000,INTERNAL,Consumer,Prepaid," +
+    val subscriberHajj1 = "200540851363\tSamsungN710000\tSmartphone\tSamsung\tYes\tSaudi Arabia\tConsumer\tPrepaid" +
+      "\tConnect 5G Pre\tConnect\tN\tINTERNAL_VISITOR\tINTERNAL_VISITOR\tLocal\t$null$\t$null$\tLOCALS\t1.000" +
+      "\t100.000\tY\t100.000"
+    val subscriberHajj2 = "200540851363\tSamsungN710000\tSmartphone\tSamsung\tYes\tSaudi Arabia\tConsumer\tPrepaid" +
+      "\tConnect 5G Pre\tConnect\tN\tINTERNAL_VISITOR\tINTERNAL_VISITOR\tLocal\t$null$\t$null$\tLOCALS\t1.000" +
+      "\t100.000\tY\t100.000"
+    val subscriberHajj3 = "Not a number,N/A,20AUG_10OCT_14,Y,Saudi Arabia,N,Y,0.000,INTERNAL,Consumer,Prepaid," +
       "Connect 5G Pre,Connect,TENURE_GRT90 = \"YO\" and MAKKAH_MADINAH_L3M = \"N\",INTERNAL"
 
     val subscriberHajj = sc.parallelize(List(subscriberHajj1, subscriberHajj2,
       subscriberHajj3))
   }
 
-  "SubscriberHajjContext" should "get correctly parsed data" in new WithSubscriberHajjText {
+  "SubscriberHajjDsl" should "get correctly parsed data" in new WithSubscriberHajjText {
     subscriberHajj.toSubscriberHajj.count should be (2)
   }
 

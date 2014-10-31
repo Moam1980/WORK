@@ -14,17 +14,39 @@ class SubscriberHajjTest extends FlatSpec with ShouldMatchers {
 
   trait WithSubscriberHajj {
 
-    val timestamp = 364683600000L
-    val inputDateFormat = "yyyyMMdd"
+    val subscriberDwhLine = "200540851363\tSamsungN710000\tSmartphone\tSamsung\tYes\tSaudi Arabia\tConsumer\tPrepaid" +
+      "\tConnect 5G Pre\tConnect\tN\tINTERNAL_VISITOR\tINTERNAL_VISITOR\tLocal\t$null$\t$null$\tLOCALS\t1.000" +
+      "\t100.000\tY\t100.000"
 
-    val subscriberDwhLine = "200540000000,N/A,20AUG_10OCT_14,Y,Saudi Arabia,N,Y,0.000,INTERNAL,Consumer,Prepaid," +
-      "Connect 5G Pre,Connect,TENURE_GRT90 = \"Y\" and MAKKAH_MADINAH_L3M = \"N\",INTERNAL"
-    val fields = Array("200540000000", "N/A", "20AUG_10OCT_14", "Y", "Saudi Arabia", "N", "Y", "0.000", "INTERNAL",
-      "Consumer", "Prepaid", "Connect 5G Pre,Connect,TENURE_GRT90 = \"Y\" and MAKKAH_MADINAH_L3M = \"N\"", "INTERNAL")
+    val subscriberDwhLineOther = "966831020866881\t$null$\t$null$\t$null$\t$null$\tSaudi Arabia\tignore\tignore" +
+      "\tignore\tignore\tN\tLOCAL\tLOCAL_OLD\tLocal\t$null$\t$null$\tLOCALS\t$null$\t$null$\tN\t$null$"
 
-    val subscriberDwh = SubscriberHajj(200540000000L, "N/A", "20AUG_10OCT_14", Some(true), "Saudi Arabia", Some(false),
-      Some(true), 0D, "INTERNAL", "Consumer", "Prepaid", "Connect 5G Pre", "Connect",
-      "TENURE_GRT90 = \"Y\" and MAKKAH_MADINAH_L3M = \"N\"", "INTERNAL")
+    val fields = Array("200540851363", "SamsungN710000", "Smartphone", "Samsung", "Yes", "Saudi Arabia", "Consumer",
+      "Prepaid", "Connect 5G Pre", "Connect", "N", "INTERNAL_VISITOR", "INTERNAL_VISITOR", "Local", "$null$",
+      "$null$", "LOCALS", "1.000", "100.000", "Y", "100.000")
+
+    val subscriberDwh = SubscriberHajj(
+      msisdn = 200540851363L,
+      handsetType = "SamsungN710000",
+      handsetSubCategory = "Smartphone",
+      handsetVendor = "Samsung",
+      smartPhone = Some(true),
+      nationality = "Saudi Arabia",
+      segment = ConsumerSegment,
+      contractType = PrepaidContract,
+      pack = "Connect 5G Pre",
+      category = "Connect",
+      makkah7Days = false,
+      finalFlag = InternalVisitorFlag,
+      flagDetails = "INTERNAL_VISITOR",
+      nationalityGroup = National,
+      totalMou = None,
+      destinationCountry = "",
+      calculatedNationalityGroup = NationalCalculated,
+      numberRecharges = Some(1),
+      rechargeAmount = Some(100F),
+      subsciberRen = true,
+      subsciberRenRev = Some(100F))
   }
 
   "SubscriberHajjDWH" should "be built from CSV" in new WithSubscriberHajj {
@@ -33,5 +55,81 @@ class SubscriberHajjTest extends FlatSpec with ShouldMatchers {
 
   it should "be discarded when the CSV format is wrong" in new WithSubscriberHajj {
     an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(0, "WrongNumber"))
+  }
+
+  it should "be built from CSV with Business segment" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(6, "Business")) should be (subscriberDwh.copy(segment = BusinessSegment))
+  }
+
+  it should "be built from CSV with Ignore segment" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(6, "ignore")) should be (subscriberDwh.copy(segment = IgnoreSegment))
+  }
+
+  it should "be built from CSV with Test segment" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(6, "Test")) should be (subscriberDwh.copy(segment = TestSegment))
+  }
+
+  it should "be built from CSV with contract type postpaid" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(7, "Postpaid")) should be (subscriberDwh.copy(contractType = PostpaidContract))
+  }
+
+  it should "be built from CSV with contract type business" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(7, "Business")) should be (subscriberDwh.copy(contractType = BusinessContract))
+  }
+
+  it should "be built from CSV with contract type BB" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(7, "BB")) should be (subscriberDwh.copy(contractType = BBContract))
+  }
+
+  it should "be built from CSV with contract type ignore" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(7, "ignore")) should be (subscriberDwh.copy(contractType = IgnoreContract))
+  }
+
+  it should "be built from CSV with contract type test" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(7, "test")) should be (subscriberDwh.copy(contractType = TestContract))
+  }
+
+  it should "be built from CSV with flag internal visitor" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(11, "Internal_Visitor")) should be (subscriberDwh.copy(finalFlag =
+      InternalVisitorFlag))
+  }
+
+  it should "be built from CSV with flag internal" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(11, "Internal")) should be (subscriberDwh.copy(finalFlag =
+      InternalFlag))
+  }
+
+  it should "be built from CSV with flag external" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(11, "External")) should be (subscriberDwh.copy(finalFlag = ExternalFlag))
+  }
+
+  it should "be built from CSV with flag local" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(11, "Local")) should be (subscriberDwh.copy(finalFlag = LocalFlag))
+  }
+
+  it should "be built from CSV with flag default" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(11, "default")) should be (subscriberDwh.copy(finalFlag = DefaultFlag))
+  }
+
+  it should "be built from CSV with flag ignore" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(11, "ignore")) should be (subscriberDwh.copy(finalFlag = IgnoreFlag))
+  }
+
+  it should "be built from CSV with nationality group Expat" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(13, "Expat")) should be (subscriberDwh.copy(nationalityGroup = Expat))
+  }
+
+  it should "be built from CSV with nationality group not available" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(13, "N/A")) should be (subscriberDwh.copy(nationalityGroup = NotAvailable))
+  }
+
+  it should "be built from CSV with calculated nationality group Expat" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(16, "Expat")) should be (subscriberDwh.copy(calculatedNationalityGroup =
+      ExpatCalculated))
+  }
+
+  it should "be built from CSV with calculated nationality group not available" in new WithSubscriberHajj {
+    fromCsv.fromFields(fields.updated(16, "N/A")) should be (subscriberDwh.copy(calculatedNationalityGroup =
+      NotAvailableCalculated))
   }
 }
