@@ -36,6 +36,10 @@ object EdmCoreUtils {
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
+  def parseLong(s: String): Option[Long] = Try { s.toLong }.toOption
+
+  def parseFloat(s: String): Option[Float] = Try { s.toFloat }.toOption
+
   def getCountryCode(msisdn: String): Int = phoneNumberUtil.parse(msisdn, "").getCountryCode
 
   def getRegionCodesForCountryCodeList(msisdn: String): List[String] =
@@ -60,11 +64,23 @@ object EdmCoreUtils {
 
   def roundTimestampHourly(timestamp: Long): Long = new DateTime(timestamp).hourOfDay.roundFloorCopy.getMillis
 
-  def parseYesNoBoolean(s: String): Option[Boolean] = s.toLowerCase match {
+  def parseYesNoBooleanOption(s: String): Option[Boolean] = s.toLowerCase match {
     case "y" => Some(true)
     case "yes" => Some(true)
     case "n" => Some(false)
     case "no" => Some(false)
     case _ => None
+  }
+
+  def parseYesNoBoolean(s: String): Boolean = s.toLowerCase match {
+    case "y" => true
+    case "yes" => true
+    case "n" => false
+    case "no" => false
+  }
+
+  def parseNullString(s: String): String = s.toLowerCase match {
+    case "$null$" => ""
+    case _ => s
   }
 }
