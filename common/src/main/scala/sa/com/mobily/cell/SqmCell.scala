@@ -9,7 +9,7 @@ import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class SqmCell(
-    cellId: String,
+    cellId: Int,
     ci: String,
     cellName: String,
     nodeId: String,
@@ -44,7 +44,7 @@ object SqmCell {
       val coords = LatLongCoordinates(latitudeText.toDouble, longitudeText.toDouble).utmCoordinates()
 
       SqmCell(
-        cellIdText,
+        cellIdText.toInt,
         ciText,
         cellNameText,
         nodeIdText,

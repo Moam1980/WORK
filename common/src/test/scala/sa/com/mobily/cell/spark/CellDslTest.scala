@@ -19,11 +19,11 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
   }
 
   trait WithSqmCells extends WithCoords {
-    val sqmCell1 = SqmCell("4465390", "4465390", "eNB_446539_0", "6539", "YB6539_P3_LTE", 57, coords, "HUAWEI",
+    val sqmCell1 = SqmCell(4465390, "4465390", "eNB_446539_0", "6539", "YB6539_P3_LTE", 57, coords, "HUAWEI",
       FourGTdd, Macro, 25.0, 0.0, "M1P1 and M1P2 and M1P3 and M1P4 and M1P5", "NORTH", "SECTOR", 15.2, -128, 2600)
-    val sqmCell2 = SqmCell("4465390", "4465390", "eNB_446539_0", "1234", "YB6539_P3_LTE", 312, coords, "HUAWEI",
+    val sqmCell2 = SqmCell(4465390, "4465390", "eNB_446539_0", "1234", "YB6539_P3_LTE", 312, coords, "HUAWEI",
       ThreeG, Pico, 30.0, 0.0, "M1P1 and M1P2 and M1P3 and M1P4 and M1P5", "NORTH", "SECTOR", 15.2, -128, 2600)
-    val sqmCell3 = SqmCell("4465391", "4465391", "eNB_446539_1", "6539", "YB6539_P3_LTE", 57, coords, "HUAWEI",
+    val sqmCell3 = SqmCell(4465391, "4465391", "eNB_446539_1", "6539", "YB6539_P3_LTE", 57, coords, "HUAWEI",
       FourGFdd, Micro, 25.0, 180.0, "M1P1 and M1P2 and M1P3 and M1P4 and M1P5", "NORTH", "SECTOR", 15.2, -128, 2600)
 
     val sqmCellRdd = sc.parallelize(Array(sqmCell1, sqmCell2, sqmCell3))
@@ -37,8 +37,8 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
   trait WithCell extends WithCoords {
     val cell1 = Cell(
-      cellId = "4465390",
-      lac = 57,
+      cellId = 4465390,
+      lacTac = 57,
       planarCoords = coords,
       technology = FourGTdd,
       cellType = Macro,
@@ -64,8 +64,8 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
       mcc = "420",
       mnc = "03")
     val cell3 = Cell(
-      cellId = "4465391",
-      lac = 57,
+      cellId = 4465391,
+      lacTac = 57,
       planarCoords = coords,
       technology = FourGFdd,
       cellType = Micro,
@@ -98,6 +98,14 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
   it should "discard SqmCell that do not match any BTS site" in new WithSqmCells with WithEgBts with WithCell {
     sc.parallelize(Array(sqmCell2)).toCell(egBtsRdd).count should be (0)
+  }
+
+  it should "broadcast the cells with (LAC, CellId) as key" in new WithCell {
+    val cells = sc.parallelize(Array(cell1, cell3))
+    val broadcastMap = cells.toBroadcastMap
+    broadcastMap.value.size should be (2)
+    broadcastMap.value((57, 4465390)) should be (cell1)
+    broadcastMap.value((57, 4465391)) should be (cell3)
   }
 
   "CellMerger" should "compute beamwidths when there are duplicates" in {

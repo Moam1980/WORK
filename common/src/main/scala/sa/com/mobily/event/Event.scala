@@ -20,4 +20,6 @@ case class Event(
     rac: String,
     rat: Short,
     sac: String,
-    tac: String)
+    tac: String,
+    inSpeed: Option[Double] = None,
+    outSpeed: Option[Double] = None)
