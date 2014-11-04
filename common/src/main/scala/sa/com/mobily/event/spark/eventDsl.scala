@@ -6,6 +6,7 @@ package sa.com.mobily.event.spark
 
 import scala.language.implicitConversions
 
+import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.event.{Event, PsEvent}
@@ -23,9 +24,17 @@ class EventReader(self: RDD[String]) {
   def psToEvent: RDD[Event] = psToParsedEvent.values
 }
 
+class EventFunctions(self: RDD[Event]) {
+
+  def byUserChronologically: RDD[(Long, List[Event])] = self.keyBy(_.msisdn).groupByKey.map(idEvent =>
+    (idEvent._1, idEvent._2.toList.sortBy(_.beginTime)))
+}
+
 trait EventDsl {
 
-  implicit def eventReader(self: RDD[String]): EventReader = new EventReader(self)
+  implicit def eventReader(csv: RDD[String]): EventReader = new EventReader(csv)
+
+  implicit def eventFunctions(events: RDD[Event]): EventFunctions = new EventFunctions(events)
 }
 
 object EventDsl extends EventDsl with ParsedItemsDsl

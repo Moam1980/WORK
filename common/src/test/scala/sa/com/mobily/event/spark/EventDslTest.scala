@@ -6,6 +6,7 @@ package sa.com.mobily.event.spark
 
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.utils.LocalSparkContext
 
 class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
@@ -25,6 +26,18 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     val events = sc.parallelize(List(event1, event2, event3))
   }
 
+  trait WithEvents {
+
+    val event1 = Event(1404162126L, "null", "null", 1404162610L, 859, 866173010386736L, 420034122616618L, None,
+      "052C", None, None, 560917079L, "null", 1, "330B", "null")
+    val event2 = Event(1404162525L, "null", "null", 1404162610L, 859, 866173010386736L, 420034122616618L, None,
+      "052C", None, None, 560917135L, "null", 1, "330B", "null")
+    val event3 = Event(1404162133L, "null", "null", 1404162610L, 859, 866173010386736L, 420034122616618L, None,
+      "052C", None, None, 560917079L, "null", 1, "330B", "null")
+
+    val events = sc.parallelize(Array(event1, event2, event3))
+  }
+
   "EventDsl" should "get correctly parsed psEvents" in new WithPsEventsText {
     events.psToEvent.count should be(2)
   }
@@ -35,5 +48,12 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
   it should "get both correctly and wrongly parsed psEvents" in new WithPsEventsText {
     events.psToParsedEvent.count should be(3)
+  }
+
+  it should "group by user chronologically" in new WithEvents {
+    val orderedEvents = events.byUserChronologically
+    orderedEvents.count should be (2)
+    orderedEvents.first should be (560917079L, List(event1, event3))
+    orderedEvents.take(2)(1) should be (560917135L, List(event2))
   }
 }

@@ -7,6 +7,7 @@ package sa.com.mobily.cell.spark
 import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{EgBts, SqmCell, Cell}
@@ -15,6 +16,12 @@ import sa.com.mobily.geometry.{GeomUtils, CellCoverage}
 class SqmFunctions(self: RDD[SqmCell]) {
 
   def toCell(bts: RDD[EgBts]): RDD[Cell] = CellMerger.merge(self, bts)
+}
+
+class CellFunctions(self: RDD[Cell]) {
+
+  def toBroadcastMap: Broadcast[Map[(Int, Int), Cell]] =
+    self.sparkContext.broadcast(self.keyBy(c => (c.lacTac, c.cellId)).collect.toMap)
 }
 
 object CellMerger {
@@ -49,7 +56,7 @@ object CellMerger {
 
       Cell(
         cellId = sqmCell.cellId,
-        lac = sqmCell.lacTac,
+        lacTac = sqmCell.lacTac,
         planarCoords = sqmCell.basePlanarCoords,
         technology = sqmCell.technology,
         cellType = sqmCell.cellType,
@@ -84,6 +91,8 @@ object CellMerger {
 trait CellDsl {
 
   implicit def sqmFunctions(sqmCells: RDD[SqmCell]): SqmFunctions = new SqmFunctions(sqmCells)
+
+  implicit def cellFunctions(cells: RDD[Cell]): CellFunctions = new CellFunctions(cells)
 }
 
 object CellDsl extends CellDsl

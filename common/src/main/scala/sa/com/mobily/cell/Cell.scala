@@ -36,8 +36,8 @@ case object Pico extends CellType { override val value = "PICO" }
 
 /** Cell information */
 case class Cell(
-    cellId: String,
-    lac: Int,
+    cellId: Int,
+    lacTac: Int,
     planarCoords: UtmCoordinates,
     technology: Technology,
     cellType: CellType,
@@ -69,12 +69,12 @@ object Cell {
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): Cell = {
-      val Array(mccText, mncText, cellIdText, lacText, planarXText, planarYText, utmEpsg, techText, cellTypeText,
+      val Array(mccText, mncText, cellIdText, lacTacText, planarXText, planarYText, utmEpsg, techText, cellTypeText,
         heightText, azimuthText, beamwidthText, rangeText, geomText, _) = fields
 
       Cell(
-        cellId = cellIdText,
-        lac = lacText.toInt,
+        cellId = cellIdText.toInt,
+        lacTac = lacTacText.toInt,
         planarCoords = UtmCoordinates(planarXText.toDouble, planarYText.toDouble, utmEpsg),
         technology = parseTechnology(techText),
         cellType = parseCellType(cellTypeText),
@@ -123,8 +123,8 @@ object Cell {
     Array[String](
       cell.mcc,
       cell.mnc,
-      cell.cellId,
-      cell.lac.toString,
+      cell.cellId.toString,
+      cell.lacTac.toString,
       cell.planarCoords.x.toString,
       cell.planarCoords.y.toString,
       cell.planarCoords.epsg,

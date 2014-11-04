@@ -59,8 +59,8 @@ class CellTest extends FlatSpec with ShouldMatchers {
     val cell = Cell(
       mcc = "420",
       mnc = "03",
-      cellId = "4465390",
-      lac = 57,
+      cellId = 4465390,
+      lacTac = 57,
       planarCoords = UtmCoordinates(-194243.4, 2671697.6, "EPSG:32638"),
       technology = FourGTdd,
       cellType = Macro,

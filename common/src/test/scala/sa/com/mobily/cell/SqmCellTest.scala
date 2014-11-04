@@ -23,7 +23,7 @@ class SqmCellTest extends FlatSpec with ShouldMatchers {
 
     val coords = LatLongCoordinates("24.0056".toDouble, "38.1849".toDouble).utmCoordinates()
 
-    val sqmCell = SqmCell("4465390", "4465390", "eNB_446539_0", "6539", "YB6539_P3_LTE", 57, coords, "HUAWEI",
+    val sqmCell = SqmCell(4465390, "4465390", "eNB_446539_0", "6539", "YB6539_P3_LTE", 57, coords, "HUAWEI",
       FourGTdd, Macro, 25.0, 0.0, "M1P1 and M1P2 and M1P3 and M1P4 and M1P5", "NORTH", "SECTOR", 15.2, -128, 2600)
   }
 
