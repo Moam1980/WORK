@@ -36,37 +36,36 @@ case object DefaultFlag extends Flag { override val identifier = "default" }
 case object IgnoreFlag extends Flag { override val identifier = "ignore" }
 
 /** Nationality group of the subscriber */
-sealed trait NationalityGroup { val identifier: String }
+sealed trait NationalityGroup { val identifiers: List[String] }
 
-case object Expat extends NationalityGroup { override val identifier = "expat" }
-case object National extends NationalityGroup { override val identifier = "local" }
-case object NotAvailable extends NationalityGroup { override val identifier = "n/a" }
+case object Expat extends NationalityGroup { override val identifiers = List("expat") }
+case object National extends NationalityGroup { override val identifiers = List("local", "locals") }
+case object NotAvailable extends NationalityGroup { override val identifiers = List("n/a") }
 
-/** Nationality group of the subscriber */
-sealed trait CalculatedNationalityGroup { val identifier: String }
+case class SubscriberHierarchy(
+    finalFlag: Flag,
+    segment: Segment,
+    contractType: ContractType,
+    category: String,
+    pack: String,
+    nationalityGroup: NationalityGroup,
+    nationality: String)
 
-case object ExpatCalculated extends CalculatedNationalityGroup { override val identifier = "expat" }
-case object NationalCalculated extends CalculatedNationalityGroup { override val identifier = "locals" }
-case object NotAvailableCalculated extends CalculatedNationalityGroup { override val identifier = "n/a" }
-
-case class SubscriberHajj(
-    msisdn: Long,
+case class Handset(
     handsetType: String,
     handsetSubCategory: String,
     handsetVendor: String,
-    smartPhone: Option[Boolean],
-    nationality: String,
-    segment: Segment,
-    contractType: ContractType,
-    pack: String,
-    category: String,
+    smartPhone: Option[Boolean])
+
+case class SubscriberHajj(
+    msisdn: Long,
+    handset: Handset,
+    hierarchy: SubscriberHierarchy,
     makkah7Days: Boolean,
-    finalFlag: Flag,
     flagDetails: String,
-    nationalityGroup: NationalityGroup,
     totalMou: Option[Long],
     destinationCountry: String,
-    calculatedNationalityGroup: CalculatedNationalityGroup,
+    calculatedNationalityGroup: NationalityGroup,
     numberRecharges: Option[Float],
     rechargeAmount: Option[Float],
     subsciberRen: Boolean,
@@ -89,22 +88,24 @@ object SubscriberHajj {
 
       SubscriberHajj(
         msisdn = msisdnText.toLong,
-        handsetType = handsetTypeText,
-        handsetSubCategory = EdmCoreUtils.parseNullString(handsetSubCategoryText),
-        handsetVendor = EdmCoreUtils.parseNullString(handsetVendorText),
-        smartPhone = EdmCoreUtils.parseYesNoBooleanOption(smartPhoneText),
-        nationality = EdmCoreUtils.parseNullString(nationalityText),
-        segment = parseSegment(segmentText),
-        contractType = parseContractType(contractTypeText),
-        pack = packText,
-        category = categoryText,
+        handset = Handset(
+          handsetType = handsetTypeText,
+          handsetSubCategory = EdmCoreUtils.parseNullString(handsetSubCategoryText),
+          handsetVendor = EdmCoreUtils.parseNullString(handsetVendorText),
+          smartPhone = EdmCoreUtils.parseYesNoBooleanOption(smartPhoneText)),
+        hierarchy = SubscriberHierarchy(
+          finalFlag = parseFlag(finalFlagText),
+          segment = parseSegment(segmentText),
+          contractType = parseContractType(contractTypeText),
+          category = categoryText,
+          pack = packText,
+          nationalityGroup = parseNationalityGroup(nationalityGroupText),
+          nationality = EdmCoreUtils.parseNullString(nationalityText)),
         makkah7Days = EdmCoreUtils.parseYesNoBoolean(makkah7DaysText),
-        finalFlag = parseFlag(finalFlagText),
         flagDetails = flagDetailsText,
-        nationalityGroup = parseNationalityGroup(nationalityGroupText),
         totalMou = EdmCoreUtils.parseLong(totalMouText),
         destinationCountry = EdmCoreUtils.parseNullString(destinationCountryText),
-        calculatedNationalityGroup = parseCalculatedNationalityGroup(calculatedNationalityGroupText),
+        calculatedNationalityGroup = parseNationalityGroup(calculatedNationalityGroupText),
         numberRecharges = EdmCoreUtils.parseFloat(numberRechargesText),
         rechargeAmount = EdmCoreUtils.parseFloat(rechargeAmountText),
         subsciberRen = EdmCoreUtils.parseYesNoBoolean(subsciberRenText),
@@ -138,15 +139,8 @@ object SubscriberHajj {
   }
 
   def parseNationalityGroup(nationalityGroupText: String): NationalityGroup = nationalityGroupText.toLowerCase match {
-    case Expat.identifier => Expat
-    case National.identifier => National
-    case NotAvailable.identifier => NotAvailable
-  }
-
-  def parseCalculatedNationalityGroup(calculatedNationalityGroupText: String): CalculatedNationalityGroup =
-    calculatedNationalityGroupText.toLowerCase match {
-    case ExpatCalculated.identifier => ExpatCalculated
-    case NationalCalculated.identifier => NationalCalculated
-    case NotAvailableCalculated.identifier => NotAvailableCalculated
+    case value if Expat.identifiers.contains(value) => Expat
+    case value if National.identifiers.contains(value) => National
+    case value if NotAvailable.identifiers.contains(value)  => NotAvailable
   }
 }

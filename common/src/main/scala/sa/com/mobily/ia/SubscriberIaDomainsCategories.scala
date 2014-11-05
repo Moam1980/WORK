@@ -10,10 +10,7 @@ case class SubscriberIaDomainsCategories(
     timestamp: Long,
     subscriberId: String,
     categoryId: String,
-    visitCount: Long,
-    uploadVolume: Double,
-    downloadVolume: Double,
-    totalVolume: Double,
+    trafficInfo: TrafficInfo,
     locationId: String,
     businessEntityId: String)
 
@@ -31,10 +28,11 @@ object SubscriberIaDomainsCategories extends IaParser {
         timestamp = fmt.parseDateTime(dateText).getMillis,
         subscriberId = subscriberIdText,
         categoryId = categoryIdText,
-        visitCount = visitCountText.toLong,
-        uploadVolume = uploadVolumeText.toDouble,
-        downloadVolume = downloadVolumeText.toDouble,
-        totalVolume = totalVolumeText.toDouble,
+        trafficInfo = TrafficInfo(
+          visitCount = visitCountText.toLong,
+          uploadVolume = uploadVolumeText.toDouble,
+          downloadVolume = downloadVolumeText.toDouble,
+          totalVolume = totalVolumeText.toDouble),
         locationId = locationIdText,
         businessEntityId = businessEntityIdText)
     }
