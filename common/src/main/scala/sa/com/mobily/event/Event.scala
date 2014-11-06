@@ -19,7 +19,9 @@ case class Event(
     cellId: Int,
     eventType: String, // TODO concrete types
     subsequentLacTac: Option[Int],
-    subsequentCellId: Option[Int])
+    subsequentCellId: Option[Int],
+    inSpeed: Option[Double] = None,
+    outSpeed: Option[Double] = None)
 
 object Event {
 
