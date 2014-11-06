@@ -27,22 +27,24 @@ class SubscriberHajjTest extends FlatSpec with ShouldMatchers {
 
     val subscriberDwh = SubscriberHajj(
       msisdn = 200540851363L,
-      handsetType = "SamsungN710000",
-      handsetSubCategory = "Smartphone",
-      handsetVendor = "Samsung",
-      smartPhone = Some(true),
-      nationality = "Saudi Arabia",
-      segment = ConsumerSegment,
-      contractType = PrepaidContract,
-      pack = "Connect 5G Pre",
-      category = "Connect",
+      handset = Handset(
+        handsetType = "SamsungN710000",
+        handsetSubCategory = "Smartphone",
+        handsetVendor = "Samsung",
+        smartPhone = Some(true)),
+      hierarchy = SubscriberHierarchy(
+        finalFlag = InternalVisitorFlag,
+        segment = ConsumerSegment,
+        contractType = PrepaidContract,
+        category = "Connect",
+        pack = "Connect 5G Pre",
+        nationalityGroup = National,
+        nationality = "Saudi Arabia"),
       makkah7Days = false,
-      finalFlag = InternalVisitorFlag,
       flagDetails = "INTERNAL_VISITOR",
-      nationalityGroup = National,
       totalMou = None,
       destinationCountry = "",
-      calculatedNationalityGroup = NationalCalculated,
+      calculatedNationalityGroup = National,
       numberRecharges = Some(1),
       rechargeAmount = Some(100F),
       subsciberRen = true,
@@ -58,78 +60,92 @@ class SubscriberHajjTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Business segment" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(6, "Business")) should be (subscriberDwh.copy(segment = BusinessSegment))
+    fromCsv.fromFields(fields.updated(6, "Business")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(segment = BusinessSegment)))
   }
 
   it should "be built from CSV with Ignore segment" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(6, "ignore")) should be (subscriberDwh.copy(segment = IgnoreSegment))
+    fromCsv.fromFields(fields.updated(6, "ignore")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(segment = IgnoreSegment)))
   }
 
   it should "be built from CSV with Test segment" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(6, "Test")) should be (subscriberDwh.copy(segment = TestSegment))
+    fromCsv.fromFields(fields.updated(6, "Test")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(segment = TestSegment)))
   }
 
   it should "be built from CSV with contract type postpaid" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(7, "Postpaid")) should be (subscriberDwh.copy(contractType = PostpaidContract))
+    fromCsv.fromFields(fields.updated(7, "Postpaid")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(contractType = PostpaidContract)))
   }
 
   it should "be built from CSV with contract type business" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(7, "Business")) should be (subscriberDwh.copy(contractType = BusinessContract))
+    fromCsv.fromFields(fields.updated(7, "Business")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(contractType = BusinessContract)))
   }
 
   it should "be built from CSV with contract type BB" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(7, "BB")) should be (subscriberDwh.copy(contractType = BBContract))
+    fromCsv.fromFields(fields.updated(7, "BB")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(contractType = BBContract)))
   }
 
   it should "be built from CSV with contract type ignore" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(7, "ignore")) should be (subscriberDwh.copy(contractType = IgnoreContract))
+    fromCsv.fromFields(fields.updated(7, "ignore")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(contractType = IgnoreContract)))
   }
 
   it should "be built from CSV with contract type test" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(7, "test")) should be (subscriberDwh.copy(contractType = TestContract))
+    fromCsv.fromFields(fields.updated(7, "test")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(contractType = TestContract)))
   }
 
   it should "be built from CSV with flag internal visitor" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(11, "Internal_Visitor")) should be (subscriberDwh.copy(finalFlag =
-      InternalVisitorFlag))
+    fromCsv.fromFields(fields.updated(11, "Internal_Visitor")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(finalFlag = InternalVisitorFlag)))
   }
 
   it should "be built from CSV with flag internal" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(11, "Internal")) should be (subscriberDwh.copy(finalFlag =
-      InternalFlag))
+    fromCsv.fromFields(fields.updated(11, "Internal")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(finalFlag = InternalFlag)))
   }
 
   it should "be built from CSV with flag external" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(11, "External")) should be (subscriberDwh.copy(finalFlag = ExternalFlag))
+    fromCsv.fromFields(fields.updated(11, "External")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(finalFlag = ExternalFlag)))
   }
 
   it should "be built from CSV with flag local" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(11, "Local")) should be (subscriberDwh.copy(finalFlag = LocalFlag))
+    fromCsv.fromFields(fields.updated(11, "Local")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(finalFlag = LocalFlag)))
   }
 
   it should "be built from CSV with flag default" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(11, "default")) should be (subscriberDwh.copy(finalFlag = DefaultFlag))
+    fromCsv.fromFields(fields.updated(11, "default")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(finalFlag = DefaultFlag)))
   }
 
   it should "be built from CSV with flag ignore" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(11, "ignore")) should be (subscriberDwh.copy(finalFlag = IgnoreFlag))
+    fromCsv.fromFields(fields.updated(11, "ignore")) should be (subscriberDwh.copy(hierarchy =
+      subscriberDwh.hierarchy.copy(finalFlag = IgnoreFlag)))
   }
 
   it should "be built from CSV with nationality group Expat" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(13, "Expat")) should be (subscriberDwh.copy(nationalityGroup = Expat))
+    fromCsv.fromFields(fields.updated(13, "Expat")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(nationalityGroup = Expat)))
   }
 
   it should "be built from CSV with nationality group not available" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(13, "N/A")) should be (subscriberDwh.copy(nationalityGroup = NotAvailable))
+    fromCsv.fromFields(fields.updated(13, "N/A")) should be
+      (subscriberDwh.copy(hierarchy = subscriberDwh.hierarchy.copy(nationalityGroup = NotAvailable)))
   }
 
   it should "be built from CSV with calculated nationality group Expat" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(16, "Expat")) should be (subscriberDwh.copy(calculatedNationalityGroup =
-      ExpatCalculated))
+    fromCsv.fromFields(fields.updated(16, "Expat")) should be
+      (subscriberDwh.copy(calculatedNationalityGroup = Expat))
   }
 
   it should "be built from CSV with calculated nationality group not available" in new WithSubscriberHajj {
-    fromCsv.fromFields(fields.updated(16, "N/A")) should be (subscriberDwh.copy(calculatedNationalityGroup =
-      NotAvailableCalculated))
+    fromCsv.fromFields(fields.updated(16, "N/A")) should be
+      (subscriberDwh.copy(calculatedNationalityGroup = NotAvailable))
   }
 }

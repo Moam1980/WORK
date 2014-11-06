@@ -20,8 +20,17 @@ class SubscriberIaAppsCategoriesTest extends FlatSpec with ShouldMatchers {
       "\"101\""
     val fields = Array("20141001", "12556247", "18", "1", "3942", "10976", "14918", "", "101")
 
-    val subscriberAppsCategories = SubscriberIaAppsCategories(timestamp, "12556247", "18", 1L, 3942D, 10976D, 14918D,
-      "", "101")
+    val subscriberAppsCategories = SubscriberIaAppsCategories(
+      timestamp = timestamp,
+      subscriberId = "12556247",
+      appGroup = "18",
+      trafficInfo = TrafficInfo(
+        visitCount = 1L,
+        uploadVolume = 3942D,
+        downloadVolume = 10976D,
+        totalVolume = 14918D),
+      locationId = "",
+      businessEntityId = "101")
   }
 
   "SubscriberIaAppsCategories" should "be built from CSV" in new WithSubscriberIaAppsCategories {
