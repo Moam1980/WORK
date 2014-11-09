@@ -64,6 +64,8 @@ object EdmCoreUtils {
 
   def roundTimestampHourly(timestamp: Long): Long = new DateTime(timestamp).hourOfDay.roundFloorCopy.getMillis
 
+  def roundTimestampDaily(timestamp: Long): Long = new DateTime(timestamp).dayOfMonth.roundFloorCopy.getMillis
+
   def parseYesNoBooleanOption(s: String): Option[Boolean] = s.toLowerCase match {
     case "y" => Some(true)
     case "yes" => Some(true)
