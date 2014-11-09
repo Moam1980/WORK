@@ -54,36 +54,52 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.roundAt1(roundUpNumber) should be (roundedUpNumber)
   }
 
-  it should "convert to double" in new WithManyDecimalNumbers {
+  it should "convert to double" in {
     EdmCoreUtils.parseDouble("3.14") should be (Some(3.14))
   }
 
-  it should "detect badly formatted doubles" in new WithManyDecimalNumbers {
+  it should "detect badly formatted doubles" in {
     EdmCoreUtils.parseDouble("This is not a number") should be (None)
   }
 
-  it should "convert to integer" in new WithManyDecimalNumbers {
+  it should "convert to integer" in {
     EdmCoreUtils.parseInt("139482") should be (Some(139482))
   }
 
-  it should "detect badly formatted integers" in new WithManyDecimalNumbers {
+  it should "detect badly formatted integers" in {
     EdmCoreUtils.parseInt("3.14") should be (None)
   }
 
-  it should "convert to long" in new WithManyDecimalNumbers {
+  it should "convert to long" in {
     EdmCoreUtils.parseLong("139482") should be (Some(139482L))
   }
 
-  it should "detect badly formatted long" in new WithManyDecimalNumbers {
+  it should "detect badly formatted long" in {
     EdmCoreUtils.parseLong("3.14") should be (None)
   }
 
-  it should "convert to float" in new WithManyDecimalNumbers {
+  it should "convert to float" in {
     EdmCoreUtils.parseFloat("3.14") should be (Some(3.14F))
   }
 
-  it should "detect badly formatted float" in new WithManyDecimalNumbers {
+  it should "detect badly formatted float" in {
     EdmCoreUtils.parseFloat("This is not a number") should be (None)
+  }
+
+  it should "convert string hexadecimal to decimal" in {
+    EdmCoreUtils.hexToDecimal("F") should be (Some(15))
+  }
+
+  it should "detect badly formatted hexadecimal" in {
+    EdmCoreUtils.hexToDecimal("GAF2") should be (None)
+  }
+
+  it should "convert to short" in  {
+    EdmCoreUtils.parseShort("1") should be (Some(1))
+  }
+
+  it should "detect badly formatted short" in  {
+    EdmCoreUtils.parseShort("This is not a number") should be (None)
   }
 
   "EdmCoreUtils" should "return correct string date for timestamp" in new WithDates {
