@@ -21,6 +21,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     
     val timestamp = 1412171413000L
     val timestampRoundFLoorHour = 1412168400000L
+    val timestampRoundFLoorDay = 1412110800000L
 
     val outputDateFormat = "yyyy/MM/dd HH:mm:ss"
 
@@ -112,6 +113,10 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "should round timestamp to floor hour" in new WithDates {
     EdmCoreUtils.roundTimestampHourly(timestamp) should be (timestampRoundFLoorHour)
+  }
+
+  it should "should round timestamp to floor day" in new WithDates {
+    EdmCoreUtils.roundTimestampDaily(timestamp) should be (timestampRoundFLoorDay)
   }
 
   "EdmCoreUtils" should "return correct country code for saudi phone number" in new WithPhones {
