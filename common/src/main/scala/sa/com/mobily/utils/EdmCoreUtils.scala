@@ -67,9 +67,11 @@ object EdmCoreUtils {
 
   def parseTimestampToSaudiDate(timestamp: Long): String = fmt.print(timestamp)
 
-  def roundTimestampHourly(timestamp: Long): Long = new DateTime(timestamp).hourOfDay.roundFloorCopy.getMillis
+  def roundTimestampHourly(timestamp: Long): Long =
+    new DateTime(timestamp, DateTimeZone.UTC).hourOfDay.roundFloorCopy.getMillis
 
-  def roundTimestampDaily(timestamp: Long): Long = new DateTime(timestamp).dayOfMonth.roundFloorCopy.getMillis
+  def roundTimestampDaily(timestamp: Long): Long =
+    new DateTime(timestamp, DateTimeZone.UTC).dayOfMonth.roundFloorCopy.getMillis
 
   def parseYesNoBooleanOption(s: String): Option[Boolean] = s.toLowerCase match {
     case "y" => Some(true)
