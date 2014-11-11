@@ -21,7 +21,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     
     val timestamp = 1412171413000L
     val timestampRoundFLoorHour = 1412168400000L
-    val timestampRoundFLoorDay = 1412110800000L
+    val timestampRoundFLoorDay = 1412121600000L
 
     val outputDateFormat = "yyyy/MM/dd HH:mm:ss"
 
