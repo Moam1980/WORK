@@ -10,6 +10,8 @@ scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature")
 
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7")
 
+addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverage:test ;assembly")
+
 libraryDependencies in ThisBuild ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.4.0",
   "org.apache.spark" %% "spark-core" % "1.1.0" % "compile,test,it,provided",
@@ -17,3 +19,14 @@ libraryDependencies in ThisBuild ++= Seq(
   "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "compile,test,it" exclude("javax.servlet", "servlet-api"),
   "org.scalatest" %% "scalatest" % "2.0" % "test,it"
 )
+
+publishTo in ThisBuild := {
+  val nexus = "http://10.64.246.161/nexus/"
+  Some("edm-core" at nexus + "content/repositories/edm-core-ci")
+}
+
+publishArtifact in (ThisBuild, packageDoc) := true
+
+publishArtifact in (ThisBuild, packageSrc) := false
+
+credentials in ThisBuild += Credentials(Path.userHome / ".ivy2" / ".credentials")
