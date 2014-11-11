@@ -6,7 +6,7 @@ package sa.com.mobily.ia.spark
 
 import org.apache.spark.rdd.RDD
 import sa.com.mobily.ia.Category
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkCsvParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 
 import scala.language.implicitConversions
@@ -15,7 +15,7 @@ class CategoryReader(self: RDD[String]) {
 
   import sa.com.mobily.parsing.spark.ParsedItemsDsl._
 
-  def toParsedCategory: RDD[ParsedItem[Category]] = SparkCsvParser.fromCsv[Category](self)
+  def toParsedCategory: RDD[ParsedItem[Category]] = SparkParser.fromCsv[Category](self)
 
   def toCategory: RDD[Category] = toParsedCategory.values
 

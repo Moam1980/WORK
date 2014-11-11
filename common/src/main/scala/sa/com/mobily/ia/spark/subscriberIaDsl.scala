@@ -5,8 +5,9 @@
 package sa.com.mobily.ia.spark
 
 import org.apache.spark.rdd.RDD
+
 import sa.com.mobily.ia.SubscriberIa
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkCsvParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 
 import scala.language.implicitConversions
@@ -15,7 +16,7 @@ class SubscriberIaReader(self: RDD[String]) {
 
   import sa.com.mobily.parsing.spark.ParsedItemsDsl._
 
-  def toParsedSubscriberIa: RDD[ParsedItem[SubscriberIa]] = SparkCsvParser.fromCsv[SubscriberIa](self)
+  def toParsedSubscriberIa: RDD[ParsedItem[SubscriberIa]] = SparkParser.fromCsv[SubscriberIa](self)
 
   def toSubscriberIa: RDD[SubscriberIa] = toParsedSubscriberIa.values
 

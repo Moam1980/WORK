@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.dwh.SubscriberHajj
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkCsvParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 
 import scala.language.implicitConversions
 
@@ -16,7 +16,7 @@ class SubscriberHajjReader(self: RDD[String]) {
 
   import sa.com.mobily.parsing.spark.ParsedItemsDsl._
 
-  def toParsedSubscriberHajj: RDD[ParsedItem[SubscriberHajj]] = SparkCsvParser.fromCsv[SubscriberHajj](self)
+  def toParsedSubscriberHajj: RDD[ParsedItem[SubscriberHajj]] = SparkParser.fromCsv[SubscriberHajj](self)
 
   def toSubscriberHajj: RDD[SubscriberHajj] = toParsedSubscriberHajj.values
 
