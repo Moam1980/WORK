@@ -10,13 +10,13 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{GisSqmSite, GisSqmCell}
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
+import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
 
 class GisSqmCellReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
-  def toParsedGisSqmCell: RDD[ParsedItem[GisSqmCell]] = SparkCsvParser.fromCsv[GisSqmCell](self)
+  def toParsedGisSqmCell: RDD[ParsedItem[GisSqmCell]] = SparkParser.fromCsv[GisSqmCell](self)
 
   def toGisSqmCell: RDD[GisSqmCell] = toParsedGisSqmCell.values
 
@@ -27,7 +27,7 @@ class GisSqmSiteReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
-  def toParsedGisSqmSite: RDD[ParsedItem[GisSqmSite]] = SparkCsvParser.fromCsv[GisSqmSite](self)
+  def toParsedGisSqmSite: RDD[ParsedItem[GisSqmSite]] = SparkParser.fromCsv[GisSqmSite](self)
 
   def toGisSqmSite: RDD[GisSqmSite] = toParsedGisSqmSite.values
 

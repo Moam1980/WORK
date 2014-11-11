@@ -10,14 +10,14 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.ia.SubscriberIaAppsCategories
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkCsvParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 
 class SubscriberIaAppsCategoriesReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
   def toParsedSubscriberIaAppsCategories: RDD[ParsedItem[SubscriberIaAppsCategories]] =
-    SparkCsvParser.fromCsv[SubscriberIaAppsCategories](self)
+    SparkParser.fromCsv[SubscriberIaAppsCategories](self)
 
   def toSubscriberIaAppsCategories: RDD[SubscriberIaAppsCategories] = toParsedSubscriberIaAppsCategories.values
 

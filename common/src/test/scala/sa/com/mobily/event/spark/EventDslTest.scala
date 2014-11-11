@@ -4,6 +4,7 @@
 
 package sa.com.mobily.event.spark
 
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.event.Event
@@ -97,6 +98,19 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     val events = sc.parallelize(Array(event1, event2, event3))
   }
 
+  trait WithEventsRows {
+
+    val row =
+      Row("866173010386736", "420034122616618", 560917079L, 1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0)
+    val row2 =
+      Row("866173010386735", "420034122616617", 560917080L, 1404162126001L, 1404162610001L, 0x052C, 13067, "859", 0, 0)
+    val wrongRow =
+      Row(866173010386L, "420034122616618", 560917079L, 1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0)
+
+    val rows = sc.parallelize(List(row, row2))
+    val wrongRows = sc.parallelize(List(row, row2, wrongRow))
+  }
+
   "EventDsl" should "get correctly parsed PS events" in new WithPsEventsText {
     psEvents.psToEvent.count should be (2)
   }
@@ -138,5 +152,13 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     orderedEvents.size should be (2)
     orderedEvents(560917079L) should be (List(event3, event1))
     orderedEvents(560917080L) should be (List(event2))
+  }
+
+  it should  "get correctly parsed rows" in new WithEventsRows {
+    rows.toEvent.count should be (2)
+  }
+
+  it should "throw an exception when parsing a list with incorrect rows" in new WithEventsRows {
+    an[Exception] should be thrownBy wrongRows.toEvent.count
   }
 }

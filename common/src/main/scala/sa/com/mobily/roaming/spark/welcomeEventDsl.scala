@@ -9,14 +9,14 @@ import scala.language.implicitConversions
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
+import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
 import sa.com.mobily.roaming.WelcomeEvent
 
 class WelcomeEventReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
-  def toParsedWelcomeEvent: RDD[ParsedItem[WelcomeEvent]] = SparkCsvParser.fromCsv[WelcomeEvent](self)
+  def toParsedWelcomeEvent: RDD[ParsedItem[WelcomeEvent]] = SparkParser.fromCsv[WelcomeEvent](self)
 
   def toWelcomeEvent: RDD[WelcomeEvent] = toParsedWelcomeEvent.values
 

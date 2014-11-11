@@ -10,13 +10,13 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.ia.AggregatedData
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkCsvParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 
 class AggregatedDataReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
-  def toParsedAggregatedData: RDD[ParsedItem[AggregatedData]] = SparkCsvParser.fromCsv[AggregatedData](self)
+  def toParsedAggregatedData: RDD[ParsedItem[AggregatedData]] = SparkParser.fromCsv[AggregatedData](self)
 
   def toAggregatedData: RDD[AggregatedData] = toParsedAggregatedData.values
 

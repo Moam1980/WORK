@@ -9,7 +9,7 @@ import scala.language.implicitConversions
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
+import sa.com.mobily.parsing.spark.{SparkParser,ParsedItemsDsl}
 import sa.com.mobily.roaming.InternationalJourney
 
 class InternationalJourneyReader(self: RDD[String]) {
@@ -17,7 +17,7 @@ class InternationalJourneyReader(self: RDD[String]) {
   import ParsedItemsDsl._
 
   def toParsedInternationalJourney: RDD[ParsedItem[InternationalJourney]] =
-    SparkCsvParser.fromCsv[InternationalJourney](self)
+    SparkParser.fromCsv[InternationalJourney](self)
 
   def toInternationalJourney: RDD[InternationalJourney] = toParsedInternationalJourney.values
 

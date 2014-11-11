@@ -10,13 +10,13 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{EgBts, EgCell}
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
-import sa.com.mobily.parsing.spark.{SparkCsvParser, ParsedItemsDsl}
+import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
 
 class EgCellReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
-  def toParsedEgCell: RDD[ParsedItem[EgCell]] = SparkCsvParser.fromCsv[EgCell](self)
+  def toParsedEgCell: RDD[ParsedItem[EgCell]] = SparkParser.fromCsv[EgCell](self)
 
   def toEgCell: RDD[EgCell] = toParsedEgCell.values
 
@@ -32,7 +32,7 @@ class EgBtsReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
-  def toParsedEgBts: RDD[ParsedItem[EgBts]] = SparkCsvParser.fromCsv[EgBts](self)
+  def toParsedEgBts: RDD[ParsedItem[EgBts]] = SparkParser.fromCsv[EgBts](self)
 
   def toEgBts: RDD[EgBts] = toParsedEgBts.values
 
