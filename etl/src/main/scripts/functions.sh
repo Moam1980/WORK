@@ -69,9 +69,9 @@ checkIsDirectory ()
     directory=$1
         
     # Check for deploy in order to do a new symbolic link
-    if [ -e $directory ]; then
+    if [ -e "$directory" ]; then
         # Check if not a directory
-        if [ ! -d $directory ]; then
+        if [ ! -d "$directory" ]; then
             echo 1>&2 "ERROR: $0: $directory is not a directory, please check it"
             # Exit entire script
             exit 2
@@ -98,16 +98,16 @@ checkIsDirectoryAndCreate ()
     directory=$1
         
     # Check for deploy in order to do a new symbolic link
-    if [ -e $directory ]; then
+    if [ -e "$directory" ]; then
         # Check if not a directory
-        if [ ! -d $directory ]; then
+        if [ ! -d "$directory" ]; then
             echo 1>&2 "ERROR: $0: $directory is not a directory, please check it"
             # Exit entire script
             exit 2
         fi
     else
         # Directory does not exist just create
-        mkdir -p ${directory}
+        mkdir -p "${directory}"
         
         # Check if there is a problem creating directory
         if [ "$?" -ne "0" ]; then
@@ -134,7 +134,7 @@ checkIsReadableFile ()
     file=$1
 
     # Check that is a file and exist
-    if [ ! -r ${file} ]; then 
+    if [ ! -r "${file}" ]; then
         # Show error and exit
         echo 1<&2 "ERROR: $0: File: ${file} has to be a readable file"
         exit 2
@@ -154,7 +154,7 @@ checkNotExistsFile ()
     file=$1
 
     # Check that is a file and exist
-    if [ -e ${file} ]; then 
+    if [ -e "${file}" ]; then
         # Show error and exit
         echo 1<&2 "ERROR: $0: File: ${file} exists, please make sure that file does not exists"
         exit 2
