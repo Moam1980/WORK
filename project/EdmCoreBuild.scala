@@ -48,6 +48,7 @@ object EdmCoreBuild extends Build {
 
   lazy val usercentric = (Project(id = projectId("usercentric"), base = file("usercentric"))
     settings(ScoverageSbtPlugin.instrumentSettings: _*)
+    settings(ScalastylePlugin.Settings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     settings(testParallelSettings: _*)
