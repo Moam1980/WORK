@@ -157,8 +157,4 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
   it should  "get correctly parsed rows" in new WithEventsRows {
     rows.toEvent.count should be (2)
   }
-
-  it should "throw an exception when parsing a list with incorrect rows" in new WithEventsRows {
-    an[Exception] should be thrownBy wrongRows.toEvent.count
-  }
 }

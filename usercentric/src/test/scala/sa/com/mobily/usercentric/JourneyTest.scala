@@ -70,10 +70,11 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
       coverageWkt = "POLYGON (( 1 0, 1 3, 4 3, 4 0, 1 0 ))")
 
     val cells = sc.parallelize(List(cell1, cell20, cell21, cell22, cell3, cell101, cell120, cell130, cellIntersect1,
-      cellIntersect2, cellIntersect3, cellIntersectWith1And2, cellIntersectWith2And3, cellContainInitPoint1)).toBroadcastMap.value
+      cellIntersect2, cellIntersect3, cellIntersectWith1And2, cellIntersectWith2And3,
+      cellContainInitPoint1)).toBroadcastMap.value
   }
 
-  trait WithInitPoints extends WithCellCatalogue {
+  trait WithInitPoints {
 
     val geomFactory = GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid)
     val initPoint1 = geomFactory.createPoint(new Coordinate(2, 0))
