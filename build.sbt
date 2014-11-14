@@ -10,23 +10,23 @@ scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature")
 
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7")
 
-addCommandAlias("testEdmCommon", ";project edm-core-common ;test ;project /")
+addCommandAlias("test-common", ";project edm-core-common ;test ;project /")
 
-addCommandAlias("testEdmUsercentric", ";project edm-core-usercentric ;test ;project /")
+addCommandAlias("test-usercentric", ";project edm-core-usercentric ;test ;project /")
 
-addCommandAlias("testEdmComplete", ";project edm-core-complete ;test ;project /")
+addCommandAlias("test-complete", ";project edm-core-complete ;test ;project /")
 
-addCommandAlias("testEdmAll", ";testEdmCommon ;testEdmUsercentric ;testEdmComplete ;project /")
+addCommandAlias("test-all", ";test-common ;test-usercentric ;test-complete ;project /")
 
-addCommandAlias("scoverageEdmCommon", ";project edm-core-common ;scoverage:test ;project /")
+addCommandAlias("scoverage-common", ";project edm-core-common ;scoverage:test ;project /")
 
-addCommandAlias("scoverageEdmUsercentric", ";project edm-core-usercentric ;scoverage:test ;project /")
+addCommandAlias("scoverage-usercentric", ";project edm-core-usercentric ;scoverage:test ;project /")
 
-addCommandAlias("scoverageEdmComplete", ";project edm-core-complete ;scoverage:test ;project /")
+addCommandAlias("scoverage-complete", ";project edm-core-complete ;scoverage:test ;project /")
 
-addCommandAlias("scoverageEdmAll", ";scoverageEdmCommon ;scoverageEdmUsercentric ;scoverageEdmComplete ;project /")
+addCommandAlias("scoverage-all", ";scoverage-common ;scoverage-usercentric ;scoverage-complete ;project /")
 
-addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverageEdmAll ;assembly")
+addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverage-all ;assembly")
 
 libraryDependencies in ThisBuild ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.4.0",
