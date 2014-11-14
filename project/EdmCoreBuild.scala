@@ -36,6 +36,7 @@ object EdmCoreBuild extends Build {
     settings(Defaults.itSettings: _*)
     settings(testParallelSettings: _*)
     aggregate(complete, common, usercentric)
+    settings(aggregate in test := false)
     )
 
   lazy val common = (Project(id = projectId("common"), base = file("common"))
