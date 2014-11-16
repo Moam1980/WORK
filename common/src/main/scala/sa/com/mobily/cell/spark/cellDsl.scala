@@ -12,10 +12,23 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{EgBts, SqmCell, Cell}
 import sa.com.mobily.geometry.{GeomUtils, CellCoverage}
+import sa.com.mobily.parsing.{ParsingError, ParsedItem}
+import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
 
 class SqmFunctions(self: RDD[SqmCell]) {
 
   def toCell(bts: RDD[EgBts]): RDD[Cell] = CellMerger.merge(self, bts)
+}
+
+class CellReader(self: RDD[String]) {
+
+  import ParsedItemsDsl._
+
+  def toParsedCell: RDD[ParsedItem[Cell]] = SparkParser.fromCsv[Cell](self)
+
+  def toCell: RDD[Cell] = toParsedCell.values
+
+  def toCellErrors: RDD[ParsingError] = toParsedCell.errors
 }
 
 class CellFunctions(self: RDD[Cell]) {
@@ -89,6 +102,8 @@ object CellMerger {
 }
 
 trait CellDsl {
+
+  implicit def cellReader(csv: RDD[String]): CellReader = new CellReader(csv)
 
   implicit def sqmFunctions(sqmCells: RDD[SqmCell]): SqmFunctions = new SqmFunctions(sqmCells)
 
