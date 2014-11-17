@@ -14,3 +14,4 @@ cd parallel-*
 ./configure
 make && sudo make install
 ln -s /usr/local/bin/parallel /usr/bin/parallel
+

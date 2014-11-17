@@ -183,5 +183,3 @@ loadPropertiesFile()
     echo 1>&2 "INFO: $0: Properties file: ${1} has been loaded"
 }
 
-
-
