@@ -10,7 +10,23 @@ scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature")
 
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7")
 
-addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverage:test ;assembly")
+addCommandAlias("testEdmCommon", ";project edm-core-common ;test ;project /")
+
+addCommandAlias("testEdmUsercentric", ";project edm-core-usercentric ;test ;project /")
+
+addCommandAlias("testEdmComplete", ";project edm-core-complete ;test ;project /")
+
+addCommandAlias("testEdmAll", ";testEdmCommon ;testEdmUsercentric ;testEdmComplete ;project /")
+
+addCommandAlias("scoverageEdmCommon", ";project edm-core-common ;scoverage:test ;project /")
+
+addCommandAlias("scoverageEdmUsercentric", ";project edm-core-usercentric ;scoverage:test ;project /")
+
+addCommandAlias("scoverageEdmComplete", ";project edm-core-complete ;scoverage:test ;project /")
+
+addCommandAlias("scoverageEdmAll", ";scoverageEdmCommon ;scoverageEdmUsercentric ;scoverageEdmComplete ;project /")
+
+addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverageEdmAll ;assembly")
 
 libraryDependencies in ThisBuild ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.4.0",
