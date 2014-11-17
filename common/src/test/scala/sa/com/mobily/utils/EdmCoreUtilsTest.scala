@@ -103,6 +103,54 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.parseShort("This is not a number") should be (None)
   }
 
+  it should "convert Any to double" in {
+    EdmCoreUtils.doubleOption(3.14D) should be (Some(3.14))
+  }
+
+  it should "not convert non-double Any to double" in {
+    EdmCoreUtils.doubleOption('A') should be (None)
+  }
+
+  it should "convert Any to integer" in {
+    EdmCoreUtils.intOption(139482) should be (Some(139482))
+  }
+
+  it should "not convert decimal numerals to integer" in {
+    EdmCoreUtils.intOption(3.14) should be (None)
+  }
+
+  it should "convert Any to long" in {
+    EdmCoreUtils.longOption(139482L) should be (Some(139482L))
+  }
+
+  it should "not convert decimal numerals to long" in {
+    EdmCoreUtils.longOption(3.14) should be (None)
+  }
+
+  it should "convert Any to float" in {
+    EdmCoreUtils.floatOption(3.14F) should be (Some(3.14F))
+  }
+
+  it should "not convert non-float Any to float" in {
+    EdmCoreUtils.floatOption('A') should be (None)
+  }
+
+  it should "convert Any to short" in {
+    EdmCoreUtils.shortOption(1.toShort) should be (Some(1))
+  }
+
+  it should "not convert non-short Any to short" in {
+    EdmCoreUtils.shortOption('A') should be (None)
+  }
+
+  it should "convert Any to string" in {
+    EdmCoreUtils.stringOption("A") should be (Some("A"))
+  }
+
+  it should "not convert non-text Any to short" in {
+    EdmCoreUtils.stringOption(1) should be (None)
+  }
+
   "EdmCoreUtils" should "return correct string date for timestamp" in new WithDates {
     EdmCoreUtils.parseTimestampToSaudiDate(timestamp) should be (dateString)
   }

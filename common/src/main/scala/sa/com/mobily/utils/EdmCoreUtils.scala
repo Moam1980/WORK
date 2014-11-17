@@ -45,6 +45,36 @@ object EdmCoreUtils {
 
   def parseShort(s: String): Option[Short] = Try { s.toShort }.toOption
 
+  def doubleOption(a: Any): Option[Double] = a match {
+    case a: Double => Some(a)
+    case _ => None
+  }
+
+  def floatOption(a: Any): Option[Float] = a match {
+    case a: Float => Some(a)
+    case _ => None
+  }
+
+  def intOption(a: Any): Option[Int] = a match {
+    case a: Int => Some(a)
+    case _ => None
+  }
+
+  def longOption(a: Any): Option[Long] = a match {
+    case a: Long => Some(a)
+    case _ => None
+  }
+
+  def shortOption(a: Any): Option[Short] = a match {
+    case a: Short => Some(a)
+    case _ => None
+  }
+
+  def stringOption(a: Any): Option[String] = a match {
+    case a: String => Some(a)
+    case _ => None
+  }
+
   def getCountryCode(msisdn: String): Int = phoneNumberUtil.parse(msisdn, "").getCountryCode
 
   def getRegionCodesForCountryCodeList(msisdn: String): List[String] =
