@@ -4,14 +4,16 @@
 
 package sa.com.mobily.event.spark
 
+import scala.reflect.io.File
+
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.event.Event
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.LocalSparkContext
+import sa.com.mobily.utils.LocalSparkSqlContext
 
-class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
   import EventDsl._
 
@@ -101,12 +103,14 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
   trait WithEventsRows {
 
     val row =
-      Row("866173010386736", "420034122616618", 560917079L, 1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0)
+      Row(Row("866173010386736", "420034122616618", 560917079L),
+        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None)
     val row2 =
-      Row("866173010386735", "420034122616617", 560917080L, 1404162126001L, 1404162610001L, 0x052C, 13067, "859", 0, 0)
+      Row(Row("866173010386735", "420034122616617", 560917080L),
+        1404162126001L, 1404162610001L, 0x052C, 13067, "859", None, None, None, None)
     val wrongRow =
-      Row(866173010386L, "420034122616618", 560917079L, 1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0)
-
+      Row(Row(866173010386L, "420034122616618", 560917079L),
+        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None)
     val rows = sc.parallelize(List(row, row2))
     val wrongRows = sc.parallelize(List(row, row2, wrongRow))
   }
@@ -154,7 +158,14 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     orderedEvents(560917080L) should be (List(event2))
   }
 
-  it should  "get correctly parsed rows" in new WithEventsRows {
+  it should "get correctly parsed rows" in new WithEventsRows {
     rows.toEvent.count should be (2)
+  }
+
+  it should "save events in parquet" in new WithEvents {
+    val path = File.makeTemp().name
+    events.saveAsParquetFile(path)
+    sqc.parquetFile(path).toEvent.collect.sameElements(events.collect) should be (true)
+    File(path).deleteRecursively
   }
 }

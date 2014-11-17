@@ -4,6 +4,8 @@
 
 package sa.com.mobily.event
 
+import scala.language.existentials
+
 import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.apache.spark.sql._
 import org.joda.time.format.DateTimeFormatter
@@ -11,6 +13,7 @@ import org.joda.time.format.DateTimeFormatter
 import sa.com.mobily.metrics.{MeasurableByTime, MeasurableByType}
 import sa.com.mobily.parsing.{OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
+import sa.com.mobily.utils.EdmCoreUtils
 import sa.com.mobily.utils.EdmCoreUtils._
 
 case class Event(
@@ -43,8 +46,8 @@ object Event {
 
   implicit val fromRow = new RowParser[Event] {
     override def fromRow(row: Row): Event = {
-      val Array(imei, imsi, msisdn, beginTime, endTime, lacTac, cellId, eventType, subsequentLacTac, subsequentCellId) =
-        row.toSeq.toArray
+      val Seq(Seq(imei, imsi, msisdn),
+        beginTime, endTime, lacTac, cellId, eventType, subsequentLacTac,subsequentCellId, inSpeed, outSpeed) = row.toSeq
       Event(
         user =
           User(imei = imei.asInstanceOf[String], imsi = imsi.asInstanceOf[String], msisdn = msisdn.asInstanceOf[Long]),
@@ -53,8 +56,10 @@ object Event {
         lacTac = lacTac.asInstanceOf[Int],
         cellId = cellId.asInstanceOf[Int],
         eventType = eventType.asInstanceOf[String],
-        subsequentLacTac = Option(subsequentLacTac.asInstanceOf[Int]),
-        subsequentCellId = Option(subsequentCellId.asInstanceOf[Int]))
+        subsequentLacTac = EdmCoreUtils.intOption(subsequentLacTac),
+        subsequentCellId = EdmCoreUtils.intOption(subsequentCellId),
+        inSpeed = EdmCoreUtils.doubleOption(inSpeed),
+        outSpeed = EdmCoreUtils.doubleOption(outSpeed))
     }
   }
 }

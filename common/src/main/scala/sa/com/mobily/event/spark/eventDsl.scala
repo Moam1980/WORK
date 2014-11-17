@@ -11,7 +11,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
 import sa.com.mobily.event._
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
+import sa.com.mobily.parsing.spark.{SparkWriter, ParsedItemsDsl, SparkParser}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 
 class EventCsvReader(self: RDD[String]) {
@@ -48,6 +48,11 @@ class EventFunctions(self: RDD[Event]) {
     (idEvent._1, idEvent._2.toList.sortBy(_.beginTime)))
 }
 
+class EventWriter(self: RDD[Event]) {
+
+  def saveAsParquetFile(path: String): Unit = SparkWriter.saveAsParquetFile[Event](self, path)
+}
+
 trait EventDsl {
 
   implicit def eventCsvReader(self: RDD[String]): EventCsvReader = new EventCsvReader(self)
@@ -55,6 +60,8 @@ trait EventDsl {
   implicit def eventRowReader(self: RDD[Row]): EventRowReader = new EventRowReader(self)
 
   implicit def eventFunctions(events: RDD[Event]): EventFunctions = new EventFunctions(events)
+
+  implicit def eventWriter(events: RDD[Event]): EventWriter = new EventWriter(events)
 }
 
 object EventDsl extends EventDsl with ParsedItemsDsl
