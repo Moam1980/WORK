@@ -41,6 +41,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
 
     val cell1 = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4,
       "POLYGON (( 0 0, 0 4, 2 4, 2 0, 0 0 ))")
+    val cell1Centroid = "POINT (1 2)"
     val cell20 = cell1.copy(cellId = 20, planarCoords = UtmCoordinates(7, 4),
       coverageWkt = "POLYGON (( 3 4, 7 4, 7 0, 3 4 ))")
     val cell21 = cell1.copy(cellId = 21, planarCoords = UtmCoordinates(7, 4),
@@ -92,14 +93,6 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
     Journey.secondsInBetween(event1, event1) should be(0.001)
   }
 
-  it should "assign a zero incoming speed to an event" in new WithEvents {
-    Journey.zeroInSpeed(event1).inSpeed should be(Some(0.0))
-  }
-
-  it should "assign a zero outgoing speed to an event" in new WithEvents {
-    Journey.zeroOutSpeed(event1).outSpeed should be(Some(0.0))
-  }
-
   it should "compute the point for next geometry when there's a path through that geometry towards its next one" in
     new WithEvents with WithCellCatalogue with WithInitPoints {
       val closestInSecondToInit1 =
@@ -129,13 +122,15 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
   }
 
   it should "assign zero in/out speed to a single event list" in new WithCellCatalogue with WithEvents {
-    Journey.computeMinSpeed(List(event1), cells) should be(List(event1.copy(inSpeed = Some(0), outSpeed = Some(0))))
+    Journey.computeMinSpeed(List(event1), cells) should
+      be(List(event1.copy(inSpeed = Some(0), outSpeed = Some(0), minSpeedPointWkt = Some(cell1Centroid))))
   }
 
   it should "compute minimum speed for a list with two events" in new WithCellCatalogue with WithEvents {
     val eventsWithSpeed = Journey.computeMinSpeed(List(event101, event120), cells)
     eventsWithSpeed.map(_.inSpeed) should be(List(Some(0), Some(0.4)))
     eventsWithSpeed.map(_.outSpeed) should be(List(Some(0.4), Some(0)))
+    eventsWithSpeed.map(_.minSpeedPointWkt) should be(List(Some("POINT (2 1)"), Some("POINT (2 3)")))
   }
 
   it should "compute minimum speed for a list with some events belonging to the same cell" in
@@ -143,6 +138,13 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
       val eventsWithSpeed = Journey.computeMinSpeed(List(event101, event120, event1200, event1201, event130), cells)
       eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(0.4), Some(0.0), Some(0.0), Some(1.5)))
       eventsWithSpeed.map(_.outSpeed) should be(List(Some(0.4), Some(0.0), Some(0.0), Some(1.5), Some(0.0)))
+      eventsWithSpeed.map(_.minSpeedPointWkt) should
+        be(List(
+          Some("POINT (2 1)"),
+          Some("POINT (2 3)"),
+          Some("POINT (2 3)"),
+          Some("POINT (2 3)"),
+          Some("POINT (2 6)")))
     }
 
   it should "compute minimum speed for a list with three events (no intersections)" in
@@ -150,6 +152,8 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
       val eventsWithSpeed = Journey.computeMinSpeed(List(event101, event120, event130), cells)
       eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(0.6), Some(0.4)))
       eventsWithSpeed.map(_.outSpeed) should be(List(Some(0.6), Some(0.4), Some(0.0)))
+      eventsWithSpeed.map(_.minSpeedPointWkt) should
+        be(List(Some("POINT (2 1)"), Some("POINT (2 4)"), Some("POINT (2 6)")))
   }
 
   it should "compute minimum speed when second intersects third" in new WithCellCatalogue with WithEvents {
@@ -157,6 +161,8 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
       Journey.computeMinSpeed(List(eventIntersect1, eventIntersectWith2And3, eventIntersect3), cells)
     eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(1.375), Some(0.25)))
     eventsWithSpeed.map(_.outSpeed) should be(List(Some(1.375), Some(0.25), Some(0.0)))
+    eventsWithSpeed.map(_.minSpeedPointWkt) should
+      be(List(Some("POINT (1.5 1.5)"), Some("POINT (7 1.5)"), Some("POINT (8 1.5)")))
   }
 
   it should "compute minimum speed when first intersects second" in new WithCellCatalogue with WithEvents {
@@ -164,6 +170,8 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
       Journey.computeMinSpeed(List(eventIntersect1, eventIntersectWith1And2, eventIntersect3), cells)
     eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(1.0), Some(0.75)))
     eventsWithSpeed.map(_.outSpeed) should be(List(Some(1.0), Some(0.75), Some(0.0)))
+    eventsWithSpeed.map(_.minSpeedPointWkt) should
+      be(List(Some("POINT (1.5 1.5)"), Some("POINT (3.5 1.5)"), Some("POINT (8 1.5)")))
   }
 
   it should "compute minimum speed when first intersects second and second intersects third" in
@@ -172,6 +180,8 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
         Journey.computeMinSpeed(List(eventIntersect1, eventIntersectWith1And2, eventIntersect2), cells)
       eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(0.75), Some(0.5)))
       eventsWithSpeed.map(_.outSpeed) should be(List(Some(0.75), Some(0.5), Some(0.0)))
+      eventsWithSpeed.map(_.minSpeedPointWkt) should
+        be(List(Some("POINT (1.5 1.5)"), Some("POINT (3 1.5)"), Some("POINT (4 1.5)")))
     }
 
   it should "compute minimum speed when initial point is inside second" in new WithCellCatalogue with WithEvents {
@@ -179,6 +189,8 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
       Journey.computeMinSpeed(List(eventIntersect1, eventContainInitPoint1, eventIntersect2), cells)
     eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(0.0), Some(1.25)))
     eventsWithSpeed.map(_.outSpeed) should be(List(Some(0.0), Some(1.25), Some(0.0)))
+    eventsWithSpeed.map(_.minSpeedPointWkt) should
+      be(List(Some("POINT (1.5 1.5)"), Some("POINT (1.5 1.5)"), Some("POINT (4 1.5)")))
   }
 
   it should "compute minimum speed when initial point is in the second's border" in
@@ -187,5 +199,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
         Journey.computeMinSpeed(List(eventIntersect1, eventIntersect2, eventIntersect2, eventIntersect3), cells)
       eventsWithSpeed.map(_.inSpeed) should be(List(Some(0.0), Some(0.625), Some(0.0), Some(1.0)))
       eventsWithSpeed.map(_.outSpeed) should be(List(Some(0.625), Some(0.0), Some(1.0), Some(0.0)))
+      eventsWithSpeed.map(_.minSpeedPointWkt) should
+        be(List(Some("POINT (1.5 1.5)"), Some("POINT (4 1.5)"), Some("POINT (4 1.5)"), Some("POINT (8 1.5)")))
     }
 }

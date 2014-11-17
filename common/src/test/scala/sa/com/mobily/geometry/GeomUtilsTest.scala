@@ -4,7 +4,7 @@
 
 package sa.com.mobily.geometry
 
-import com.vividsolutions.jts.geom.Coordinate
+import com.vividsolutions.jts.geom.{PrecisionModel, Coordinate}
 import org.geotools.geometry.jts.JTSFactoryFinder
 import org.scalatest.{ShouldMatchers, FlatSpec}
 
@@ -101,6 +101,46 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
       sridPlanar)
   }
 
+  trait WithNearestGeometries {
+
+    val withFixedScaleGeomFactory =
+      GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid, Coordinates.UtmPrecisionModel)
+    val withPointInsideGeom = withFixedScaleGeomFactory.createPoint(new Coordinate(1, 1))
+    val withGeomContainingPoint = withFixedScaleGeomFactory.createPolygon(Array(
+      new Coordinate(1, 1),
+      new Coordinate(1, 2),
+      new Coordinate(2, 2),
+      new Coordinate(2, 1),
+      new Coordinate(1, 1)))
+    val pointWithFixedScale = withFixedScaleGeomFactory.createPoint(new Coordinate(669393.1, 2733929.4))
+    val geomWithFixedScale =
+      GeomUtils.parseWkt(
+        "POLYGON ((669457.4 2734012.4, 669456.7 2734023.2, 669454.7 2734033.8, 669451.4 2734044, 669446.8 2734053.8," +
+          " 669441 2734062.9, 669434.1 2734071.2, 669426.3 2734078.6, 669417.5 2734084.9, 669408.1 2734090.1, " +
+          "669398 2734094.1, 669387.6 2734096.8, 669376.9 2734098.1, 669366.1 2734098.1, 669355.4 2734096.8, " +
+          "669345 2734094.1, 669334.9 2734090.1, 669325.5 2734084.9, 669316.7 2734078.6, 669308.9 2734071.2, " +
+          "669302 2734062.9, 669296.2 2734053.8, 669291.6 2734044, 669288.3 2734033.8, 669286.3 2734023.2, " +
+          "669285.6 2734012.4, 669286.3 2734001.6, 669288.3 2733991, 669291.6 2733980.8, 669296.2 2733971, " +
+          "669302 2733961.9, 669308.9 2733953.6, 669316.7 2733946.2, 669325.5 2733939.9, 669334.9 2733934.7, " +
+          "669345 2733930.7, 669355.4 2733928, 669366.1 2733926.7, 669376.9 2733926.7, 669387.6 2733928, " +
+          "669398 2733930.7, 669408.1 2733934.7, 669417.5 2733939.9, 669426.3 2733946.2, 669434.1 2733953.6, " +
+          "669441 2733961.9, 669446.8 2733971, 669451.4 2733980.8, 669454.7 2733991, 669456.7 2734001.6, " +
+          "669457.4 2734012.4))",
+        Coordinates.SaudiArabiaUtmSrid,
+        Coordinates.UtmPrecisionModel)
+    
+    val withFloatingGeomFactory =
+      GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid, new PrecisionModel(PrecisionModel.FLOATING))
+    val pointWithFloating = withFloatingGeomFactory.createPoint(new Coordinate(1.9999, 2))
+    val geomWithFloating =
+      withFloatingGeomFactory.createPolygon(Array(
+        new Coordinate(2, 2),
+        new Coordinate(2, 3),
+        new Coordinate(3, 3),
+        new Coordinate(3, 2),
+        new Coordinate(2, 2)))
+  }
+
   "GeomUtils" should "parse WKT text and assign SRID" in new WithShapes {
     GeomUtils.parseWkt(polygonWkt, sridPlanar) should equalGeometry (poly)
   }
@@ -146,5 +186,19 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     GeomUtils.azimuthToAngle(90) should be (0)
     GeomUtils.azimuthToAngle(180) should be (-90)
     GeomUtils.azimuthToAngle(270) should be (-180)
+  }
+
+  it should "ensure a near point gets into a geometry (fixed scale geometry factory)" in new WithNearestGeometries {
+    GeomUtils.ensureNearestPointInGeom(pointWithFixedScale, geomWithFixedScale).intersects(geomWithFixedScale) should
+      be (true)
+  }
+
+  it should "ensure a near point gets into a geometry (floating geometry factory)" in new WithNearestGeometries {
+    GeomUtils.ensureNearestPointInGeom(pointWithFloating, geomWithFloating).intersects(geomWithFloating) should be (true)
+  }
+
+  it should "ensure a point is contained within a geometry" in new WithNearestGeometries {
+    GeomUtils.ensureNearestPointInGeom(withPointInsideGeom, withGeomContainingPoint) should
+      equalGeometry(withPointInsideGeom)
   }
 }
