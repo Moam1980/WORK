@@ -10,5 +10,9 @@ package sa.com.mobily.metrics
 object SanityMetrics extends MetricFunctions[Measurable] {
 
   override val functions = List[(Measurable) =>
-    Map[MetricResultKey, Long]](TypeMetric.metricFunction, TemporalMetric.metricFunction)
+    Map[MetricResultKey, Long]](
+      TypeMetric.metricFunction,
+      TypeMetric.totalFunction,
+      TemporalMetric.metricFunction,
+      IdMetric.metricFunction)
 }
