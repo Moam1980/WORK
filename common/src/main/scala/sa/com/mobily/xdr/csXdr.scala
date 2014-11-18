@@ -11,7 +11,8 @@ case class CsUser(
     imsi: Option[String],
     msisdn: Option[String],
     imeisv: Option[String],
-    tmsi: Option[String])
+    tmsi: Option[String],
+    oldTmsi: Option[String])
 
 case class CsCell(
     firstLac: Option[String],
@@ -53,6 +54,6 @@ case class CsCause(
     holdRetrieveReject: Option[Short],
     cp: Option[Short],
     rp: Option[Short],
-    sequenceTerminate: Short)
+    sequenceTerminate: Option[Short])
 
-case class CsStatistic(smsLength: Option[String])
+case class CsStatistic(smsLength: Option[String], dtmfNumberBits: Option[String])

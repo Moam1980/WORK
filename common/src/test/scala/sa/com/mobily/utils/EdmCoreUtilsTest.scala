@@ -29,7 +29,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   trait WithPhones {
-    
+
     val phoneNumber = "+966000000000"
     val wrongPhoneNumber = "966000000000"
     val saudiCode = 966
@@ -95,11 +95,19 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.hexToDecimal("GAF2") should be (None)
   }
 
-  it should "convert to short" in  {
+  it should "convert string hexadecimal to short" in {
+    EdmCoreUtils.hexToShort("B") should be (Some(11))
+  }
+
+  it should "detect badly short overflows" in {
+    EdmCoreUtils.hexToShort("FFA98FFFFA9") should be (None)
+  }
+
+  it should "convert to short" in {
     EdmCoreUtils.parseShort("1") should be (Some(1))
   }
 
-  it should "detect badly formatted short" in  {
+  it should "detect badly formatted short" in {
     EdmCoreUtils.parseShort("This is not a number") should be (None)
   }
 
@@ -345,5 +353,19 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "return empty string when string is $null$" in new WithPhones {
     EdmCoreUtils.parseNullString("$null$") should be ("")
+  }
+
+  it should "return empty string when string is $_$" in new WithPhones {
+    EdmCoreUtils.parseNullString("_") should be ("")
+  }
+
+  it should "convert not null string to Some" in new WithPhones {
+    EdmCoreUtils.parseString("A") should be (Some("A"))
+  }
+
+  it should "convert $_$ or null string to None" in {
+    EdmCoreUtils.parseString("_") should be (None)
+    EdmCoreUtils.parseString("") should be (None)
+    EdmCoreUtils.parseString("$null$") should be (None)
   }
 }

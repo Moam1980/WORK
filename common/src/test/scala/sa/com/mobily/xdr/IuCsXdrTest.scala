@@ -27,7 +27,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       "_","_","_","_","_","_","ef9","d4b","82eb","_","c00c0086","_","_","_","_","_","0","_","166","_","_","_",
       "51a00200","0","82eb","_","1","_","_","_","_","_")
     val row = Row(
-      Row(Row(null, "420032275422214", null, "8636190157279614", "a65ca98e"), "b25cb3dc"),
+      Row(null, "420032275422214", null, "8636190157279614", "a65ca98e", "b25cb3dc"),
       Row(Row("d4b", null, "d4b", "ef9", "d4b"), "420", "03", null, null, null, "82eb", null, "82eb", null),
       Row(Row(null, 142.toShort), null, null, null, null, null),
       Row(Row(0.toShort, null), "2", 131.toShort, null, null, null, "166", null, null, null),
@@ -59,9 +59,9 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         null,
         null,
         null),
-      Row(Row(null), null, null, null, null, null, null, null))
+      Row(Row(null, null), null, null, null, null, null, null))
     val wrongRow = Row(
-      Row(Row(null, "420032275422214", null, "8636190157279614", "a65ca98e"), "b25cb3dc"),
+      Row(null, "420032275422214", null, "8636190157279614", "a65ca98e", "b25cb3dc"),
       Row(Row("d4b", null, "d4b", "ef9", "d4b"), "420", "03", null, null, null, "82eb", null, "82eb", null),
       Row(Row(null, 142.toShort), null, null, null, null, null),
       Row(Row(0.toShort, null), 131.toShort, "2", null, null, null, "166", null, null, null),
@@ -93,15 +93,14 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         null,
         null,
         null),
-      Row(Row(null), null, null, null, null, null, null, null))
+      Row(Row(null, null), null, null, null, null, null, null))
     val iuCsXdrEvent = IuCsXdr(
-      user = IuUser(
-        csUser = CsUser(
+      user =  CsUser(
           imei = None,
           imsi = Some("420032275422214"),
           msisdn = None,
           imeisv = Some("8636190157279614"),
-          tmsi = Some("a65ca98e")),
+          tmsi = Some("a65ca98e"),
         oldTmsi = Some("b25cb3dc")),
       cell = IuCell(
         csCell = CsCell(
@@ -180,7 +179,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
           holdRetrieveReject = None,
           cp = None,
           rp = None,
-          sequenceTerminate = 0),
+          sequenceTerminate = Some(0)),
         iuRelease = Some(83),
         securityReject = None,
         paging = None,
@@ -193,14 +192,13 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         ccRelease = None,
         noCli = None),
       statistic = IuStatistic(
-        csStatistics = CsStatistic(smsLength = None),
+        csStatistics = CsStatistic(smsLength = None, dtmfNumberBits = None),
         requestedDownlinkMaximumBitRate = None,
         requestedDownlinkGuranteedBitRate = None,
         requestedUplinkMaximumBitRate = None,
         requestedUplinkGuranteedBitRate = None,
         assignedDownlinkMaximumBitRate = None,
-        assignedUplinkMaximumBitRate = None,
-        dtmfNumberBits = None))
+        assignedUplinkMaximumBitRate = None))
   }
 
   "IuCsXdr" should "be built from CSV" in new WithIuCsXdrEvent {

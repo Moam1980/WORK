@@ -36,6 +36,8 @@ object EdmCoreUtils {
 
   def hexToDecimal(s: String): Option[Int] = Try { Integer.parseInt(s, BaseForHexadecimal) }.toOption
 
+  def hexToShort(s: String): Option[Short] = Try { Integer.parseInt(s, BaseForHexadecimal).toShort }.toOption
+
   def parseDouble(s: String): Option[Double] = Try { s.toDouble }.toOption
 
   def parseFloat(s: String): Option[Float] = Try { s.toFloat }.toOption

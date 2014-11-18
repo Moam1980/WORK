@@ -49,6 +49,7 @@ class CsvParserTest extends FlatSpec with ShouldMatchers {
     val parsedItem = CsvParser.fromLine("")
     parsedItem.value should be (None)
     parsedItem.parsingError.get.line should be ("")
+    parsedItem.parsingError.get.typeValue shouldBe a [String]
     parsedItem.parsingError.get.error shouldBe a [MatchError]
   }
 
