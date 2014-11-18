@@ -14,7 +14,6 @@ import sa.com.mobily.metrics.{MeasurableByTime, MeasurableByType}
 import sa.com.mobily.parsing.{OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
-import sa.com.mobily.utils.EdmCoreUtils._
 
 case class Event(
     user: User,
@@ -26,7 +25,8 @@ case class Event(
     subsequentLacTac: Option[Int],
     subsequentCellId: Option[Int],
     inSpeed: Option[Double] = None,
-    outSpeed: Option[Double] = None) extends MeasurableByTime with MeasurableByType {
+    outSpeed: Option[Double] = None,
+    minSpeedPointWkt: Option[String] = None) extends MeasurableByTime with MeasurableByType {
 
   override def typeValue: String = eventType
 
@@ -38,16 +38,18 @@ object Event {
   val LineCsvParserObject = new OpenCsvParser(separator = ',', quote = '"')
 
   val DateFormatter: DateTimeFormatter =
-    DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS").withZone(TimeZoneSaudiArabia)
+    DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
 
   def lacOrTac(lac: String, tac: String): String = if (lac.isEmpty) tac else lac
 
   def sacOrCi(sac: String, ci: String): String = if (sac.isEmpty) ci else sac
 
   implicit val fromRow = new RowParser[Event] {
+
     override def fromRow(row: Row): Event = {
-      val Seq(Seq(imei, imsi, msisdn),
-        beginTime, endTime, lacTac, cellId, eventType, subsequentLacTac,subsequentCellId, inSpeed, outSpeed) = row.toSeq
+      val Seq(Seq(imei, imsi, msisdn), beginTime, endTime, lacTac, cellId, eventType, subsequentLacTac,
+        subsequentCellId, inSpeed, outSpeed, minSpeedPointWkt) = row.toSeq
+
       Event(
         user =
           User(imei = imei.asInstanceOf[String], imsi = imsi.asInstanceOf[String], msisdn = msisdn.asInstanceOf[Long]),
@@ -59,7 +61,8 @@ object Event {
         subsequentLacTac = EdmCoreUtils.intOption(subsequentLacTac),
         subsequentCellId = EdmCoreUtils.intOption(subsequentCellId),
         inSpeed = EdmCoreUtils.doubleOption(inSpeed),
-        outSpeed = EdmCoreUtils.doubleOption(outSpeed))
+        outSpeed = EdmCoreUtils.doubleOption(outSpeed),
+        minSpeedPointWkt = EdmCoreUtils.stringOption(minSpeedPointWkt))
     }
   }
 }

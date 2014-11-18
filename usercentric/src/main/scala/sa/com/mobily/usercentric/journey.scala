@@ -10,58 +10,73 @@ import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.operation.distance.DistanceOp
 
 import sa.com.mobily.cell.Cell
-import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.event.Event
+import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 
 object Journey {
 
   val MillisInSecond = 1000
   val ZeroSpeed = Some(0.0)
 
+  // scalastyle:off method.length
   def computeMinSpeed(events: List[Event], cells: Map[(Int, Int), Cell]): List[Event] = {
     val geom = eventGeom(cells) _
     val geomFactory =
       if (events.headOption.isDefined)
         GeomUtils.geomFactory(geom(events.head).getSRID, geom(events.head).getPrecisionModel)
-      else
-        GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid)
+      else GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid)
 
     @tailrec
     def fillMinSpeed(
         events: List[Event],
-        initPoint: Point,
-        result: List[Event] = List()): List[Event] = events match {
-      case first :: Nil => result :+ zeroOutSpeed(first)
-      case first :: second :: Nil => {
-        val speed = DistanceOp.distance(initPoint, geom(second)) / secondsInBetween(first, second)
-        result :+ first.copy(outSpeed = Some(speed)) :+ second.copy(inSpeed = Some(speed), outSpeed = ZeroSpeed)
-      }
-      case first :: second :: tail if geom(second).intersects(initPoint) =>
-        fillMinSpeed(events = zeroInSpeed(second) :: tail, initPoint = initPoint, result :+ zeroOutSpeed(first))
-      case first :: second :: third :: tail => {
-        val closestInSecondToInit =
-          geomFactory.createPoint(DistanceOp.nearestPoints(initPoint, geom(second)).last)
-        val initPointInSecond =
-          nextInitPoint(
-            closestInSecondToInit = closestInSecondToInit,
-            second = geom(second),
-            third = geom(third),
-            geomFactory = geomFactory)
-        val speed = initPoint.distance(initPointInSecond) / secondsInBetween(first, second)
-        fillMinSpeed(
-          events = second.copy(inSpeed = Some(speed)) :: third :: tail,
-          initPoint = initPointInSecond,
-          result :+ first.copy(outSpeed = Some(speed)))
+        result: List[Event] = List()): List[Event] = {
+      val initPoint =
+        GeomUtils.parseWkt(events.head.minSpeedPointWkt.get, geomFactory.getSRID, geomFactory.getPrecisionModel)
+      events match {
+        case first :: Nil => result :+ first.copy(outSpeed = ZeroSpeed)
+        case first :: second :: Nil =>
+          val initPointInSecond =
+            GeomUtils.ensureNearestPointInGeom(
+              geomFactory.createPoint(DistanceOp.nearestPoints(initPoint, geom(second)).last),
+              geom(second))
+          val speed = DistanceOp.distance(initPoint, initPointInSecond) / secondsInBetween(first, second)
+          val newSecond =
+            second.copy(
+              inSpeed = Some(speed),
+              outSpeed = ZeroSpeed,
+              minSpeedPointWkt = Some(GeomUtils.wkt(initPointInSecond)))
+          result :+ first.copy(outSpeed = Some(speed)) :+ newSecond
+        case first :: second :: tail if geom(second).intersects(initPoint) =>
+          fillMinSpeed(
+            second.copy(inSpeed = ZeroSpeed, minSpeedPointWkt = Some(GeomUtils.wkt(initPoint))) :: tail,
+            result :+ first.copy(outSpeed = ZeroSpeed))
+        case first :: second :: third :: tail =>
+          val closestInSecondToInit =
+            GeomUtils.ensureNearestPointInGeom(
+              geomFactory.createPoint(DistanceOp.nearestPoints(initPoint, geom(second)).last),
+              geom(second))
+          val initPointInSecond =
+            nextInitPoint(
+              closestInSecondToInit = closestInSecondToInit,
+              second = geom(second),
+              third = geom(third),
+              geomFactory = geomFactory)
+          val speed = initPoint.distance(initPointInSecond) / secondsInBetween(first, second)
+          val newSecond = second.copy(inSpeed = Some(speed), minSpeedPointWkt = Some(GeomUtils.wkt(initPointInSecond)))
+          fillMinSpeed(
+            newSecond :: third :: tail,
+            result :+ first.copy(outSpeed = Some(speed)))
       }
     }
 
     if (events.isEmpty) List()
     else {
-      val eventsWithFirstInSpeedZero = zeroInSpeed(events.head) :: events.tail
       val startingPoint = geom(events.head).getCentroid // TODO: Might need to refine and get a more appropriate point
-      fillMinSpeed(events = eventsWithFirstInSpeedZero, initPoint = startingPoint)
+      fillMinSpeed(
+        events.head.copy(inSpeed = ZeroSpeed, minSpeedPointWkt = Some(GeomUtils.wkt(startingPoint))) :: events.tail)
     }
   }
+  // scalastyle:on method.length
 
   def secondsInBetween(firstEvent: Event, secondEvent: Event): Double = {
     val difference: Double = secondEvent.beginTime - firstEvent.beginTime
@@ -80,14 +95,12 @@ object Journey {
     val closestInThird = geomFactory.createPoint(DistanceOp.nearestPoints(closestInSecondToInit, third).last)
     val line =
       geomFactory.createLineString(Array(closestInSecondToInit.getCoordinate, closestInThird.getCoordinate))
-    val geomThroughSecond = if (line.isValid) line.intersection(second) else line.getStartPoint.intersection(second)
+    val geomThroughSecond = if (line.isValid) line.intersection(second) else closestInSecondToInit
     val closestInLineThroughSecondToThird = DistanceOp.nearestPoints(geomThroughSecond, third).head
     val midPointThroughSecond = geomFactory.createPoint(
       LineSegment.midPoint(closestInSecondToInit.getCoordinate, closestInLineThroughSecondToThird))
-    geomFactory.createPoint(DistanceOp.nearestPoints(second, midPointThroughSecond).head)
+    GeomUtils.ensureNearestPointInGeom(
+      geomFactory.createPoint(DistanceOp.nearestPoints(second, midPointThroughSecond).head),
+      second)
   }
-
-  def zeroInSpeed(event: Event): Event = event.copy(inSpeed = ZeroSpeed)
-
-  def zeroOutSpeed(event: Event): Event = event.copy(outSpeed = ZeroSpeed)
 }

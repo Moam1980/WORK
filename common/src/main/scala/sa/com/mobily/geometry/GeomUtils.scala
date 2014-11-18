@@ -127,6 +127,12 @@ object GeomUtils {
 
   def azimuthToAngle(azimuth: Double): Double = 90 - azimuth
 
+  def ensureNearestPointInGeom(p: Point, geom: Geometry): Point =
+    if (p.intersects(geom)) p
+    else if (!p.getPrecisionModel.isFloating)
+      p.buffer(2 / p.getPrecisionModel.getScale).intersection(geom).getCentroid
+    else p.buffer(p.distance(geom) * 2).intersection(geom).getCentroid
+
   private def buildShape(
       xCoords: List[Double],
       yCoords: List[Double],

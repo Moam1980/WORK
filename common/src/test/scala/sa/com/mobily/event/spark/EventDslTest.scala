@@ -104,13 +104,13 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
 
     val row =
       Row(Row("866173010386736", "420034122616618", 560917079L),
-        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None)
+        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None, None)
     val row2 =
       Row(Row("866173010386735", "420034122616617", 560917080L),
-        1404162126001L, 1404162610001L, 0x052C, 13067, "859", None, None, None, None)
+        1404162126001L, 1404162610001L, 0x052C, 13067, "859", None, None, None, None, None)
     val wrongRow =
       Row(Row(866173010386L, "420034122616618", 560917079L),
-        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None)
+        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None, None)
     val rows = sc.parallelize(List(row, row2))
     val wrongRows = sc.parallelize(List(row, row2, wrongRow))
   }

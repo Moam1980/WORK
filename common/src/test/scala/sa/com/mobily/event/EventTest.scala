@@ -25,9 +25,9 @@ class EventTest extends FlatSpec with ShouldMatchers {
       subsequentLacTac = Some(0),
       subsequentCellId = Some(0))
     val row = Row(Row("866173010386736", "420034122616618", 560917079L),
-      1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0, None, None)
+      1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0, None, None, None)
     val wrongRow = Row(Row(866173010386L, "420034122616618", 560917079L),
-      1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0, None, None)
+      1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0, None, None, None)
   }
 
   "Event" should "prefer LAC to TAC" in {
