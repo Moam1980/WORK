@@ -136,7 +136,3 @@ echo 1>&2 "Removing dates file: $DATES_FILE"
 rm ${DATES_FILE}
 exit 0
 
-
-
-
-

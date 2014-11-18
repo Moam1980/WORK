@@ -27,3 +27,4 @@ sudo cpan install Geo::Coordinates
 sudo cpan install Config::Properties
 
 iodbctest "Driver=/usr/local/Cellar/freetds/0.91/lib/libtdsodbc.so;Server=localhost;Port=1433;TDS_Version=8.0;uid=USER;pwd=PASSWORD;Database=DATABASE"
+

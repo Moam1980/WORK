@@ -204,3 +204,4 @@ do
 done
 
 echo 1>&2 "INFO $0: ${#filesBaseName[@]} files downloaded"
+
