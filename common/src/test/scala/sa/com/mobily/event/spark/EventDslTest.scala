@@ -115,6 +115,27 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     val wrongRows = sc.parallelize(List(row, row2, wrongRow))
   }
 
+  trait WithFlickeringEvents {
+
+    val user1 = User(imei = "0134160098258500", imsi = "420034120446250", msisdn = 560917079L)
+    val user2 = User(imei = "0134160098258501", imsi = "420034120446251", msisdn = 560917073L)
+    val cell1 = (1326, 12566)
+    val cell2 = (1325, 1212565566)
+    val event1 = Event(
+      user1,
+      beginTime = 1389363562000L,
+      endTime = 1389363565000L,
+      lacTac = cell1._1,
+      cellId = cell1._2,
+      eventType = "1",
+      subsequentLacTac = Some(1326),
+      subsequentCellId = Some(12566))
+    val event2 = event1.copy(beginTime = 1389363563000L)
+    val event3 = event1.copy(beginTime = 1389363562001L, lacTac = cell2._1, cellId = cell2._2)
+    val event4 = event3.copy(user = user2)
+    val events = sc.parallelize(Array(event1, event2, event3, event4))
+  }
+
   "EventDsl" should "get correctly parsed PS events" in new WithPsEventsText {
     psEvents.psToEvent.count should be (2)
   }
@@ -167,5 +188,11 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     events.saveAsParquetFile(path)
     sqc.parquetFile(path).toEvent.collect.sameElements(events.collect) should be (true)
     File(path).deleteRecursively
+  }
+
+  it should "detect flickering for user Events" in new WithFlickeringEvents {
+    val analysis = events.flickeringAnalysis(2000).collect
+    analysis.length should be (1)
+    analysis should be (Seq(Set(cell1, cell2)))
   }
 }

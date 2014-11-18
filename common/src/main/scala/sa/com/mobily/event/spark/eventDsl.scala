@@ -9,9 +9,9 @@ import scala.language.implicitConversions
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-
+import sa.com.mobily.cell.Flickering
 import sa.com.mobily.event._
-import sa.com.mobily.parsing.spark.{SparkWriter, ParsedItemsDsl, SparkParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 
 class EventCsvReader(self: RDD[String]) {
@@ -46,6 +46,14 @@ class EventFunctions(self: RDD[Event]) {
 
   def byUserChronologically: RDD[(Long, List[Event])] = self.keyBy(_.user.msisdn).groupByKey.map(idEvent =>
     (idEvent._1, idEvent._2.toList.sortBy(_.beginTime)))
+
+  def flickeringAnalysis(timeWindow: Long): RDD[Set[(Int, Int)]] = {
+    val byUser = self.map(event => (event.user.msisdn, (event.beginTime, (event.lacTac, event.cellId)))).groupByKey
+    byUser.flatMap(userAndTimeCell => {
+      val byUserSortedCells = userAndTimeCell._2.toSeq.sortBy(timeCell => timeCell._1)
+      Flickering.detect(byUserSortedCells, timeWindow)
+    }).distinct
+  }
 }
 
 class EventWriter(self: RDD[Event]) {
