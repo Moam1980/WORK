@@ -6,7 +6,12 @@ package sa.com.mobily.parsing
 
 import scala.util.{Failure, Success, Try}
 
-case class ParsingError(line: String, error: Throwable)
+import sa.com.mobily.metrics.MeasurableByType
+
+case class ParsingError(line: String, error: Throwable) extends MeasurableByType {
+
+  override def typeValue: String = error.getMessage
+}
 
 case class ParsedItem[T](value: Option[T], parsingError: Option[ParsingError] = None) {
 

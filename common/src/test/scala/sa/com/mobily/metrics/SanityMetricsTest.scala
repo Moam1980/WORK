@@ -8,7 +8,7 @@ import sa.com.mobily.event.Event
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
-class EventMetricTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class SanityMetricsTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
   trait WithEventsForMetrics {
 
@@ -45,7 +45,7 @@ class EventMetricTest extends FlatSpec with ShouldMatchers with LocalSparkContex
 
     val events = sc.parallelize(List(event0, event1, event2, event3, event4))
     implicit val accumulableParam = new MetricResultParam[Measurable]()
-    val accumulabe: Accumulable[MetricResult, Measurable] = sc.accumulable(MetricResult(), "sanity")
+    val accumulable: Accumulable[MetricResult, Measurable] = sc.accumulable(MetricResult(), "sanity")
   }
 
   "TimeMetric" should "should work for different time chunks" in new WithEventsForMetrics {
@@ -66,12 +66,12 @@ class EventMetricTest extends FlatSpec with ShouldMatchers with LocalSparkContex
   }
 
   it should "process a list of Events and grouping it" in new WithEventsForSpark {
-    events.collect.map(event => accumulabe += event)
-    accumulabe.value.metricValue.get(key0) should be(Some(1))
-    accumulabe.value.metricValue.get(falseKey) should be(None)
-    accumulabe.value.metricValue.get(key4) should be(Some(2))
-    accumulabe.value.metricValue.get(key5) should be(Some(2))
-    accumulabe.value.metricValue.get(key6) should be(Some(1))
+    events.collect.map(event => accumulable += event)
+    accumulable.value.metricValue.get(key0) should be(Some(1))
+    accumulable.value.metricValue.get(falseKey) should be(None)
+    accumulable.value.metricValue.get(key4) should be(Some(2))
+    accumulable.value.metricValue.get(key5) should be(Some(2))
+    accumulable.value.metricValue.get(key6) should be(Some(1))
   }
 
   it should "check the equality of objects" in new WithEventsForMetrics {

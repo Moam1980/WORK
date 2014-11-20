@@ -10,7 +10,7 @@ import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.apache.spark.sql._
 import org.joda.time.format.DateTimeFormatter
 
-import sa.com.mobily.metrics.{MeasurableByTime, MeasurableByType}
+import sa.com.mobily.metrics.{MeasurableById, MeasurableByTime, MeasurableByType}
 import sa.com.mobily.parsing.{OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -26,9 +26,11 @@ case class Event(
     subsequentCellId: Option[Int],
     inSpeed: Option[Double] = None,
     outSpeed: Option[Double] = None,
-    minSpeedPointWkt: Option[String] = None) extends MeasurableByTime with MeasurableByType {
+    minSpeedPointWkt: Option[String] = None) extends MeasurableByTime with MeasurableByType with MeasurableById[Long] {
 
   override def typeValue: String = eventType
+
+  override def id: Long = user.id
 
   override def timeValue: Long = beginTime
 }

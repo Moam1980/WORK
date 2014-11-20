@@ -16,4 +16,7 @@ trait Metric[T <: Measurable] extends Serializable {
    * @return The MetricKey object for grouping
    */
   def bin(measurable: T): MetricKey
+
+  def totalFunction(measurable: Measurable): Map[MetricResultKey, Long] =
+    Map(MetricResultKey("Total-items", MetricKey("all")) -> 1)
 }
