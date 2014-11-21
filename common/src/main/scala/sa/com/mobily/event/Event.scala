@@ -7,9 +7,11 @@ package sa.com.mobily.event
 import scala.language.existentials
 
 import com.github.nscala_time.time.Imports.DateTimeFormat
+import com.vividsolutions.jts.geom.Geometry
 import org.apache.spark.sql._
 import org.joda.time.format.DateTimeFormatter
 
+import sa.com.mobily.cell.Cell
 import sa.com.mobily.metrics.{MeasurableById, MeasurableByTime, MeasurableByType}
 import sa.com.mobily.parsing.{OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
@@ -33,6 +35,8 @@ case class Event(
   override def id: Long = user.id
 
   override def timeValue: Long = beginTime
+
+  def minSpeedPopulated: Boolean = inSpeed.isDefined && outSpeed.isDefined && minSpeedPointWkt.isDefined
 }
 
 object Event {
@@ -67,4 +71,8 @@ object Event {
         minSpeedPointWkt = EdmCoreUtils.stringOption(minSpeedPointWkt))
     }
   }
+
+  def geom(cells: Map[(Int, Int), Cell])(event: Event): Geometry = cells((event.lacTac, event.cellId)).coverageGeom
+
+  def geomWkt(cells: Map[(Int, Int), Cell])(event: Event): String = cells((event.lacTac, event.cellId)).coverageWkt
 }

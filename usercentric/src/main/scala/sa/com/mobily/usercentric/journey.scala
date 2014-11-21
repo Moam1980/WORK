@@ -20,11 +20,10 @@ object Journey {
 
   // scalastyle:off method.length
   def computeMinSpeed(events: List[Event], cells: Map[(Int, Int), Cell]): List[Event] = {
-    val geom = eventGeom(cells) _
-    val geomFactory =
-      if (events.headOption.isDefined)
-        GeomUtils.geomFactory(geom(events.head).getSRID, geom(events.head).getPrecisionModel)
-      else GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid)
+    val geom = Event.geom(cells) _
+    val geomFactory = cells.headOption.map(cellTuple =>
+      GeomUtils.geomFactory(cellTuple._2.coverageGeom.getSRID, cellTuple._2.coverageGeom.getPrecisionModel)).getOrElse(
+        GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid))
 
     @tailrec
     def fillMinSpeed(
@@ -83,9 +82,6 @@ object Journey {
     if (difference == 0) 1d / MillisInSecond
     else difference / MillisInSecond
   }
-
-  def eventGeom(cells: Map[(Int, Int), Cell])(event: Event): Geometry =
-    cells((event.lacTac, event.cellId)).coverageGeom
 
   def nextInitPoint(
       closestInSecondToInit: Point,

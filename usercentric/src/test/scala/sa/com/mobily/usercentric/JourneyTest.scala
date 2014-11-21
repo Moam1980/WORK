@@ -15,7 +15,7 @@ import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCustomMatchers, LocalSparkContext}
 
-class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers with LocalSparkContext {
+class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers with LocalSparkContext {
 
   trait WithEvents {
 
@@ -81,11 +81,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers  with EdmCustomMatchers w
     val initPoint1 = geomFactory.createPoint(new Coordinate(2, 0))
   }
 
-  "Journey" should "provide with cell geometry for an event" in new WithEvents with WithCellCatalogue {
-    Journey.eventGeom(cells)(event20) should equalGeometry(cell20.coverageGeom)
-  }
-
-  it should "calculate the seconds in between two events" in new WithEvents {
+  "Journey" should "calculate the seconds in between two events" in new WithEvents {
     Journey.secondsInBetween(event1, event20) should be(5)
   }
 
