@@ -76,6 +76,16 @@ object EdmCoreUtils {
     case _ => None
   }
 
+  def intOrZero(a: Any): Int = a match {
+    case a: Int => a
+    case _ => 0
+  }
+
+  def longOrZero(a: Any): Long = a match {
+    case a: Long => a
+    case _ => 0L
+  }
+
   def getCountryCode(msisdn: String): Int = phoneNumberUtil.parse(msisdn, "").getCountryCode
 
   def getRegionCodesForCountryCodeList(msisdn: String): List[String] =
