@@ -7,10 +7,10 @@ package sa.com.mobily.cell.spark
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell._
-import sa.com.mobily.geometry.UtmCoordinates
-import sa.com.mobily.utils.LocalSparkContext
+import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
+import sa.com.mobily.utils.{EdmCustomMatchers, LocalSparkContext}
 
-class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext with EdmCustomMatchers {
 
   import CellDsl._
 
@@ -149,6 +149,25 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     val cellsText = sc.parallelize(Array(cellText1, cellText2, cellText3))
   }
 
+  trait WithCellsAndLacs {
+
+    val cell1 = Cell(
+      cellId = 4465390,
+      lacTac = 57,
+      planarCoords = UtmCoordinates(0, 0),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25.0,
+      azimuth = 0.0,
+      beamwidth = 216,
+      range = 681.54282813,
+      coverageWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))")
+    val cell2 = cell1.copy(coverageWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))")
+    val aggGeom = GeomUtils.parseWkt("POLYGON ((0 0, 0 1, 1.5 1, 1.5 0, 0 0))", Coordinates.SaudiArabiaUtmSrid)
+
+    val cells = sc.parallelize(Array(cell1, cell2))
+  }
+
   "CellDsl" should "build Cell from joining SqmCell and EgBts" in new WithSqmCells with WithEgBts with WithCell {
     sqmCellRdd.toCell(egBtsRdd).count should be (2)
   }
@@ -199,5 +218,12 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     val Array(outCell1, outCell3) = sqmCellRdd.toCell(egBtsRdd).take(2)
     outCell1 should be (cell1)
     outCell3 should be (cell3)
+  }
+
+  it should "build LAC geometries" in new WithCellsAndLacs {
+    val lacGeoms = cells.lacGeometries
+    lacGeoms.count should be (1)
+    lacGeoms.first._1 should be (57)
+    lacGeoms.first._2 should equalGeometry (aggGeom)
   }
 }

@@ -6,6 +6,8 @@ package sa.com.mobily.cell.spark
 
 import scala.language.implicitConversions
 
+import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -35,6 +37,13 @@ class CellFunctions(self: RDD[Cell]) {
 
   def toBroadcastMap: Broadcast[Map[(Int, Int), Cell]] =
     self.sparkContext.broadcast(self.keyBy(c => (c.lacTac, c.cellId)).collect.toMap)
+
+  def lacGeometries: RDD[(Int, Geometry)] = {
+    val byLac = self.keyBy(_.lacTac).groupByKey
+    byLac.mapValues(cellsForLac => {
+      cellsForLac.foldLeft(cellsForLac.head.coverageGeom) { (geomAccum, cell) => geomAccum.union(cell.coverageGeom) }
+    }).map(byLac => (byLac._1, DouglasPeuckerSimplifier.simplify(byLac._2, 1 / byLac._2.getPrecisionModel.getScale)))
+  }
 }
 
 object CellMerger {
