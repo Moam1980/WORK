@@ -50,6 +50,12 @@ case class Cell(
     mnc: String = Cell.MobilyMnc) {
 
   lazy val coverageGeom: Geometry = GeomUtils.parseWkt(coverageWkt, planarCoords.srid)
+
+  lazy val identifier: (Int, Int) = (lacTac, cellId)
+
+  def centroidDistance(location: Geometry): Double = coverageGeom.getCentroid.distance(location.getCentroid)
+
+  def areaRatio(location: Geometry): Double = coverageGeom.getArea / location.getArea
 }
 
 object Cell {

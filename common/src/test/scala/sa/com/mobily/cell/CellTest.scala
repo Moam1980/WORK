@@ -6,7 +6,7 @@ package sa.com.mobily.cell
 
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.geometry.{GeomUtils, UtmCoordinates}
+import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.utils.EdmCustomMatchers
 
@@ -69,6 +69,24 @@ class CellTest extends FlatSpec with ShouldMatchers {
       beamwidth = 90,
       range = 2530.3,
       coverageWkt = shapeWkt)
+  }
+
+  trait WithLocation {
+
+    val cell = Cell(
+      mcc = "420",
+      mnc = "03",
+      cellId = 4465390,
+      lacTac = 57,
+      planarCoords = UtmCoordinates(-194243.4, 2671697.6, "EPSG:32638"),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25,
+      azimuth = 0,
+      beamwidth = 90,
+      range = 2530.3,
+      coverageWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
+    val location = GeomUtils.parseWkt("POLYGON ((4 0, 4 2, 6 2, 6 0, 4 0))", Coordinates.SaudiArabiaUtmSrid)
   }
 
   "Cell" should "be built from CSV" in new WithCell {
@@ -153,5 +171,17 @@ class CellTest extends FlatSpec with ShouldMatchers {
 
   it should "generate a list of fields" in new WithCell {
     Cell.toFields(cell) should be (fields)
+  }
+
+  it should "provide the cell identifier" in new WithCell {
+    cell.identifier should be ((57, 4465390))
+  }
+
+  it should "compute the distance from the centroid to another geometry's centroid" in new WithLocation {
+    cell.centroidDistance(location) should be (4)
+  }
+
+  it should "compute the ratio of the cell area against another location" in new WithLocation {
+    cell.areaRatio(location) should be (1)
   }
 }
