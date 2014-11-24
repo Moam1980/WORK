@@ -10,13 +10,13 @@ import org.scalatest._
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.utils.EdmCoreUtils
 
-class UserPhoneCallTest extends FlatSpec with ShouldMatchers {
+class UserPhoneCallsTest extends FlatSpec with ShouldMatchers {
 
   import UserPhoneCalls._
 
   trait WhitPhoneCallText {
-    val phoneCallText = "'0500001413','20140824',2541,'1','01, 02'"
-    val fields = Array("'0500001413'","'20140824'","2541","'1'","'01, 02'")
+    val phoneCallText = "'0500001413','20140824',2541,'1','01, 02',"
+    val fields = Array("'0500001413'","'20140824'","2541","'1'","'01, 02',")
     val phoneCallsObjetct = UserPhoneCalls(500001413, DateTimeFormat.forPattern("yyyymmdd").
       withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"), "2541", 1, Seq(1, 2))
   }

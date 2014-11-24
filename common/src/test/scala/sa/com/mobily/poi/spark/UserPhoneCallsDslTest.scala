@@ -7,22 +7,20 @@ package sa.com.mobily.poi.spark
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.mllib.linalg.Vectors
 import org.scalatest._
-
 import sa.com.mobily.poi.UserPhoneCalls
-import sa.com.mobily.utils.EdmCoreUtils
-import sa.com.mobily.utils.LocalSparkContext
+import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
 class UserPhoneCallsDslTest extends  FlatSpec with ShouldMatchers with LocalSparkContext{
 
-  import UserPhoneCallsDsl._
+  import sa.com.mobily.poi.spark.UserPhoneCallsDsl._
 
   trait WithPhoneCallsDslText {
 
-    val phoneCall1 = "'0500001413','20140824',2541,'1','01, 02'"
-    val phoneCall2 = "'0500001413','20140824',2806,'1','13, 19, 20'"
-    val phoneCall3 = "'XXXXXX','20140824',4576,'1','19'"
-    val phoneCall4 = "'0500001413','20140825',6051,'1','10, 11'"
-    val phoneCall5 = "'0500001413','20140825',5346,'1','01, 02, 03, 04, 05, 07, 08, 09'"
+    val phoneCall1 = "'0500001413','20140824',2541,'1','01, 02',"
+    val phoneCall2 = "'0500001413','20140824',2806,'1','13, 19, 20',"
+    val phoneCall3 = "'XXXXXX','20140824',4576,'1','19',"
+    val phoneCall4 = "'0500001413','20140825',6051,'1','10, 11',"
+    val phoneCall5 = "'0500001413','20140825',5346,'1','01, 02, 03, 04, 05, 07, 08, 09',"
 
     val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4, phoneCall5))
   }

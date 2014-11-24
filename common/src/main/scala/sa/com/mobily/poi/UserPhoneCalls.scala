@@ -28,7 +28,7 @@ object UserPhoneCalls {
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): UserPhoneCalls = {
-      val Array(msisdn, timestamp, siteId, regionId, callHours) = fields
+      val Array(msisdn, timestamp, siteId, regionId, callHours, _) = fields
 
       UserPhoneCalls(
         msisdn = msisdn.toLong,
