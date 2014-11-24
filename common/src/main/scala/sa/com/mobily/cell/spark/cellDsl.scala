@@ -12,7 +12,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
-import sa.com.mobily.cell.{EgBts, SqmCell, Cell}
+import sa.com.mobily.cell._
 import sa.com.mobily.geometry.{GeomUtils, CellCoverage}
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
 import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
@@ -43,6 +43,44 @@ class CellFunctions(self: RDD[Cell]) {
     byLac.mapValues(cellsForLac => {
       cellsForLac.foldLeft(cellsForLac.head.coverageGeom) { (geomAccum, cell) => geomAccum.union(cell.coverageGeom) }
     }).map(byLac => (byLac._1, DouglasPeuckerSimplifier.simplify(byLac._2, 1 / byLac._2.getPrecisionModel.getScale)))
+  }
+
+  def locationCellMetrics(location: Geometry): RDD[LocationCellMetrics] =
+    self.filter(_.coverageGeom.intersects(location)).map(cell =>
+      LocationCellMetrics(
+        cellIdentifier = cell.identifier,
+        cellWkt = cell.coverageWkt,
+        centroidDistance = cell.centroidDistance(location),
+        areaRatio = cell.areaRatio(location)))
+
+  def locationCellAggMetrics(location: Geometry): LocationCellAggMetrics = {
+    val cellMetrics = locationCellMetrics(location).cache
+    val numberOfCells = cellMetrics.count
+
+    val centroidDistances = cellMetrics.map(_.centroidDistance)
+    val centroidDistanceAvg = centroidDistances.sum / numberOfCells
+    val centroidDistanceMin = centroidDistances.min
+    val centroidDistanceMax = centroidDistances.max
+    val centroidDistanceSqrDiffs =
+      centroidDistances.map(centroidDistance => math.pow(centroidDistance - centroidDistanceAvg, 2))
+    val centroidDistanceStDev = Math.sqrt(centroidDistanceSqrDiffs.sum / numberOfCells)
+
+    val areaRatios = cellMetrics.map(_.areaRatio)
+    val areaRatioAvg = areaRatios.sum / numberOfCells
+    val areaRatioSqrDiffs = areaRatios.map(areaRatio => math.pow(areaRatio - areaRatioAvg, 2))
+    val areaRatioStDev = Math.sqrt(areaRatioSqrDiffs.sum / numberOfCells)
+
+    cellMetrics.unpersist(blocking = false)
+
+    LocationCellAggMetrics(
+      cellsWkt = cellMetrics.map(_.cellWkt).collect.toList,
+      numberOfCells = numberOfCells,
+      centroidDistanceAvg = centroidDistanceAvg,
+      centroidDistanceStDev = centroidDistanceStDev,
+      centroidDistanceMin = centroidDistanceMin,
+      centroidDistanceMax = centroidDistanceMax,
+      areaRatioAvg = areaRatioAvg,
+      areaRatioStDev = areaRatioStDev)
   }
 }
 

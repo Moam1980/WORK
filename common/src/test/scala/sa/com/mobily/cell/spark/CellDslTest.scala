@@ -35,7 +35,7 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext wi
     val egBtsRdd = sc.parallelize(Array(egBts))
   }
 
-  trait WithCell extends WithCoords {
+  trait WithCells extends WithCoords {
     val cell1 = Cell(
       cellId = 4465390,
       lacTac = 57,
@@ -168,15 +168,60 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext wi
     val cells = sc.parallelize(Array(cell1, cell2))
   }
 
-  "CellDsl" should "build Cell from joining SqmCell and EgBts" in new WithSqmCells with WithEgBts with WithCell {
+  trait WithCellsAndLocations {
+
+    val cell1 = Cell(
+      mcc = "420",
+      mnc = "03",
+      cellId = 4465390,
+      lacTac = 57,
+      planarCoords = UtmCoordinates(-194243.4, 2671697.6, "EPSG:32638"),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25,
+      azimuth = 0,
+      beamwidth = 90,
+      range = 2530.3,
+      coverageWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
+    val cell2 = cell1.copy(cellId = 4465391, coverageWkt = "POLYGON ((2 0, 2 2, 5 2, 5 0, 2 0))")
+    val cell3 = cell1.copy(cellId = 4465392, coverageWkt = "POLYGON ((7 7, 7 9, 9 9, 9 7, 7 7))")
+    val cells = sc.parallelize(Array(cell1, cell2, cell3))
+
+    val location = GeomUtils.parseWkt("POLYGON ((1 0, 1 2, 3 2, 3 0, 1 0))", Coordinates.SaudiArabiaUtmSrid)
+
+    val cellMetrics1 =
+      LocationCellMetrics(
+        cellIdentifier = (57, 4465390),
+        cellWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
+        centroidDistance = 1,
+        areaRatio = 1)
+    val cellMetrics2 =
+      LocationCellMetrics(
+        cellIdentifier = (57, 4465391),
+        cellWkt = "POLYGON ((2 0, 2 2, 5 2, 5 0, 2 0))",
+        centroidDistance = 1.5,
+        areaRatio = 1.5)
+    val aggMetrics =
+      LocationCellAggMetrics(
+        cellsWkt = List("POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))", "POLYGON ((2 0, 2 2, 5 2, 5 0, 2 0))"),
+        numberOfCells = 2,
+        centroidDistanceAvg = 1.25,
+        centroidDistanceStDev = 0.25,
+        centroidDistanceMin = 1,
+        centroidDistanceMax = 1.5,
+        areaRatioAvg = 1.25,
+        areaRatioStDev = 0.25)
+  }
+
+  "CellDsl" should "build Cell from joining SqmCell and EgBts" in new WithSqmCells with WithEgBts with WithCells {
     sqmCellRdd.toCell(egBtsRdd).count should be (2)
   }
 
-  it should "discard SqmCell that do not match any BTS site" in new WithSqmCells with WithEgBts with WithCell {
+  it should "discard SqmCell that do not match any BTS site" in new WithSqmCells with WithEgBts with WithCells {
     sc.parallelize(Array(sqmCell2)).toCell(egBtsRdd).count should be (0)
   }
 
-  it should "broadcast the cells with (LAC, CellId) as key" in new WithCell {
+  it should "broadcast the cells with (LAC, CellId) as key" in new WithCells {
     val cells = sc.parallelize(Array(cell1, cell3))
     val broadcastMap = cells.toBroadcastMap
     broadcastMap.value.size should be (2)
@@ -214,7 +259,7 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext wi
     CellMerger.computeBeamwidths(northernAzimuths) should be (beamwidths)
   }
 
-  it should "merge SqmCell with EgBts using BTS id and LAC" in new WithSqmCells with WithEgBts with WithCell {
+  it should "merge SqmCell with EgBts using BTS id and LAC" in new WithSqmCells with WithEgBts with WithCells {
     val Array(outCell1, outCell3) = sqmCellRdd.toCell(egBtsRdd).take(2)
     outCell1 should be (cell1)
     outCell3 should be (cell3)
@@ -225,5 +270,16 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext wi
     lacGeoms.count should be (1)
     lacGeoms.first._1 should be (57)
     lacGeoms.first._2 should equalGeometry (aggGeom)
+  }
+
+  it should "generate location cell metrics" in new WithCellsAndLocations {
+    val metrics = cells.locationCellMetrics(location).collect.toList
+    metrics.size should be (2)
+    metrics should contain (cellMetrics1)
+    metrics should contain (cellMetrics2)
+  }
+
+  it should "generate aggregated location cell metrics" in new WithCellsAndLocations {
+    cells.locationCellAggMetrics(location) should be (aggMetrics)
   }
 }
