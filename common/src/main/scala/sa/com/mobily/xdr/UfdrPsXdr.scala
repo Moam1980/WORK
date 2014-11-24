@@ -73,7 +73,8 @@ object UfdrPsXdr {
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): UfdrPsXdr = {
-      val (firstChunk, restChunk) = fields.splitAt(19) // scalastyle:ignore magic.number
+      val fieldsTrim = fields.map(_.trim)
+      val (firstChunk, restChunk) = fieldsTrim.splitAt(19) // scalastyle:ignore magic.number
       val (secondChunk, thirdChunk) = restChunk.splitAt(19) // scalastyle:ignore magic.number
       val Array(sidText, interfaceIdText, beginTimeText, endTimeText, protocolCategoryText, protocolIdText,
         msisdnText, imsiText, imeiText, msIpText, serverIpText, msPortText, serverPortText, apnText, sgsnSigIpText,
