@@ -9,7 +9,7 @@ import annotation.tailrec
 object Flickering {
 
   def detect(byUserSortedCells: Seq[(Long, (Int, Int))], timeWindow: Long): Set[Set[(Int, Int)]] = {
-    
+
     @tailrec
     def detect(
         byUserSortedTimeCells: Seq[(Long, (Int, Int))],
