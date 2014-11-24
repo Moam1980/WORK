@@ -15,7 +15,7 @@ case class User(
   lazy val mcc: String = imsi.substring(User.MccStartIndex, User.MncStartIndex)
   lazy val mnc: String = {
     val mncs = CountryCode.MccCountryOperatorsLookup(mcc).map(_.mnc)
-    mncs.filter(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).headOption.getOrElse(User.UnknownMnc)
+    mncs.find(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).getOrElse(User.UnknownMnc)
   }
 
   override def id: Long = msisdn
