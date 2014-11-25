@@ -5,6 +5,7 @@
 package sa.com.mobily.geometry
 
 import org.scalatest._
+import sa.com.mobily.roaming.CountryCode
 
 import sa.com.mobily.utils.EdmCustomMatchers
 
@@ -21,6 +22,14 @@ class CoordinatesTest extends FlatSpec with ShouldMatchers {
     val utmCoords = UtmCoordinates(669314, 2734074.4)
     val utmCoordsGeom = GeomUtils.parseWkt("POINT ( 669314 2734074.4 )", utmCoords.srid)
     val planarSrid = 32638
+  }
+
+  "Coordinates" should "return the UTM SRID for Saudi Arabia country ISO code" in {
+    Coordinates.isoCodeUtmSrid(CountryCode.SaudiArabiaIsoCode) should be (Coordinates.SaudiArabiaUtmSrid)
+  }
+
+  it should "return Saudi Arabia UTM SRID for an unknown country ISO code" in {
+    Coordinates.isoCodeUtmSrid("unknown") should be (Coordinates.SaudiArabiaUtmSrid)
   }
 
   "UtmCoordinates" should "transform to LatLongCoordinates (WGS84 geodetic)" in new WithUtmCoordinates

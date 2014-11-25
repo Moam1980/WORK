@@ -12,6 +12,29 @@ import com.vividsolutions.jts.operation.distance.DistanceOp
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
+import sa.com.mobily.roaming.CountryCode
+
+case class Journey(
+    user: Long,
+    id: Int,
+    startTime: Long,
+    endTime: Long,
+    geomWkt: String,
+    orderedCells: List[(Int, Int)],
+    firstEventBeginTime: Long,
+    lastEventEndTime: Long,
+    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry with CellSequence
+
+case class JourneyViaPoint(
+    user: Long,
+    journeyId: Int,
+    startTime: Long,
+    endTime: Long,
+    geomWkt: String,
+    orderedCells: List[(Int, Int)],
+    firstEventBeginTime: Long,
+    lastEventEndTime: Long,
+    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry with CellSequence
 
 object Journey {
 

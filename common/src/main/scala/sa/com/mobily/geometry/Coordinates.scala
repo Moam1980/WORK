@@ -8,7 +8,7 @@ import com.vividsolutions.jts.geom._
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 
-import sa.com.mobily.utils.EdmCoreUtils
+import sa.com.mobily.roaming.CountryCode
 
 /** Cartesian coordinates in the UTM (planar) coordinate system (WGS84 ellipsoid)
   *
@@ -72,4 +72,8 @@ object Coordinates {
   def srid(epsg: String): Int = epsg.substring(epsg.indexOf(Coordinates.AuthoritySridSep) + 1).toInt
 
   def epsg(srid: Int): String = s"$EpsgAuthority$AuthoritySridSep$srid"
+
+  def isoCodeUtmSrid(isoCode: String): Int = isoCode match {
+    case _ => SaudiArabiaUtmSrid
+  }
 }
