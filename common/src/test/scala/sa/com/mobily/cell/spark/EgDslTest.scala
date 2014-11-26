@@ -28,21 +28,15 @@ class EgDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
   }
 
   trait WithEgBtsText {
-    val egBtsLine1 = "23\t118\t\"2806\"\t\"2806\"\t\"New-Addition\"\t37.34991\t31.31631\t\"\"\t\"\"\t\"3834\"\t" +
-      "\"BTS\"\t\"Alcatel\"\t\"East\"\t\"\"\t\"Eastern Pool\"\t\"E317\"\t\"AJREA2806\"\t\"\"\t\"\"\t1\t\"\"\t\"\"\t" +
-      "\"\"\t\"\"\t\"42003038342806\"\t\"\"\t9999\t9999\t9999\t9999\t\"\"\t\"\"\t\"2G\"\t17\t\"P3\"\t\"Macro\"\t" +
-      "\"Eastern Pool\"\t\"Eastern Pool\"\t\"\"\t\"\"\t1\t10\t1\t1\t4\t619\t27-AUG-14\t535.49793639\t681.54282813\t" +
-      "SDE.ST_GEOMETRY(1,1,37.34991,31.31631,37.34991,31.31631,NULL,NULL,NULL,NULL,0,0,4326,'oracle.sql.BLOB@d6bed81')"
-    val egBtsLine2 = "23\t118\t\"2806\"\t\"2806\"\t\"New-Addition\"\t37.34991\t31.31631\t\"\"\t\"\"\t\"3834\"\t" +
-      "\"BTS\"\t\"Ericsson\"\t\"East\"\t\"\"\t\"Eastern Pool\"\t\"E317\"\t\"AJREA2806\"\t\"\"\t\"\"\t1\t\"\"\t\"\"\t" +
-      "\"\"\t\"\"\t\"42003038342806\"\t\"\"\t9999\t9999\t9999\t9999\t\"\"\t\"\"\t\"2G\"\t17\t\"P3\"\t\"Macro\"\t" +
-      "\"Eastern Pool\"\t\"Eastern Pool\"\t\"\"\t\"\"\t1\t10\t1\t1\t4\t619\t27-AUG-14\t535.49793639\t681.54282813\t" +
-      "SDE.ST_GEOMETRY(1,1,37.34991,31.31631,37.34991,31.31631,NULL,NULL,NULL,NULL,0,0,4326,'oracle.sql.BLOB@d6bed81')"
-    val egBtsLine3 = "23\t118\t\"2806\"\t\"2806\"\t\"New-Addition\"\t37.34991\t31.31631\t\"\"\t\"\"\t\"3834\"\t" +
-      "\"BTS\"\t\"Alcatel\"\t\"East\"\t\"\"\t\"Eastern Pool\"\t\"E317\"\t\"AJREA2806\"\t\"\"\t\"\"\t1\t\"\"\t\"\"\t" +
-      "\"\"\t\"\"\t\"42003038342806\"\t\"\"\t9999\t9999\t9999\t9999\t\"\"\t\"\"\t\"2G\"\t17\t\"P3\"\t\"Macro\"\t" +
-      "\"Eastern Pool\"\t\"Eastern Pool\"\t\"\"\t\"\"\t1\t10\t1\t1\t4\t619\t27-AUG-14\t535.49793639\tNotOutdoorCov\t" +
-      "SDE.ST_GEOMETRY(1,1,37.34991,31.31631,37.34991,31.31631,NULL,NULL,NULL,NULL,0,0,4326,'oracle.sql.BLOB@d6bed81')"
+    val egBtsLine1 = ",,11,97,3581,3581057,,2181,MACRO,5,42003021752181,2181,11/16/2014 9:03:08 AM,,," +
+      "Western Pool,,618,23,,,461.04367785,2175,21.53853,,39.19721,,West,Jeddah Pool,UXJD2181,,14,," +
+      "658.63382551,,N212,Western Pool,P1,2,3,New-Addition,1,3G,2,Node B,,Ericsson,2"
+    val egBtsLine2 = ",,11,97,3581,3581027,,2183,MACRO,5,42003021752183,2183,11/16/2014 9:03:08 AM,,," +
+      "Western Pool,,618,23.5,,,471.0663665,2175,21.5554,,39.20935,,West,Jeddah Pool,UXJD2183,,15,," +
+      "672.95195215,,N212,Western Pool,P2,3,3,New-Addition,1,3G,2,Node B,,Ericsson,2"
+    val egBtsLine3 = ",,11,97,3581,3581026,,2115,MACRO,5,42003021762115,2115,11/16/2014 9:03:08 AM,,," +
+      "Western Pool,,618,17.5,,,350.79410272,2176,21.58388,,39.15818,,West,Jeddah Pool,UXJD2115,,18,," +
+      "NotOutdoorCov,,N211,Western Pool,P1,2,3,New-Addition,1,3G,2,Node B,,Ericsson,2"
 
     val egBtsRdd = sc.parallelize(List(egBtsLine1, egBtsLine2, egBtsLine3))
   }
