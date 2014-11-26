@@ -14,20 +14,16 @@ class EgBtsTest extends FlatSpec with ShouldMatchers {
   import EgBts._
 
   trait WithEgBts {
-    val egBtsLine = "23\t118\t\"2806\"\t\"2806\"\t\"New-Addition\"\t37.34991\t31.31631\t\"\"\t\"\"\t\"3834\"\t" +
-      "\"BTS\"\t\"Alcatel\"\t\"East\"\t\"\"\t\"Eastern Pool\"\t\"E317\"\t\"AJREA2806\"\t\"\"\t\"\"\t1\t\"\"\t\"\"\t" +
-      "\"\"\t\"\"\t\"42003038342806\"\t\"\"\t9999\t9999\t9999\t9999\t\"\"\t\"\"\t\"2G\"\t17\t\"P3\"\t\"Macro\"\t" +
-      "\"Eastern Pool\"\t\"Eastern Pool\"\t\"\"\t\"\"\t1\t10\t1\t1\t4\t619\t27-AUG-14\t535.49793639\t681.54282813\t" +
-      "SDE.ST_GEOMETRY(1,1,37.34991,31.31631,37.34991,31.31631,NULL,NULL,NULL,NULL,0,0,4326,'oracle.sql.BLOB@d6bed81')"
-    val fields = Array("23", "118", "\"2806\"", "\"2806\"", "\"New-Addition\"", "37.34991", "31.31631", "\"\"",
-      "\"\"", "\"3834\"", "\"BTS\"", "\"Alcatel\"", "\"East\"", "\"\"", "\"Eastern Pool\"", "\"E317\"",
-      "\"AJREA2806\"", "\"\"", "\"\"", "1", "\"\"", "\"\"", "\"\"", "\"42003038342806\"", "\"\"", "9999", "9999",
-      "9999", "9999", "\"\"", "\"\"", "\"2G\"", "17", "\"P3\"", "\"Macro\"", "\"Eastern Pool\"", "\"Eastern Pool\"",
-      "\"\"", "\"\"", "1", "10", "1", "1", "4", "619", "27-AUG-14", "535.49793639", "681.54282813",
-      "SDE.ST_GEOMETRY(1,1,37.34991,31.31631,37.34991,31.31631,NULL,NULL,NULL,NULL,0,0,4326,'oracle.sql.BLOB@d6bed81')")
-    val coords = UtmCoordinates(-228902.5, 3490044.0)
-    val egBts = EgBts("2806", "2806", "New-Addition", coords, "", "", 3834, "BTS", "Alcatel", "E317",
-      "42003038342806", TwoG, "17", "Macro", 535.49793639, 681.54282813)
+    val egBtsLine = ",,13,61,9999,9999,,3870,Macro,8,42003038353870,3870,11/16/2014 9:03:08 AM,,,Eastern Pool," +
+      "AN NUQAYRAH,161,48,,,1511.99417334,3835,27.86804,,48.26362,,East,Eastern Pool,ASR3870,,7,,1924.35622061,," +
+      "E379,Eastern Pool,P3,4,1,New-Addition,1,2G,1,BTS,,Alcatel,1"
+    val fields = Array("", "", "13", "61", "9999", "9999", "", "3870", "Macro", "8", "42003038353870", "3870",
+      "11/16/2014 9:03:08 AM", "", "", "Eastern Pool", "AN NUQAYRAH", "161", "48", "", "", "1511.99417334", "3835",
+      "27.86804", "", "48.26362", "", "East", "Eastern Pool", "ASR3870", "", "7", "", "1924.35622061", "", "E379",
+      "Eastern Pool", "P3", "4", "1", "New-Addition", "1", "2G", "1", "BTS", "", "Alcatel", "1")
+    val coords = UtmCoordinates(821375.9, 3086866.0)
+    val egBts = EgBts("3870", "3870", "New-Addition", coords, "", "", 3835, "BTS", "Alcatel", "E379",
+      "42003038353870", TwoG, "48", "Macro", 1511.99417334, 1924.35622061)
   }
   
   "EgBts" should "be built from CSV" in new WithEgBts {
@@ -35,6 +31,6 @@ class EgBtsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be discarded when the CSV format is wrong" in new WithEgBts {
-    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(7, "NotLongitude"))
+    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(25, "NotLongitude"))
   }
 }

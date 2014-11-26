@@ -37,9 +37,9 @@ object SqmCell {
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): SqmCell = {
-      val Array(cellNameText, cellIdText, nodeIdText, ciText, nodeNameText, lacTacText, latitudeText, longitudeText,
-        vendorText, techText, cellTypeText, heightText, azimuthText, bscRncNmeText, regionText, antennaTypeText,
-        bspwrPcpichPmaxText, accminRxlevminText, bandText) = fields
+      val Array(cellNameText, cellIdText, nodeIdText, ciText, _, nodeNameText, lacTacText, latitudeText,
+        longitudeText, vendorText, techText, cellTypeText, heightText, azimuthText, bscRncNmeText, regionText,
+        antennaTypeText, bspwrPcpichPmaxText, accminRxlevminText, bandText) = fields
 
       val coords = LatLongCoordinates(latitudeText.toDouble, longitudeText.toDouble).utmCoordinates()
 
