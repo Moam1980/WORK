@@ -19,6 +19,7 @@ project/plugins/project/
 
 # IntelliJ-IDE specific
 .idea
+.idea_modules
 edm-core.iml
 
 #Platform specific
