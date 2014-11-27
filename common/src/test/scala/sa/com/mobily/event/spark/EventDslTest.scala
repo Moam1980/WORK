@@ -9,7 +9,11 @@ import scala.reflect.io.File
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.cell.{Macro, FourGTdd, Cell}
+import sa.com.mobily.cell.spark.CellDsl._
 import sa.com.mobily.event.Event
+import sa.com.mobily.flickering.FlickeringCells
+import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
 
@@ -119,21 +123,50 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
 
     val user1 = User(imei = "0134160098258500", imsi = "420034120446250", msisdn = 560917079L)
     val user2 = User(imei = "0134160098258501", imsi = "420034120446251", msisdn = 560917073L)
-    val cell1 = (1326, 12566)
-    val cell2 = (1325, 1212565566)
+    val cell1 = Cell(
+      cellId = 4465390,
+      lacTac = 57,
+      planarCoords = UtmCoordinates(-228902.5, 3490044.0),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25.0,
+      azimuth = 0.0,
+      beamwidth = 216,
+      range = 681.54282813,
+      coverageWkt = "POLYGON ((-228969.5 3490032.3, -228977.7 3490031.6, -229017.2 3490033.9, -229056.8 3490042.1, " +
+        "-229095.7 3490056.2, -229132.9 3490076.1, -229167.6 3490101.5, -229199 3490132.2, -229226.2 3490167.5, " +
+        "-229248.7 3490206.9, -229265.7 3490249.7, -229277 3490295.1, -229281.9 3490342.2, -229280.5 3490390.1, " +
+        "-229272.4 3490438, -229257.9 3490484.8, -229237 3490529.6, -229210.1 3490571.6, -229177.5 3490609.9, " +
+        "-229139.9 3490643.7, -229098 3490672.3, -229052.4 3490695.3, -229004 3490712, -228953.7 3490722.1, " +
+        "-228902.5 3490725.5, -228851.3 3490722.1, -228801 3490712, -228752.6 3490695.3, -228707 3490672.3, " +
+        "-228665.1 3490643.7, -228627.5 3490609.9, -228594.9 3490571.6, -228568 3490529.6, -228547.1 3490484.8, " +
+        "-228532.6 3490438, -228524.5 3490390.1, -228523.1 3490342.2, -228528 3490295.1, -228539.3 3490249.7, " +
+        "-228556.3 3490206.9, -228578.8 3490167.5, -228606 3490132.2, -228637.4 3490101.5, -228672.1 3490076.1, " +
+        "-228709.3 3490056.2, -228748.2 3490042.1, -228787.8 3490033.9, -228827.3 3490031.6, -228835.5 3490032.3, " +
+        "-228836.5 3490027.1, -228839.1 3490018.9, -228842.8 3490011.2, -228847.4 3490003.9, -228852.8 3489997.3, " +
+        "-228859.1 3489991.5, -228866 3489986.5, -228873.5 3489982.3, -228881.4 3489979.2, -228889.7 3489977.1, " +
+        "-228898.2 3489976, -228906.8 3489976, -228915.3 3489977.1, -228923.6 3489979.2, -228931.5 3489982.3, " +
+        "-228939 3489986.5, -228945.9 3489991.5, -228952.2 3489997.3, -228957.6 3490003.9, -228962.2 3490011.2, " +
+        "-228965.9 3490018.9, -228968.5 3490027.1, -228969.5 3490032.3))",
+      mcc = "420",
+      mnc = "03")
+    val cell2 = cell1.copy(cellId = 4465391)
     val event1 = Event(
       user1,
       beginTime = 1389363562000L,
       endTime = 1389363565000L,
-      lacTac = cell1._1,
-      cellId = cell1._2,
+      lacTac = cell1.lacTac,
+      cellId = cell1.cellId,
       eventType = "1",
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val event2 = event1.copy(beginTime = 1389363563000L)
-    val event3 = event1.copy(beginTime = 1389363562001L, lacTac = cell2._1, cellId = cell2._2)
+    val event3 = event1.copy(beginTime = 1389363562001L, lacTac = cell2.lacTac, cellId = cell2.cellId)
     val event4 = event3.copy(user = user2)
     val events = sc.parallelize(Array(event1, event2, event3, event4))
+    val cells = sc.parallelize(Array(cell1, cell2))
+    val flickeringCells = Array(FlickeringCells(Set((cell1.lacTac , cell1.cellId), (cell2.lacTac , cell2.cellId))))
+    val broadcastCellCatalogue = cells.toBroadcastMap
   }
 
   "EventDsl" should "get correctly parsed PS events" in new WithPsEventsText {
@@ -191,8 +224,8 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
   }
 
   it should "detect flickering for user Events" in new WithFlickeringEvents {
-    val analysis = events.flickeringAnalysis(2000).collect
+    val analysis = events.flickeringDetector(2000)(broadcastCellCatalogue).collect
     analysis.length should be (1)
-    analysis should be (Seq(Set(cell1, cell2)))
+    analysis should be (flickeringCells)
   }
 }
