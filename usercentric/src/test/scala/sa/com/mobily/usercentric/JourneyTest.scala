@@ -81,6 +81,28 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
     val initPoint1 = geomFactory.createPoint(new Coordinate(2, 0))
   }
 
+  trait WithJourney {
+
+    val journey = Journey(
+      user = 1,
+      id = 1,
+      startTime = 1,
+      endTime = 10,
+      geomWkt = "LINESTRING (0.5 0.5, 0.5 0.5)",
+      orderedCells = List((1, 1), (1, 1)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 8)
+    val journeyVp = JourneyViaPoint(
+      user = 1,
+      journeyId = 1,
+      startTime = 3,
+      endTime = 8,
+      geomWkt = "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
+      orderedCells = List((1, 1), (1, 1)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 8)
+  }
+
   "Journey" should "calculate the seconds in between two events" in new WithEvents {
     Journey.secondsInBetween(event1, event20) should be(5)
   }
@@ -198,4 +220,22 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
       eventsWithSpeed.map(_.minSpeedPointWkt) should
         be(List(Some("POINT (1.5 1.5)"), Some("POINT (4 1.5)"), Some("POINT (4 1.5)"), Some("POINT (8 1.5)")))
     }
+
+  it should "build geometry from WKT" in new WithJourney {
+    journey.geom should
+      equalGeometry(GeomUtils.parseWkt("LINESTRING (0.5 0.5, 0.5 0.5)", Coordinates.SaudiArabiaUtmSrid))
+  }
+
+  it should "compute the set of cells seen" in new WithJourney {
+    journey.cells should be (Set((1, 1)))
+  }
+
+  "JourneyViaPoint" should "build geometry from WKT" in new WithJourney {
+    journeyVp.geom should
+      equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", Coordinates.SaudiArabiaUtmSrid))
+  }
+
+  it should "compute the set of cells seen" in new WithJourney {
+    journeyVp.cells should be (Set((1, 1)))
+  }
 }
