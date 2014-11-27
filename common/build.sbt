@@ -7,5 +7,6 @@ libraryDependencies in ThisBuild ++= Seq(
   "org.geotools" % "gt-epsg-hsql" % "10.4",
   "com.vividsolutions" % "jts" % "1.12",
   "au.com.bytecode" % "opencsv" % "2.4",
-  "com.googlecode.libphonenumber" % "libphonenumber" % "6.3.1"
+  "com.googlecode.libphonenumber" % "libphonenumber" % "6.3.1",
+  "org.sameersingh.scalaplot" % "scalaplot" % "0.0.3"
 )

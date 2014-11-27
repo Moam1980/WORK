@@ -7,6 +7,10 @@ package sa.com.mobily.poi
 import scala.collection.Seq
 
 import com.github.nscala_time.time.Imports._
+import org.apache.spark.mllib.clustering.KMeans
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.rdd.RDD
+import org.sameersingh.scalaplot.Implicits._
 
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
@@ -38,5 +42,22 @@ object UserPhoneCalls {
         regionId = regionId.toLong,
         callHours = callHours.split(UserPhoneCallSeparator).map(hs => hs.trim.toInt))
     }
+  }
+
+  def generateClusterNumberAndCostSequence(data: RDD[Vector], maximumNumberOfClusters: Int): Seq[(Int, Double)] = {
+    for (numberOfClusters <- 1 until maximumNumberOfClusters + 1)
+    yield (numberOfClusters, computeCost(numberOfClusters, data))
+  }
+
+  def computeCost(k: Int, data: RDD[Vector]): Double = {
+    val kMeans = new KMeans().setK(k)
+    val kMeansModel = kMeans.run(data)
+    kMeansModel.computeCost(data)
+  }
+
+  def generatePngGraph(dir: String, name: String, clusterNumberAndCosts: Seq[(Int, Double)]): String = {
+    val xData = clusterNumberAndCosts.map(_._1.toDouble)
+    val yData = clusterNumberAndCosts.map(_._2)
+    output(PNG(dir, name), plot(xData -> yData))
   }
 }
