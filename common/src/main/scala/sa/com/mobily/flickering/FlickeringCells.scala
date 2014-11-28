@@ -8,7 +8,7 @@ import sa.com.mobily.cell.Cell
 import sa.com.mobily.geometry.GeomUtils
 
 case class FlickeringCells(cells: Set[(Int, Int)] = Set()) {
-  
+
   require(cells.size == 2)
 
   def fields(implicit cellCatalogue: Map[(Int, Int), Cell]): Array[String] = {
