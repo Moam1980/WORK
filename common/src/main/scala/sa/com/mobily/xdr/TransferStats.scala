@@ -36,4 +36,28 @@ object TransferStats {
       ulLostRate = t1.ulLostRate + t2.ulLostRate,
       dwLostRate = t1.dwLostRate + t2.dwLostRate)
   }
+
+  def header: Array[String] = {
+    Array[String](
+      "l4UlThroughput",
+      "l4DwThroughput",
+      "l4UlPackets",
+      "l4DwPackets",
+      "dataTransUlDuration",
+      "dataTransDwDuration",
+      "ulLostRate",
+      "dwLostRate")
+  }
+
+  def fields(transferStats: TransferStats): Array[String] = {
+    Array[String](
+      transferStats.l4UlThroughput.toString,
+      transferStats.l4DwThroughput.toString,
+      transferStats.l4UlPackets.toString,
+      transferStats.l4DwPackets.toString,
+      transferStats.dataTransUlDuration.toString,
+      transferStats.dataTransDwDuration.toString,
+      transferStats.ulLostRate.toString,
+      transferStats.dwLostRate.toString)
+  }
 }

@@ -64,6 +64,57 @@ case class UfdrPsXdr(
     durationMsel : DurationMsel,
     clickToContent: Option[Long])
 
+case class UfdrPsXdrHierarchy(
+    hourTime: String,
+    cell: UfdrPSXdrCell,
+    user: User,
+    protocol: Protocol)
+
+case class UfdrPsXdrHierarchyAgg(
+    hierarchy: UfdrPsXdrHierarchy,
+    transferStats: TransferStats)
+
+object UfdrPSXdrCell {
+
+  def header: Array[String] = {
+    Array[String]("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
+  }
+
+  def fields(ufdrPSXdrCell: UfdrPSXdrCell): Array[String] = {
+    Array[String](
+      ufdrPSXdrCell.rat.identifier.toString,
+      ufdrPSXdrCell.lac,
+      ufdrPSXdrCell.rac,
+      ufdrPSXdrCell.sac,
+      ufdrPSXdrCell.ci,
+      ufdrPSXdrCell.tac,
+      ufdrPSXdrCell.eci,
+      ufdrPSXdrCell.mcc,
+      ufdrPSXdrCell.mnc)
+  }
+}
+
+object UfdrPsXdrHierarchyAgg {
+
+  def header: Array[String] = {
+    Array[String]("Date Hour") ++
+      UfdrPSXdrCell.header ++
+      User.header ++
+      Array[String]("catelogory id", "protocol id") ++
+      TransferStats.header
+  }
+
+  def fields(ufdrPsXdrHierarchyAgg: UfdrPsXdrHierarchyAgg): Array[String] = {
+    Array[String](ufdrPsXdrHierarchyAgg.hierarchy.hourTime) ++
+      UfdrPSXdrCell.fields(ufdrPsXdrHierarchyAgg.hierarchy.cell) ++
+      User.fields(ufdrPsXdrHierarchyAgg.hierarchy.user) ++
+      Array[String](
+        ufdrPsXdrHierarchyAgg.hierarchy.protocol.category.identifier.toString,
+        ufdrPsXdrHierarchyAgg.hierarchy.protocol.id.toString) ++
+      TransferStats.fields(ufdrPsXdrHierarchyAgg.transferStats)
+  }
+}
+
 object UfdrPsXdr {
 
   final val lineCsvParserObject = new OpenCsvParser(separator = '|')
