@@ -7,7 +7,9 @@ package sa.com.mobily.xdr
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
 
 class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
@@ -199,6 +201,24 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         requestedUplinkGuranteedBitRate = None,
         assignedDownlinkMaximumBitRate = None,
         assignedUplinkMaximumBitRate = None))
+    val iuCsXdrEvent2 = iuCsXdrEvent.copy(
+      user = iuCsXdrEvent.user.copy(
+        imei = Some("8636190157279614"), imsi = Some("420032275422214"), msisdn = Some("666666666")),
+      call = iuCsXdrEvent.call.copy(
+        csCall = iuCsXdrEvent.call.csCall.copy(
+          callType = Some(0))))
+    val event = Event(
+      User("8636190157279614", "420032275422214", 666666666),
+      1416156747015L,
+      1416156748435L,
+      3403,
+      33515,
+      "0",
+      None,
+      None,
+      None,
+      None,
+      None)
   }
 
   "IuCsXdr" should "be built from CSV" in new WithIuCsXdrEvent {
@@ -215,5 +235,13 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
 
   it should "be discarded when row is wrong" in new WithIuCsXdrEvent {
     an[Exception] should be thrownBy fromRow.fromRow(wrongRow)
+  }
+
+  it should "be parsed to Event" in new WithIuCsXdrEvent {
+    iuCsXdrEvent2.toEvent should be (event)
+  }
+
+  it should "be discarded when IuCsXdr is wrong" in new WithIuCsXdrEvent {
+    an[Exception] should be thrownBy iuCsXdrEvent.toEvent
   }
 }

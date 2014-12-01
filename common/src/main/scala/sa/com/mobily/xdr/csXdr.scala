@@ -4,8 +4,6 @@
 
 package sa.com.mobily.xdr
 
-import scala.language.existentials
-
 case class CsUser(
     imei: Option[String],
     imsi: Option[String],

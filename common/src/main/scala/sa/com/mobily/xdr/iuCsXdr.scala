@@ -4,17 +4,16 @@
 
 package sa.com.mobily.xdr
 
-import scala.language.existentials
+import scala.language.{existentials, implicitConversions}
+import scala.util.Try
 
-import org.apache.spark.sql._
+import org.apache.spark.sql.Row
 
 import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
-
-final case class IuUser(
-    csUser: CsUser,
-    oldTmsi: Option[String])
+import sa.com.mobily.utils.EdmCoreUtils._
 
 final case class IuCell(
     csCell: CsCell,
@@ -114,7 +113,23 @@ case class IuCsXdr(
     operation: CsOperation,
     flag: IuFlag,
     cause: IuCause,
-    statistic: IuStatistic)
+    statistic: IuStatistic) {
+
+  def toEvent: Event = {
+    Event(
+      User(
+        imei = user.imei.getOrElse(""),
+        imsi = user.imsi.getOrElse(""),
+        msisdn = user.msisdn.get.toLong),
+      beginTime = hexToLong(time.csTime.begin),
+      endTime = hexToLong(time.csTime.end),
+      lacTac = hexToInt(cell.csCell.firstLac.get),
+      cellId = hexToInt(cell.firstSac.get),
+      eventType = call.csCall.callType.get.toString,
+      subsequentLacTac = Try { cell.csCell.secondLac.get.toInt }.toOption,
+      subsequentCellId = Try { cell.secondSac.get.toInt }.toOption)
+  }
+}
 
 object IuCsXdr {
 

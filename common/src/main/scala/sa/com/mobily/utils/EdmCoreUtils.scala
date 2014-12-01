@@ -34,6 +34,10 @@ object EdmCoreUtils {
 
   def roundAt1(n: Double): Double = roundAt(1)(n)
 
+  def hexToLong(s: String): Long = java.lang.Long.parseLong(s, BaseForHexadecimal)
+
+  def hexToInt(s: String): Int = Integer.parseInt(s, BaseForHexadecimal)
+
   def hexToDecimal(s: String): Option[Int] = Try { Integer.parseInt(s, BaseForHexadecimal) }.toOption
 
   def hexToShort(s: String): Option[Short] = Try { Integer.parseInt(s, BaseForHexadecimal).toShort }.toOption
