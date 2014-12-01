@@ -46,7 +46,7 @@ class JourneyFunctions(byUserChronologically: RDD[(Long, List[Event])]) {
               " (" + EdmCoreUtils.roundAt1(first.outSpeed.get * JourneyDsl.KmPerHourInOneMeterPerSecond) + " km/h)",
             wkt(first),
             wkt(second))
-          fields.mkString(EdmCoreUtils.EdmSeparator)
+          fields.mkString(EdmCoreUtils.Separator)
       }.toList
       (userEvents._1, minSpeedJourney)
     }

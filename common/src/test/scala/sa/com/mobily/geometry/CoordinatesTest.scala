@@ -32,6 +32,14 @@ class CoordinatesTest extends FlatSpec with ShouldMatchers {
     Coordinates.isoCodeUtmSrid("unknown") should be (Coordinates.SaudiArabiaUtmSrid)
   }
 
+  it should "return Saudi Arabia ISO code for UTM 38N SRID" in {
+    Coordinates.utmSridIsoCode(Coordinates.SaudiArabiaUtmSrid) should be (CountryCode.SaudiArabiaIsoCode)
+  }
+
+  it should "return Saudi Arabia ISO code for an unknown SRID" in {
+    Coordinates.utmSridIsoCode(9999) should be (CountryCode.SaudiArabiaIsoCode)
+  }
+
   "UtmCoordinates" should "transform to LatLongCoordinates (WGS84 geodetic)" in new WithUtmCoordinates
       with WithLatLongCoordinates {
     utmCoords.latLongCoordinates() should be (latLongCoords)

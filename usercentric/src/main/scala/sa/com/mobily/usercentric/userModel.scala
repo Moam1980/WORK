@@ -43,4 +43,39 @@ object UserModel {
         aggSameCell(tail, Some(SpatioTemporalSlot(event)), result :+ previous.get)
     case event :: tail if !previous.isDefined => aggSameCell(tail, Some(SpatioTemporalSlot(event)), result)
   }
+
+  @tailrec
+  def computeScores(
+      slots: List[SpatioTemporalSlot],
+      result: List[SpatioTemporalSlot] = List()): List[SpatioTemporalSlot] = slots match {
+    case Nil => result
+    case onlySlot :: Nil => result :+ onlySlot
+    case first :: second :: tail =>
+      computeScores(
+        second :: tail,
+        result :+ first.copy(score = Some(CompatibilityScore.score(first, second))))
+  }
+
+  @tailrec
+  def aggregateCompatible(slots: List[SpatioTemporalSlot]): List[SpatioTemporalSlot] = {
+    val maxScoreSlot = slots.maxBy(_.score)
+    if (!maxScoreSlot.score.isDefined || (maxScoreSlot.score.get.ratio == 0)) slots
+    else {
+      val maxIndex = slots.indexOf(maxScoreSlot)
+      if (slots.isDefinedAt(maxIndex - 1)) {
+        val (before, after) = slots.splitAt(maxIndex - 1)
+        val mergedItem = after(1).append(after(2))
+        val previousToMergedItemWithScore = after(0).copy(score = Some(CompatibilityScore.score(after(0), mergedItem)))
+        if (after.isDefinedAt(3)) {
+          val mergedItemWithScore = mergedItem.copy(score = Some(CompatibilityScore.score(mergedItem, after(3))))
+          aggregateCompatible(before ++ List(previousToMergedItemWithScore, mergedItemWithScore) ++ after.drop(3))
+        } else
+          aggregateCompatible(before ++ List(previousToMergedItemWithScore, mergedItem))
+      } else {
+        val mergedSlotNoScore = slots.head.append(slots(1))
+        val mergedSlot = mergedSlotNoScore.copy(score = Some(CompatibilityScore.score(mergedSlotNoScore, slots(2))))
+        aggregateCompatible(List(mergedSlot) ++ slots.drop(2))
+      }
+    }
+  }
 }

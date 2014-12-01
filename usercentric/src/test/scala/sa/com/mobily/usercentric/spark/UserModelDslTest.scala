@@ -2,7 +2,7 @@
  * TODO: License goes here!
  */
 
-package sa.com.mobily.usercentric
+package sa.com.mobily.usercentric.spark
 
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
@@ -10,8 +10,12 @@ import sa.com.mobily.cell.{Micro, FourGFdd, Cell}
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.user.User
+import sa.com.mobily.usercentric.{CompatibilityScore, SpatioTemporalSlot}
+import sa.com.mobily.utils.LocalSparkContext
 
-class UserModelTest extends FlatSpec with ShouldMatchers {
+class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+
+  import UserModelDsl._
 
   trait WithEvents {
 
@@ -29,6 +33,10 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       minSpeedPointWkt = Some("POINT (1 1)"))
     val event2 = event1.copy(beginTime = 3, endTime = 4, cellId = 2)
     val event3 = event1.copy(beginTime = 5, endTime = 6, cellId = 3)
+    val event4 = event1.copy(beginTime = 7, endTime = 8, cellId = 1)
+
+    val events = sc.parallelize(Array(event1, event2, event3))
+    val withSameCellEvents = sc.parallelize(Array(event1, event1, event2, event3, event3, event3, event4))
   }
 
   trait WithCellCatalogue {
@@ -39,6 +47,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val cell3 = cell1.copy(cellId = 3, coverageWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))")
 
     implicit val cellCatalogue = Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3)
+    implicit val bcCellCatalogue = sc.parallelize(Array(cell1, cell2, cell3)).toBroadcastMap
   }
 
   trait WithSpatioTemporalSlots extends WithEvents {
@@ -112,71 +121,27 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       geomWkt = merged2Wkt,
       events = List(event1, event2, event1, event2),
       score = Some(CompatibilityScore(0, 0)))
+
+    val slots =
+      sc.parallelize(Array((1L, List(prefixSlot, slot1, slot2, suffixSlot, slot1After, slot2After, suffixSlot2))))
+    val onlySlot = sc.parallelize(Array((1L, List(prefixSlot))))
   }
 
-  "UserModel" should "return an empty list with no events when aggregating same cells" in
+  "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List()) should be(List())
+      events.byUserChronologically.aggSameCell.first._2.size should be (3)
     }
-  
-  it should "return a single spatio-temporal item with a list with a single element when aggregating same cells" in
-    new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List(event1)) should be (List(SpatioTemporalSlot(event1)))
-    }
-
-  it should "return different spatio-temporal items with a list with no events with the same cell " +
-      "when aggregating same cells" in new WithSpatioTemporalSlots with WithCellCatalogue {
-    UserModel.aggSameCell(List(event1, event2, event3)) should
-      be(List(SpatioTemporalSlot(event1), SpatioTemporalSlot(event2), SpatioTemporalSlot(event3)))
-  }
 
   it should "aggregate consecutive events having the same cell" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List(event1, event1, event1, event2)) should
-        be (List(slot1.copy(events = List(event1, event1, event1)), SpatioTemporalSlot(event2)))
-    }
-  
-  it should "do nothing when computing scores for an empty list" in new WithSpatioTemporalSlots {
-    UserModel.computeScores(List()) should be (List())
-  }
-
-  it should "not compute any score for a list with a single element" in new WithSpatioTemporalSlots {
-    UserModel.computeScores(List(slot1)) should be (List(slot1))
-  }
-
-  it should "compute scores for all elements but the last one in a list with two or more elements" in
-    new WithSpatioTemporalSlots {
-      UserModel.computeScores(List(slot1, slot2)) should be(List(slot1WithScore, slot2))
+      withSameCellEvents.byUserChronologically.aggSameCell.first._2.size should be(4)
     }
 
-  it should "not merge any slot when the max score is None (single element)" in new WithCompatibilitySlots {
-    UserModel.aggregateCompatible(List(suffixSlot)) should be (List(suffixSlot))
+  it should "merge compatible slots" in new WithCompatibilitySlots {
+    slots.combine.first._2.size should be(5)
   }
 
-  it should "not merge any slot when the max score is zero" in new WithCompatibilitySlots {
-    UserModel.aggregateCompatible(List(prefixSlot, suffixSlot)) should
-      be (List(prefixSlot, suffixSlot))
+  it should "merge no slots when there is only one" in new WithCompatibilitySlots {
+    onlySlot.combine.first._2.size should be(1)
   }
-
-  it should "merge slots when they are in between other slots (and recompute scores)" in new WithCompatibilitySlots {
-    UserModel.aggregateCompatible(List(prefixSlot, slot1, slot2, suffixSlot)) should
-      be (List(prefixSlot, mergedSlot, suffixSlot))
-  }
-
-  it should "merge slots when they are no slots before (and recompute scores)" in new WithCompatibilitySlots {
-    UserModel.aggregateCompatible(List(slot1, slot2, suffixSlot)) should be (List(mergedSlot, suffixSlot))
-  }
-
-  it should "merge slots when they are no slots after (and recompute scores)" in new WithCompatibilitySlots {
-    UserModel.aggregateCompatible(List(prefixSlot, slot1, slot2)) should
-      be (List(prefixSlot, mergedSlot.copy(score = None)))
-  }
-
-  it should "merge slots when there are several pairs with the same score (and recompute scores)" in
-    new WithCompatibilitySlots {
-      UserModel.aggregateCompatible(
-        List(prefixSlot, slot1, slot2, suffixSlot, slot1After, slot2After, suffixSlot2)) should
-        be(List(prefixSlot, mergedSlot, suffixSlot.copy(score = Some(CompatibilityScore(0.0, 0.0))), merged2Slot,
-          suffixSlot2))
-    }
 }

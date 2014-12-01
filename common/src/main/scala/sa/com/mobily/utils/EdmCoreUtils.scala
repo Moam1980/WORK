@@ -23,7 +23,10 @@ object EdmCoreUtils {
   final val fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
   final val phoneNumberUtil = PhoneNumberUtil.getInstance
   val BaseForHexadecimal: Int = 16
-  val EdmSeparator = "|"
+  val MillisInSecond = 1000
+  val SecondsInHour = 3600
+  val Separator = "|"
+  val IntraSequenceSeparator = ","
 
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
