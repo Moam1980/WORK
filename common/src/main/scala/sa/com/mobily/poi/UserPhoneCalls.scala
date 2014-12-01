@@ -24,6 +24,9 @@ case class UserPhoneCalls(
 
 object UserPhoneCalls {
 
+  val DefaultMinActivityRatio = 0.1
+  val HoursInWeek = 168
+
   final val UserPhoneCallSeparator = ","
   final val lineCsvParserObject = new OpenCsvParser(separator = ',', quote = '\'')
 

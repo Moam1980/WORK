@@ -30,6 +30,8 @@ class UserPhoneCallsReader(self: RDD[String]) {
 
 class UserPhoneCallsFunctions(self: RDD[UserPhoneCalls]) {
 
+  import UserPhoneCalls._
+
   def perUserAndSiteId: RDD[((Long, Int, Int, String, Long), Vector)] = {
     val byUserWeekYearRegion: RDD[((Long, Int, Int, String, Long), Iterable[(Int, Seq[Int])])] = self.map(phoneCall => {
       val callDate = new DateTime(phoneCall.timestamp, EdmCoreUtils.TimeZoneSaudiArabia)
@@ -46,6 +48,12 @@ class UserPhoneCallsFunctions(self: RDD[UserPhoneCalls]) {
         } else (0 to 23).map(_ => 0D))
       Vectors.dense(activityHour.toArray)
     })
+  }
+
+  def perUserAndSiteIdFilteringLittleActivity(
+    minimumActivityRatio: Double = DefaultMinActivityRatio): RDD[((Long, Int, Int, String, Long), Vector)] = {
+    val activityPercentageThreshold = HoursInWeek * minimumActivityRatio
+    perUserAndSiteId.filter(element => element._2.toArray.count(element => element == 1) > activityPercentageThreshold)
   }
 }
 
