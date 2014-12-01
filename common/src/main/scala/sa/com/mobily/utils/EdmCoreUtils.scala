@@ -8,8 +8,8 @@ import scala.collection.JavaConverters._
 import scala.util.Try
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormat
+import org.joda.time.{DateTime, DateTimeZone}
 
 import sa.com.mobily.roaming.CountryCallingCode
 
@@ -45,6 +45,8 @@ object EdmCoreUtils {
   def parseLong(s: String): Option[Long] = Try { s.toLong }.toOption
 
   def parseShort(s: String): Option[Short] = Try { s.toShort }.toOption
+
+  def parseString(s: String): Option[String] = if (parseNullString(s).isEmpty) None else Some(s)
 
   def doubleOption(a: Any): Option[Double] = a match {
     case a: Double => Some(a)
@@ -131,6 +133,7 @@ object EdmCoreUtils {
 
   def parseNullString(s: String): String = s.toLowerCase match {
     case "$null$" => ""
+    case "_" => ""
     case _ => s
   }
 }
