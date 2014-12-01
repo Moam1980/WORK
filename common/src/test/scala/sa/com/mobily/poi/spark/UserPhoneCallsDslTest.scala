@@ -63,6 +63,20 @@ class UserPhoneCallsDslTest extends  FlatSpec with ShouldMatchers with LocalSpar
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
   }
 
+  trait WithWeekPhoneCallsLittleActivity {
+
+    val phoneCall1 = UserPhoneCalls(1L,DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+      .parseDateTime("20140824"),"2541", 1, Seq(0, 1, 2, 4, 5, 6, 7))
+    val phoneCall2 = phoneCall1.copy(timestamp = DateTimeFormat.forPattern("yyyyMMdd").
+      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),callHours = Seq(0, 1, 2, 3, 4, 5, 6, 7))
+    val phoneCall3 = phoneCall1.copy(timestamp = DateTimeFormat.forPattern("yyyyMMdd").
+      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),callHours = Seq(1, 23))
+    val phoneCall4 = UserPhoneCalls(2L,DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+      .parseDateTime("20140825"),"2566", 1, Seq(1, 2, 3))
+
+    val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4))
+  }
+
   "PhoneCallsDsl" should "get correctly parsed phoneCalls" in new WithPhoneCallsDslText {
     phoneCalls.toParsedPhoneCalls.count() should be (5)
   }
@@ -79,5 +93,17 @@ class UserPhoneCallsDslTest extends  FlatSpec with ShouldMatchers with LocalSpar
     val homes = phoneCalls.perUserAndSiteId.collect
     homes.length should be (2)
     homes.tail.head._2 should be (vectorResult)
+  }
+
+  it should "calculate the vector to home clustering filtering little activity users" in
+    new WithWeekPhoneCallsLittleActivity {
+      val homes = phoneCalls.perUserAndSiteIdFilteringLittleActivity().collect
+      homes.length should be (1)
+  }
+
+  it should "calculate the vector to home clustering filtering little activity users and overriding default ratio" in
+    new WithWeekPhoneCallsLittleActivity {
+      val homes = phoneCalls.perUserAndSiteIdFilteringLittleActivity(0.2).collect
+      homes.length should be (0)
   }
 }
