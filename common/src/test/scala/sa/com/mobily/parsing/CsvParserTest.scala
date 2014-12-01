@@ -8,6 +8,17 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 
 class CsvParserTest extends FlatSpec with ShouldMatchers {
 
+  trait WithParsingError {
+
+    val line = "Test error in a line"
+    val errorMessage = "Just a test"
+    val error = new Throwable(errorMessage)
+
+    val parsingError = ParsingError(
+      line = line,
+      error = error)
+  }
+
   trait WithCsvData {
 
     case class Cell(cellId: Long)
@@ -49,5 +60,11 @@ class CsvParserTest extends FlatSpec with ShouldMatchers {
 
   it should "iterate over entries" in new WithCsvData {
     CsvParser.fromLines(lines.iterator).length should be (4)
+  }
+
+  it should "return a parsing error" in new WithParsingError {
+    parsingError.line should be (line)
+    parsingError.error should be (error)
+    parsingError.typeValue should be (errorMessage)
   }
 }
