@@ -48,17 +48,47 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
         "Chrome/38.0.2125.104Safari/537.36"),
       Row(97, 98), None)
 
+    val protocol = Protocol(
+      category = P2P,
+      id = 1906)
+    val protocolArray = Array[String](
+      P2P.identifier.toString,
+      "1906")
+    val user = User(
+      imei = "357940040696441",
+      imsi = "420034103554735",
+      msisdn = 200912053883L)
+    val userArray = Array[String]("357940040696441", "420034103554735", "200912053883", "420", "03")
+
+    val ufdrCell = UfdrPSXdrCell(
+      rat = Null,
+      lac = "0FE7",
+      rac = "",
+      sac = "AF88",
+      ci = "",
+      tac = "",
+      eci = "",
+      mcc = "420",
+      mnc = "03")
+    val ufdrCellArray = Array[String](Null.identifier.toString, "0FE7", "", "AF88", "", "", "", "420", "03")
+
+    val transferStats = TransferStats(
+      l4UlThroughput = 504L,
+      l4DwThroughput = 40L,
+      l4UlPackets = 1,
+      l4DwPackets = 1,
+      dataTransUlDuration = 0L,
+      dataTransDwDuration = 0L,
+      ulLostRate = 0,
+      dwLostRate = 0)
+    val transferStatsArray = Array[String]("504", "40", "1", "1", "0", "0", "0", "0")
+
     val ufdrPsXdr = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
       duration = Duration(beginTime = 1414184401L * 1000, endTime = 1414184401L * 1000),
-      protocol = Protocol(
-        category = P2P,
-        id = 1906),
-      user = User(
-        imei = "357940040696441",
-        imsi = "420034103554735",
-        msisdn = 200912053883L),
+      protocol = protocol,
+      user = user,
       msInet = Inet(
         ip = "100.114.249.146",
         port = 56194),
@@ -73,31 +103,45 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
         sigIp = "84.23.98.115",
         userIp = "84.23.98.97"),
       ranNeUserIp = "10.201.55.114",
-      cell = UfdrPSXdrCell(
-        rat = Null,
-        lac = "0FE7",
-        rac = "",
-        sac = "AF88",
-        ci = "",
-        tac = "",
-        eci = "",
-        mcc = "420",
-        mnc = "03"),
-      transferStats = TransferStats(
-        l4UlThroughput = 504L,
-        l4DwThroughput = 40L,
-        l4UlPackets = 1,
-        l4DwPackets = 1,
-        dataTransUlDuration = 0L,
-        dataTransDwDuration = 0L,
-        ulLostRate = 0,
-        dwLostRate = 0),
+      cell = ufdrCell,
+      transferStats = transferStats,
       host = Some("c.bing.com"),
       firstUri = Some("c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd"),
       userAgent = Some("Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)" +
         "Chrome/38.0.2125.104Safari/537.36"),
       durationMsel = DurationMsel(beginTimeMsel = 97, endTimeMsel = 98),
       clickToContent = None)
+
+    val cellHeader = Array[String]("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
+    val userHeader = Array[String]("imei", "imsi", "msisdn", "mcc", "mnc")
+    val transferStatsHeader = Array[String](
+      "l4UlThroughput",
+      "l4DwThroughput",
+      "l4UlPackets",
+      "l4DwPackets",
+      "dataTransUlDuration",
+      "dataTransDwDuration",
+      "ulLostRate",
+      "dwLostRate")
+    val hierarchyAggHeader = Array[String]("Date Hour") ++
+      cellHeader ++
+      userHeader ++
+      Array[String]("catelogory id", "protocol id") ++
+      transferStatsHeader
+
+    val ufdrPsXdrHierarchyAgg = UfdrPsXdrHierarchyAgg(
+      hierarchy = UfdrPsXdrHierarchy(
+        hourTime = "2014/10/25 01:01:00",
+        cell = ufdrCell,
+        user = user,
+        protocol = protocol),
+      transferStats = transferStats)
+
+    val ufdrPsXdrHierarchyAggArray = Array[String]("2014/10/25 01:01:00") ++
+      ufdrCellArray ++
+      userArray ++
+      protocolArray ++
+      transferStatsArray
   }
 
   "UfdrPsXdr" should "be built from CSV" in new WithUfdrPsXdr {
@@ -228,5 +272,21 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
   it should "be built from CSV with EuTran RadioAccessTechnology" in new WithUfdrPsXdr {
     fromCsv.fromFields(fields.updated(19, "6")) should be (ufdrPsXdr.copy(cell = ufdrPsXdr.cell.copy(rat = EuTran)))
+  }
+
+  it should "generate header for cell" in new WithUfdrPsXdr {
+    UfdrPSXdrCell.header should be (cellHeader)
+  }
+
+  it should "generate string array for cell" in new WithUfdrPsXdr {
+    UfdrPSXdrCell.fields(ufdrCell) should be (ufdrCellArray)
+  }
+
+  it should "generate header for hierarchy aggregation" in new WithUfdrPsXdr {
+    UfdrPsXdrHierarchyAgg.header should be (hierarchyAggHeader)
+  }
+
+  it should "generate string array for hierarchy aggregation" in new WithUfdrPsXdr {
+    UfdrPsXdrHierarchyAgg.fields(ufdrPsXdrHierarchyAgg) should be (ufdrPsXdrHierarchyAggArray)
   }
 }

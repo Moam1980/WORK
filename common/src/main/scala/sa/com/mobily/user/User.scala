@@ -26,4 +26,17 @@ object User {
   val MccStartIndex = 0
   val MncStartIndex = 3
   val UnknownMnc = "Unknown"
+
+  def header: Array[String] = {
+    Array[String]("imei", "imsi", "msisdn", "mcc", "mnc")
+  }
+
+  def fields(user: User): Array[String] = {
+    Array[String](
+      user.imei,
+      user.imsi,
+      user.msisdn.toString,
+      user.mcc,
+      user.mnc)
+  }
 }
