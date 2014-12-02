@@ -35,17 +35,33 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
 
   trait WithUfdrPsXdrs {
 
+    val cell1 = UfdrPSXdrCell(
+      rat = Null,
+      lac = "0FE7",
+      rac = "",
+      sac = "AF88",
+      ci = "",
+      tac = "",
+      eci = "",
+      mcc = "420",
+      mnc = "03")
+    val user1 = User(imei = "357940040696441", imsi = "420034103554735", msisdn = 200912053883L)
+    val protocol1 = Protocol(category = P2P, id = 1906)
+    val transferStats1 = TransferStats(
+      l4UlThroughput = 504L,
+      l4DwThroughput = 40L,
+      l4UlPackets = 1,
+      l4DwPackets = 1,
+      dataTransUlDuration = 0L,
+      dataTransDwDuration = 0L,
+      ulLostRate = 0,
+      dwLostRate = 0)
     val ufdrPsXdr1 = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
       duration = Duration(beginTime = 1414184401L*1000, endTime = 1414184401L*1000),
-      protocol = Protocol(
-        category = P2P,
-        id = 1906),
-      user = User(
-        imei = "357940040696441",
-        imsi = "420034103554735",
-        msisdn = 200912053883L),
+      protocol = protocol1,
+      user = user1,
       msInet = Inet(
         ip = "100.114.249.146",
         port = 56194),
@@ -60,25 +76,8 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
         sigIp = "84.23.98.115",
         userIp = "84.23.98.97"),
       ranNeUserIp = "10.201.55.114",
-      cell = UfdrPSXdrCell(
-        rat = Null,
-        lac = "0FE7",
-        rac = "",
-        sac = "AF88",
-        ci = "",
-        tac = "",
-        eci = "",
-        mcc = "420",
-        mnc = "03"),
-      transferStats = TransferStats(
-        l4UlThroughput = 504L,
-        l4DwThroughput = 40L,
-        l4UlPackets = 1,
-        l4DwPackets = 1,
-        dataTransUlDuration = 0L,
-        dataTransDwDuration = 0L,
-        ulLostRate = 0,
-        dwLostRate = 0),
+      cell = cell1,
+      transferStats = transferStats1,
       host = Some("c.bing.com"),
       firstUri = Some("c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd"),
       userAgent = Some("Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)" +
@@ -86,17 +85,21 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       durationMsel = DurationMsel(beginTimeMsel = 97, endTimeMsel = 98),
       clickToContent = None)
 
+    val transferStats2 = TransferStats(
+      l4UlThroughput = 504L,
+      l4DwThroughput = 40L,
+      l4UlPackets = 1,
+      l4DwPackets = 1,
+      dataTransUlDuration = 0L,
+      dataTransDwDuration = 0L,
+      ulLostRate = 0,
+      dwLostRate = 0)
     val ufdrPsXdr2 = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
       duration = Duration(beginTime = 1414184401L*1000, endTime = 1414184401L*1000),
-      protocol = Protocol(
-        category = P2P,
-        id = 1906),
-      user = User(
-        imei = "357940040696441",
-        imsi = "420034103554735",
-        msisdn = 200912053883L),
+      protocol = protocol1,
+      user = user1,
       msInet = Inet(
         ip = "100.114.249.146",
         port = 56194),
@@ -111,25 +114,8 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
         sigIp = "84.23.98.115",
         userIp = "84.23.98.97"),
       ranNeUserIp = "10.201.55.114",
-      cell = UfdrPSXdrCell(
-        rat = Null,
-        lac = "0FE7",
-        rac = "",
-        sac = "AF88",
-        ci = "",
-        tac = "",
-        eci = "",
-        mcc = "420",
-        mnc = "03"),
-      transferStats = TransferStats(
-        l4UlThroughput = 504L,
-        l4DwThroughput = 40L,
-        l4UlPackets = 1,
-        l4DwPackets = 1,
-        dataTransUlDuration = 0L,
-        dataTransDwDuration = 0L,
-        ulLostRate = 0,
-        dwLostRate = 0),
+      cell = cell1,
+      transferStats = transferStats2,
       host = Some("c.bing.com"),
       firstUri = Some("c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd"),
       userAgent = Some("Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)" +
@@ -137,17 +123,21 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       durationMsel = DurationMsel(beginTimeMsel = 97, endTimeMsel = 98),
       clickToContent = None)
 
+    val transferStats3 = TransferStats(
+      l4UlThroughput = 504L,
+      l4DwThroughput = 40L,
+      l4UlPackets = 1,
+      l4DwPackets = 1,
+      dataTransUlDuration = 0L,
+      dataTransDwDuration = 0L,
+      ulLostRate = 0,
+      dwLostRate = 0)
     val ufdrPsXdr3 = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
       duration = Duration(beginTime = 1414184401L*1000, endTime = 1414184401L*1000),
-      protocol = Protocol(
-        category = P2P,
-        id = 1906),
-      user = User(
-        imei = "357940040696441",
-        imsi = "420034103554735",
-        msisdn = 200912053883L),
+      protocol = protocol1,
+      user = user1,
       msInet = Inet(
         ip = "100.114.249.146",
         port = 56194),
@@ -162,25 +152,8 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
         sigIp = "84.23.98.115",
         userIp = "84.23.98.97"),
       ranNeUserIp = "10.201.55.114",
-      cell = UfdrPSXdrCell(
-        rat = Null,
-        lac = "0FE7",
-        rac = "",
-        sac = "AF88",
-        ci = "",
-        tac = "",
-        eci = "",
-        mcc = "420",
-        mnc = "03"),
-      transferStats = TransferStats(
-        l4UlThroughput = 504L,
-        l4DwThroughput = 40L,
-        l4UlPackets = 1,
-        l4DwPackets = 1,
-        dataTransUlDuration = 0L,
-        dataTransDwDuration = 0L,
-        ulLostRate = 0,
-        dwLostRate = 0),
+      cell = cell1,
+      transferStats = transferStats3,
       host = Some("c.bing.com"),
       firstUri = Some("c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd"),
       userAgent = Some("Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)" +
@@ -188,7 +161,17 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       durationMsel = DurationMsel(beginTimeMsel = 97, endTimeMsel = 98),
       clickToContent = None)
 
+    val ufdrPsXdrsAgg1 = UfdrPsXdrHierarchyAgg(
+      hierarchy = UfdrPsXdrHierarchy(
+        hourTime = "2014/10/25 00:00:00",
+        cell = cell1,
+        user = user1,
+        protocol = protocol1),
+      transferStats = TransferStats.aggregate(TransferStats.aggregate(transferStats1, transferStats2), transferStats3)
+    )
+
     val ufdrPsXdrs = sc.parallelize(Array(ufdrPsXdr1, ufdrPsXdr2, ufdrPsXdr3))
+    val ufdrPsXdrsAggs = sc.parallelize(Array(ufdrPsXdrsAgg1))
   }
 
   trait WithUfdrPsXdrsRows {
@@ -249,5 +232,9 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     ufdrPsXdrs.saveAsParquetFile(path)
     sqc.parquetFile(path).toUfdrPsXdr.collect.sameElements(ufdrPsXdrs.collect) should be (true)
     File(path).deleteRecursively
+  }
+
+  it should "aggregate ufdrPsXdrs by hour, cell, user and protocol" in new WithUfdrPsXdrs {
+    ufdrPsXdrs.perHourCellUserAndProtocol.collect should be(ufdrPsXdrsAggs.collect)
   }
 }
