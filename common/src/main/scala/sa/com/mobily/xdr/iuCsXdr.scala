@@ -99,11 +99,10 @@ final case class IuStatistic(
     requestedUplinkMaximumBitRate: Option[Long],
     requestedUplinkGuranteedBitRate: Option[Long],
     assignedDownlinkMaximumBitRate: Option[Long],
-    assignedUplinkMaximumBitRate: Option[Long],
-    dtmfNumberBits: Option[String])
+    assignedUplinkMaximumBitRate: Option[Long])
 
 case class IuCsXdr(
-    user: IuUser,
+    user: CsUser,
     cell: IuCell,
     call: IuCall,
     connection: IuConnection,
@@ -167,13 +166,12 @@ object IuCsXdr {
       val Array(smsMessageFlag, thirdSac, _, _, _, _, _, _, _) = twentyFirstChunk
 
       IuCsXdr(
-        user = IuUser(
-          csUser = CsUser(
-            parseString(imei),
-            imsi = parseString(imsi),
-            msisdn = parseString(callingNumber),
-            imeisv = parseString(imeisv),
-            tmsi = parseString(tmsi)),
+        user = CsUser(
+          parseString(imei),
+          imsi = parseString(imsi),
+          msisdn = parseString(callingNumber),
+          imeisv = parseString(imeisv),
+          tmsi = parseString(tmsi),
           oldTmsi = parseString(tmsiOld)),
         cell = IuCell(
           csCell = CsCell(
@@ -267,7 +265,7 @@ object IuCsXdr {
             holdRetrieveReject = parseShort(holdRetrieveRejectCause),
             cp = parseShort(cpCause),
             rp = parseShort(rpCause),
-            sequenceTerminate = sequenceTerminateCause.toShort),
+            sequenceTerminate = parseShort(sequenceTerminateCause)),
           iuRelease = parseShort(iuReleaseCause),
           securityReject = parseShort(securityRejectCause),
           paging = parseShort(pagingCause),
@@ -280,14 +278,13 @@ object IuCsXdr {
           ccRelease = parseShort(ccReleaseCause),
           noCli = parseShort(noCliCause)),
         statistic = IuStatistic(
-          csStatistics = CsStatistic(smsLength = parseString(smsLength)),
+          csStatistics = CsStatistic(smsLength = parseString(smsLength), dtmfNumberBits = parseString(dtmfNumberBits)),
           requestedDownlinkMaximumBitRate = parseLong(requestedDownlinkMaximumBitRate),
           requestedDownlinkGuranteedBitRate = parseLong(requestedDownlinkGuranteedBitRate),
           requestedUplinkMaximumBitRate = parseLong(requestedUplinkMaximumBitRate),
           requestedUplinkGuranteedBitRate = parseLong(requestedUplinkGuranteedBitRate),
           assignedDownlinkMaximumBitRate = parseLong(assignedDownlinkMaximumBitRate),
-          assignedUplinkMaximumBitRate = parseLong(assignedUplinkMaximumBitRate),
-          dtmfNumberBits = parseString(dtmfNumberBits)))
+          assignedUplinkMaximumBitRate = parseLong(assignedUplinkMaximumBitRate)))
     }
   }
 
@@ -308,7 +305,7 @@ object IuCsXdr {
         flagRow,
         causeRow,
         statsRow) = row.asInstanceOf[Seq[Row]]
-      val Seq(Seq(imei, imsi, msisdn, imeisv, tmsi), tmsiOld) = userRow
+      val Seq(imei, imsi, msisdn, imeisv, tmsi, tmsiOld) = userRow
       val Seq(Seq(firstLac, secondLac, thirdLac, lacOld, lacNew),
         mcc,
         mnc,
@@ -370,23 +367,21 @@ object IuCsXdr {
         ccRelease,
         noCli) = causeRow
       val Seq(
-        Seq(smsLength),
+        Seq(smsLength, dtmfNumberBits),
         requestedDownlinkMaximumBitRate,
         requestedDownlinkGuranteedBitRate,
         requestedUplinkMaximumBitRate,
         requestedUplinkGuranteedBitRate,
         assignedDownlinkMaximumBitRate,
-        assignedUplinkMaximumBitRate,
-        dtmfNumberBits) = statsRow
+        assignedUplinkMaximumBitRate) = statsRow
 
       IuCsXdr(
-        user = IuUser(
-          csUser = CsUser(
-            imsi = stringOption(imsi),
-            imei = stringOption(imei),
-            msisdn = stringOption(msisdn),
-            imeisv = stringOption(imeisv),
-            tmsi = stringOption(tmsi)),
+        user = CsUser(
+          imsi = stringOption(imsi),
+          imei = stringOption(imei),
+          msisdn = stringOption(msisdn),
+          imeisv = stringOption(imeisv),
+          tmsi = stringOption(tmsi),
           oldTmsi = stringOption(tmsiOld)),
         cell = IuCell(
           csCell = CsCell(
@@ -478,7 +473,7 @@ object IuCsXdr {
             holdRetrieveReject = shortOption(holdRetrieveReject),
             cp = shortOption(cp),
             rp = shortOption(rp),
-            sequenceTerminate = sequenceTerminate.asInstanceOf[Short]),
+            sequenceTerminate = shortOption(sequenceTerminate)),
           iuRelease = shortOption(iuRelease),
           securityReject = shortOption(securityReject),
           paging = shortOption(paging),
@@ -491,14 +486,15 @@ object IuCsXdr {
           ccRelease = shortOption(ccRelease),
           noCli = shortOption(noCli)),
         statistic = IuStatistic(
-          csStatistics = CsStatistic(smsLength = stringOption(smsLength)),
+          csStatistics = CsStatistic(
+            smsLength = stringOption(smsLength),
+            dtmfNumberBits = stringOption(dtmfNumberBits)),
           requestedDownlinkMaximumBitRate = longOption(requestedDownlinkMaximumBitRate),
           requestedDownlinkGuranteedBitRate = longOption(requestedDownlinkGuranteedBitRate),
           requestedUplinkMaximumBitRate = longOption(requestedUplinkMaximumBitRate),
           requestedUplinkGuranteedBitRate = longOption(requestedUplinkGuranteedBitRate),
           assignedDownlinkMaximumBitRate = longOption(assignedDownlinkMaximumBitRate),
-          assignedUplinkMaximumBitRate = longOption(assignedUplinkMaximumBitRate),
-          dtmfNumberBits = stringOption(dtmfNumberBits)))
+          assignedUplinkMaximumBitRate = longOption(assignedUplinkMaximumBitRate)))
     }
   }
 }
