@@ -4,11 +4,14 @@
 
 package sa.com.mobily.xdr
 
-import scala.language.existentials
+import scala.language.{existentials, implicitConversions}
+import scala.util.Try
 
 import org.apache.spark.sql._
 
-import sa.com.mobily.parsing.{RowParser, OpenCsvParser, CsvParser}
+import sa.com.mobily.event.Event
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils._
 
 final case class  AiCall(
@@ -114,7 +117,23 @@ final case class  AiCsXdr(
     aiChannel: AiChannel,
     csOperation: CsOperation,
     csStatistic: CsStatistic,
-    aiConnection: AiConnection)
+    aiConnection: AiConnection) {
+
+  def toEvent: Event = {
+    Event(
+      User(
+        imei = csUser.imei.getOrElse(""),
+        imsi = csUser.imsi.getOrElse(""),
+        msisdn = csUser.msisdn.get.toLong),
+      beginTime = java.lang.Long.parseLong(aiTime.csTime.begin, BaseForHexadecimal),
+      endTime = java.lang.Long.parseLong(aiTime.csTime.end, BaseForHexadecimal),
+      lacTac = Integer.parseInt(aiCell.csCell.firstLac.get, BaseForHexadecimal),
+      cellId = Integer.parseInt(aiCell.firstCellId.get, BaseForHexadecimal),
+      eventType = aiCall.csCall.callType.get.toString,
+      subsequentLacTac = Try { aiCell.csCell.secondLac.get.toInt }.toOption,
+      subsequentCellId = Try { aiCell.secondCellId.get.toInt }.toOption)
+  }
+}
 
 object AiCsXdr {
 

@@ -4,10 +4,14 @@
 
 package sa.com.mobily.xdr
 
+import scala.language.implicitConversions
+
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{ShouldMatchers, FlatSpec}
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.CsvParser
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
 
 class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
@@ -15,6 +19,7 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   import AiCsXdr._
 
   trait WithAiCsEvents {
+
     val aiCsXdrLine = "0,0149b9829192,0149b982d8e6,000392,000146,0,201097345297,01,_,_,1751,1,8,21,_," +
         "420034104770740,61c5f3e5,0839,517d,_,_,_,00004330,_,_,00004754,00000260,00000702,_,_,0,_,9,_,_,_,10" +
         ",_,_,0839,517d,_,_,_,_,0839,_,_,10,_,_,03,3523870633105423,61c5f3e5,00,_,0,_,_,0,0,254,_,_,_,_,1,_,0," +
@@ -172,6 +177,29 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       Row(16, null, null, null), Row(null, null), Row(Row(0.toShort, "03"), null))
   }
 
+  trait WithAiCsEventsToParse extends WithAiCsEvents {
+
+    val aiCsXdrMod = aiCsXdr.copy(csUser = CsUser(
+      imei = Some("42104770740"),
+      imsi = Some("420034104770740"),
+      msisdn = Some("352387063"),
+      tmsi = Some("61c5f3e5"),
+      imeisv = Some("3523870633105423"),
+      oldTmsi = Some("61c5f3e5")))
+    val event = Event(
+      User("42104770740", "420034104770740", 352387063),
+      1416156582290L,
+      1416156600550L,
+      2105,
+      20861,
+      "0",
+      None,
+      None,
+      None,
+      None,
+      None)
+  }
+
   "aiCsXdr" should "be built from CSV" in new WithAiCsEvents {
     CsvParser.fromLine(aiCsXdrLine).value.get should be(aiCsXdr)
   }
@@ -186,5 +214,13 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
 
   it should "be discarded when row is wrong" in new WithAiCsEvents {
     an[Exception] should be thrownBy fromRow.fromRow(wrongRow)
+  }
+
+  it should "parse AiCsXdr to Event" in new WithAiCsEventsToParse {
+    aiCsXdrMod.toEvent should be(event)
+  }
+
+  it should "be discarded when AiCsXdr is wrong" in new WithAiCsEvents {
+    an[Exception] should be thrownBy aiCsXdr.toEvent
   }
 }
