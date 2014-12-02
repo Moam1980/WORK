@@ -58,12 +58,12 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
     clusterNumberAndCost should be(clusterNumberAndCostResult)
   }
 
-  it should "generate a png image with the cluster number and cost sequence" in new WithWeekPhoneCalls {
+  it should "generate the kmeans model graphs" in new WithWeekPhoneCalls {
     withTemporaryDirectory { directory =>
-      val graphName = "elbow_graph"
-      val clusterNumberAndCost = UserPhoneCalls.generateClusterNumberAndCostSequence(phoneCallsVector, 3)
-      UserPhoneCalls.generatePngGraph(directory.path.concat("/"), graphName, clusterNumberAndCost)
-      directory.list.length should be > 0
+      val numberOfClusters = 3
+      val kMeansModel = UserPhoneCalls.kMeansModel(numberOfClusters, phoneCallsVector)
+      UserPhoneCalls.kMeansModelGraphs(kMeansModel, directory.path.concat("/"))
+      directory.list.length should be(numberOfClusters)
     }
   }
 }

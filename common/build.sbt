@@ -8,5 +8,5 @@ libraryDependencies in ThisBuild ++= Seq(
   "com.vividsolutions" % "jts" % "1.12",
   "au.com.bytecode" % "opencsv" % "2.4",
   "com.googlecode.libphonenumber" % "libphonenumber" % "6.3.1",
-  "org.sameersingh.scalaplot" % "scalaplot" % "0.0.3"
+  "com.github.wookietreiber" % "scala-chart_2.10" % "0.4.2"
 )
