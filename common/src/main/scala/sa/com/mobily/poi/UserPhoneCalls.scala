@@ -27,6 +27,8 @@ object UserPhoneCalls {
 
   val DefaultMinActivityRatio = 0.1
   val HoursInWeek = 168
+  val HoursInDay = 24
+  val DaysInWeek = 7
   val KMeansGraphPrefix = "kmeans-graph-"
 
   final val UserPhoneCallSeparator = ","
@@ -79,4 +81,6 @@ object UserPhoneCalls {
     val chart = XYLineChart(data)
     chart.saveAsPNG(filePath)
   }
+
+  def weekHour(day: Int, hour: Int): Int = ((day - 1) * HoursInDay) + hour
 }

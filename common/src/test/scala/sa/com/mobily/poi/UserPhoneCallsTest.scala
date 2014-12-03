@@ -54,16 +54,23 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
   }
 
   it should "generate the cluster number and cost sequence" in new WithWeekPhoneCalls {
-    val clusterNumberAndCost = UserPhoneCalls.generateClusterNumberAndCostSequence(phoneCallsVector, 3)
+    val clusterNumberAndCost = generateClusterNumberAndCostSequence(phoneCallsVector, 3)
     clusterNumberAndCost should be(clusterNumberAndCostResult)
   }
 
   it should "generate the kmeans model graphs" in new WithWeekPhoneCalls {
     withTemporaryDirectory { directory =>
       val numberOfClusters = 3
-      val kMeansModel = UserPhoneCalls.kMeansModel(numberOfClusters, phoneCallsVector)
-      UserPhoneCalls.kMeansModelGraphs(kMeansModel, directory.path.concat("/"))
+      val model = kMeansModel(numberOfClusters, phoneCallsVector)
+      kMeansModelGraphs(model, directory.path.concat("/"))
       directory.list.length should be(numberOfClusters)
     }
+  }
+
+  it should "translate day-hour pairs into weekly values" in {
+    weekHour(1, 0) should be(0)
+    weekHour(1, 5) should be(5)
+    weekHour(2, 0) should be(24)
+    weekHour(7, 23) should be(167)
   }
 }
