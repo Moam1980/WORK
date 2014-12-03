@@ -9,7 +9,7 @@ import scala.reflect.io.File
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.cell.{Macro, FourGTdd, Cell}
+import sa.com.mobily.cell.{Cell, FourGTdd, Macro}
 import sa.com.mobily.cell.spark.CellDsl._
 import sa.com.mobily.event.Event
 import sa.com.mobily.flickering.FlickeringCells
@@ -169,6 +169,39 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     val broadcastCellCatalogue = cells.toBroadcastMap
   }
 
+  trait WithMatchingCells {
+
+    val user1 = User(imei = "0134160098258500", imsi = "420034120446250", msisdn = 560917079L)
+    val cell1 = Cell(
+      cellId = 4465390,
+      lacTac = 51,
+      planarCoords = UtmCoordinates(-228902.5, 3490044.0),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25.0,
+      azimuth = 0.0,
+      beamwidth = 216,
+      range = 681.54282813,
+      coverageWkt = "POLYGON ((0 0, 1 1, 2 2, 0 2, 0 0))",
+      mcc = "420",
+      mnc = "03")
+    val cell2 = cell1.copy(lacTac = 52)
+    val cell3 = cell1.copy(lacTac = 53)
+    val event1 = Event(
+      user1,
+      beginTime = 1389363562000L,
+      endTime = 1389363565000L,
+      lacTac = cell1.lacTac,
+      cellId = cell1.cellId,
+      eventType = "1",
+      subsequentLacTac = Some(1326),
+      subsequentCellId = Some(12566))
+    val event2 = event1.copy(lacTac = cell2.lacTac, cellId = cell2.cellId)
+    val event3 = event1.copy(lacTac = cell3.lacTac, cellId = cell3.cellId)
+    val broadcastCellCatalogue = sc.parallelize(Array(cell1, cell2)).toBroadcastMap
+    val events = sc.parallelize(Array(event1, event2, event3))
+  }
+
   "EventDsl" should "get correctly parsed PS events" in new WithPsEventsText {
     psEvents.psToEvent.count should be (2)
   }
@@ -227,5 +260,18 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     val analysis = events.flickeringDetector(2000)(broadcastCellCatalogue).collect
     analysis.length should be (1)
     analysis should be (flickeringCells)
+  }
+
+  it should "filter events with cells matching in the cell catalogue" in new WithMatchingCells  {
+    val eventsWithMatchingCell = events.withMatchingCell(broadcastCellCatalogue).collect
+    eventsWithMatchingCell.length should be (2)
+    eventsWithMatchingCell should contain (event1)
+    eventsWithMatchingCell should contain (event2)
+  }
+
+  it should "filter events with cells not matching in the cell catalogue" in new WithMatchingCells  {
+    val eventsWithNonMatchingCell = events.withNonMatchingCell(broadcastCellCatalogue).collect
+    eventsWithNonMatchingCell.length should be (1)
+    eventsWithNonMatchingCell should contain (event3)
   }
 }

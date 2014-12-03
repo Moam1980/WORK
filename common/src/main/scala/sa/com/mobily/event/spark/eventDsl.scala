@@ -52,12 +52,19 @@ class EventFunctions(self: RDD[Event]) {
 
   def flickeringDetector(timeWindow: Long)
       (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[FlickeringCells] = {
-    val byUser = self.map(event => (event.user.msisdn, (event.beginTime, (event.lacTac, event.cellId)))).groupByKey
-    byUser.flatMap(userAndTimeCell => {
+    val byUserWithMatchingCells = withMatchingCell(cellCatalogue).map(event =>
+      (event.user.msisdn, (event.beginTime, (event.lacTac, event.cellId)))).groupByKey
+    byUserWithMatchingCells.flatMap(userAndTimeCell => {
       val byUserSortedCells = userAndTimeCell._2.toSeq.sortBy(timeCell => timeCell._1)
       Flickering.detect(byUserSortedCells, timeWindow)(cellCatalogue.value)
     }).distinct
   }
+
+  def withMatchingCell(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[Event] =
+    self.filter(event => cellCatalogue.value.isDefinedAt((event.lacTac, event.cellId)))
+
+  def withNonMatchingCell(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[Event] =
+    self.filter(event => !cellCatalogue.value.isDefinedAt((event.lacTac, event.cellId)))
 }
 
 class EventWriter(self: RDD[Event]) {

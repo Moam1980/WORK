@@ -151,4 +151,11 @@ object GeomUtils {
     factory.setNumPoints(numPoints)
     factory
   }
+
+  def intersectionRatio(first: Geometry, second: Geometry): Double = {
+    val firstArea = first.getArea
+    val secondArea = second.getArea
+    val intersectArea = first.intersection(second).getArea
+    if (firstArea >= secondArea) intersectArea / secondArea else intersectArea / firstArea
+  }
 }

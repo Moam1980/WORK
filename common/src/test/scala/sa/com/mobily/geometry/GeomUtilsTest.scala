@@ -4,9 +4,8 @@
 
 package sa.com.mobily.geometry
 
-import com.vividsolutions.jts.geom.{PrecisionModel, Coordinate}
-import org.geotools.geometry.jts.JTSFactoryFinder
-import org.scalatest.{ShouldMatchers, FlatSpec}
+import com.vividsolutions.jts.geom.{Coordinate, PrecisionModel}
+import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.utils.EdmCustomMatchers
 
@@ -128,7 +127,7 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
           "669457.4 2734012.4))",
         Coordinates.SaudiArabiaUtmSrid,
         Coordinates.UtmPrecisionModel)
-    
+
     val withFloatingGeomFactory =
       GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid, new PrecisionModel(PrecisionModel.FLOATING))
     val pointWithFloating = withFloatingGeomFactory.createPoint(new Coordinate(1.9999, 2))
@@ -139,6 +138,49 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
         new Coordinate(3, 3),
         new Coordinate(3, 2),
         new Coordinate(2, 2)))
+  }
+
+  trait WithIntersectionCells {
+
+    val sridPlanar = 32638
+    val geomFactory = GeomUtils.geomFactory(sridPlanar)
+
+    val shapeWkt1 = "POLYGON ((669525.7 2733312.6, 669542 2733322.3, 669590.6 2733341.3, 669637.2 2733352.7, " +
+      "669683.2 2733357.9, 669728.6 2733357.4, 669773 2733351.5, 669816.2 2733340.4, 669857.4 2733324.2, " +
+      "669896.4 2733303.4, 669932.4 2733278.1, 669965.2 2733248.8, 669994.2 2733215.8, 670019.1 2733179.7, " +
+      "670039.5 2733141, 670055.2 2733100.1, 670065.9 2733057.7, 670071.6 2733014.4, 670072.1 2732970.7, " +
+      "670067.5 2732927.3, 670057.8 2732884.7, 670043.2 2732843.6, 670023.8 2732804.5, 670000 2732767.9, " +
+      "669972 2732734.4, 669940.3 2732704.4, 669905.3 2732678.4, 669867.4 2732656.7, 669827.3 2732639.6, " +
+      "669785.4 2732627.3, 669742.3 2732620, 669698.7 2732617.8, 669655.2 2732620.8, 669612.2 2732629, " +
+      "669570.5 2732642.1, 669530.7 2732660, 669493.2 2732682.6, 669458.5 2732709.4, 669427.3 2732740.2, " +
+      "669399.9 2732774.4, 669376.7 2732811.8, 669358.1 2732851.7, 669344.3 2732893.7, 669335.6 2732937.1, " +
+      "669332.1 2732981.5, 669334 2733026.3, 669341.4 2733071.1, 669354.5 2733115.5, 669373.8 2733159.4, " +
+      "669400.9 2733204, 669413.2 2733218.3, 669407.4 2733223.8, 669401.5 2733231, 669396.5 2733238.9, " +
+      "669392.5 2733247.4, 669389.6 2733256.3, 669387.8 2733265.5, 669387.2 2733274.8, 669387.8 2733284.1, " +
+      "669389.6 2733293.3, 669392.5 2733302.2, 669396.5 2733310.7, 669401.5 2733318.6, 669407.4 2733325.8, " +
+      "669414.2 2733332.2, 669421.8 2733337.7, 669430 2733342.2, 669438.7 2733345.6, 669447.7 2733347.9, " +
+      "669457 2733349.1, 669466.4 2733349.1, 669475.7 2733347.9, 669484.7 2733345.6, 669493.4 2733342.2, " +
+      "669501.6 2733337.7, 669509.2 2733332.2, 669516 2733325.8, 669521.9 2733318.6, 669525.7 2733312.6))"
+    val shapeWkt2 = "POLYGON ((669357.5 2733346.2, 669357.3 2733346.2, 669291.5 2733364.2, 669231.1 2733389.3, " +
+      "669175.1 2733421.4, 669123.8 2733459.8, 669077.9 2733504, 669037.7 2733553.4, 669004 2733607.3, " +
+      "668977.1 2733664.8, 668957.3 2733725.1, 668945.1 2733787.3, 668940.6 2733850.5, 668943.7 2733913.8, " +
+      "668954.5 2733976.2, 668972.8 2734036.8, 668998.4 2734094.7, 669030.7 2734149.1, 669069.4 2734199.2, " +
+      "669114 2734244.2, 669163.6 2734283.4, 669217.6 2734316.4, 669275.3 2734342.5, 669335.6 2734361.4, " +
+      "669397.8 2734372.9, 669461 2734376.8, 669524.2 2734372.9, 669586.4 2734361.4, 669646.7 2734342.5, " +
+      "669704.4 2734316.4, 669758.4 2734283.4, 669808 2734244.2, 669852.6 2734199.2, 669891.3 2734149.1, " +
+      "669923.6 2734094.7, 669949.2 2734036.8, 669967.5 2733976.2, 669978.3 2733913.8, 669981.4 2733850.5, " +
+      "669976.9 2733787.3, 669964.7 2733725.1, 669944.9 2733664.8, 669918 2733607.3, 669884.3 2733553.4, " +
+      "669844.1 2733504, 669798.2 2733459.8, 669746.9 2733421.4, 669690.9 2733389.3, 669630.5 2733364.2, " +
+      "669564.7 2733346.2, 669564.5 2733346.2, 669565.2 2733334.4, 669564.4 2733321.3, 669562 2733308.5, " +
+      "669557.9 2733296, 669552.3 2733284.2, 669545.3 2733273.1, 669537 2733263, 669527.4 2733254.1, " +
+      "669516.9 2733246.4, 669505.4 2733240.1, 669493.2 2733235.3, 669480.5 2733232, 669467.5 2733230.4, " +
+      "669454.5 2733230.4, 669441.5 2733232, 669428.8 2733235.3, 669416.6 2733240.1, 669405.1 2733246.4, " +
+      "669394.6 2733254.1, 669385 2733263, 669376.7 2733273.1, 669369.7 2733284.2, 669364.1 2733296, " +
+      "669360 2733308.5, 669357.6 2733321.3, 669356.8 2733334.4, 669357.5 2733346.2))"
+    val geometry1 = GeomUtils.parseWkt(shapeWkt1, sridPlanar)
+    val geometry2 = GeomUtils.parseWkt(shapeWkt2, sridPlanar)
+    val rangeTolerance = 1e-6
+    val intersectRatio = 0.034577
   }
 
   "GeomUtils" should "parse WKT text and assign SRID" in new WithShapes {
@@ -160,7 +202,7 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   it should "build a circle" in new WithShapes {
     GeomUtils.circle(position, 1, 8) should equalGeometry (expectedCircle)
   }
-  
+
   it should "build a circular sector polygon" in new WithShapes {
     GeomUtils.circularSector(position, 135, 90, 1, 5) should equalGeometry (expectedCirSect)
   }
@@ -194,11 +236,17 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   }
 
   it should "ensure a near point gets into a geometry (floating geometry factory)" in new WithNearestGeometries {
-    GeomUtils.ensureNearestPointInGeom(pointWithFloating, geomWithFloating).intersects(geomWithFloating) should be (true)
+    GeomUtils.ensureNearestPointInGeom(pointWithFloating, geomWithFloating).intersects(geomWithFloating) should
+      be (true)
   }
 
   it should "ensure a point is contained within a geometry" in new WithNearestGeometries {
     GeomUtils.ensureNearestPointInGeom(withPointInsideGeom, withGeomContainingPoint) should
       equalGeometry(withPointInsideGeom)
+  }
+
+  it should "calculate the intersection ratio between two geometries" in new WithIntersectionCells {
+    GeomUtils.intersectionRatio(geometry1, geometry2) should be (intersectRatio +- rangeTolerance)
+    GeomUtils.intersectionRatio(geometry2, geometry1) should be (intersectRatio +- rangeTolerance)
   }
 }
