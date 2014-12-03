@@ -18,12 +18,13 @@ use DateTime;
 use DateTime::Format::Strptime qw();
 use File::Basename;
 use Getopt::Long;
+use POSIX qw(strftime);
 
 # Get base directory and default properties file location
 my ${baseDir}            = cwd($0);
 my ${propertiesFileName} = "${baseDir}/properties/checkFilesSftp.properties";
-my ${startDate}          = '2014-10-15';
-my ${endDate}            = '2014-11-25';
+my ${startDate}          = '2014-10-04';
+my ${endDate}            = strftime "%Y-%m-%d", localtime(time-86400);
 
 GetOptions(
     'propertiesFileName=s' => \${propertiesFileName},
@@ -50,6 +51,8 @@ my ${outputPath} = ${properties}->getProperty("outputPath")
   or die "ERROR: $0: Can't get property: outputPath from: ${propertiesFileName}: +$!\n";
 my ${filesIntervalMinutes} = ${properties}->getProperty("filesIntervalMinutes")
   or die "ERROR: $0: Can't get property: filesIntervalMinutes from: ${propertiesFileName}: +$!\n";
+my ${sourceName} = ${properties}->getProperty("sourceName")
+  or die "ERROR: $0: Can't get property: sourceName from: ${propertiesFileName}: +$!\n";
 
 # Close properties file
 close( ${propertiesFile} );
@@ -62,6 +65,7 @@ print " Start date to check: ${startDate} \n";
 print " End date to check: ${endDate} \n";
 print " Output path: ${outputPath} \n";
 print " Interval between files: ${filesIntervalMinutes} \n";
+print " Source name: ${sourceName} \n";
 
 my ( ${year}, ${month}, ${day} ) = split '\-', ${startDate};
 my ${dtStart} = DateTime->new(
@@ -164,10 +168,10 @@ foreach my ${file} (@files) {
 }
 
 # Store results in a file including zeros
-my ${outputFileName} = "${outputPath}/checkFiles_${startDate}_${endDate}.csv";
+my ${outputFileName} = "${outputPath}/checkFiles_${sourceName}_${startDate}_${endDate}.csv";
 open( my $outputFile, ">${outputFileName}" )
   or die "ERROR: $0: Can't open ${outputFileName} for writing : +$!\n";
-print $outputFile "Date|Time|DateTime|File Size Bytes|Number of files\n";
+print $outputFile "Source Name|Date|Time|DateTime|File Size Bytes|Number of files\n";
 
 my ${key};
 foreach ${key}( sort keys %files_size ) {
@@ -177,7 +181,7 @@ foreach ${key}( sort keys %files_size ) {
         my ( ${year}, ${month}, ${day}, ${hour}, ${minutes}, ${seconds} ) =
           ( $1, $2, $3, $4, $5, $6 );
         my ${dateFormatted} = "${year}${month}${day}|${hour}:${minutes}:${seconds}";
-        print $outputFile "${dateFormatted}|${key}|${files_size{${key}}}|${files_count{${key}}}\n";
+        print $outputFile "${sourceName}|${dateFormatted}|${key}|${files_size{${key}}}|${files_count{${key}}}\n";
     }
 }
 
