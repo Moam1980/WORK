@@ -89,6 +89,29 @@ class CellTest extends FlatSpec with ShouldMatchers {
     val location = GeomUtils.parseWkt("POLYGON ((4 0, 4 2, 6 2, 6 0, 4 0))", Coordinates.SaudiArabiaUtmSrid)
   }
 
+  trait WithIntersectedCells {
+
+    val cell1 = Cell(
+      mcc = "420",
+      mnc = "03",
+      cellId = 4465390,
+      lacTac = 57,
+      planarCoords = UtmCoordinates(0, 0, "EPSG:32638"),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25,
+      azimuth = 0,
+      beamwidth = 90,
+      range = 2530.3,
+      coverageWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
+    val cell2 = cell1.copy(
+      planarCoords = UtmCoordinates(1, 1, "EPSG:32638"),
+      coverageWkt = "POLYGON ((1 1, 1 3, 3 3, 3 1, 1 1))")
+    val cell3 = cell1.copy(
+      planarCoords = UtmCoordinates(1, 1, "EPSG:32638"),
+      coverageWkt = "POLYGON ((10 10, 10 30, 30 30, 30 10, 10 10))")
+  }
+
   "Cell" should "be built from CSV" in new WithCell {
     CsvParser.fromLine[Cell](cellLine).value.get should be (cell)
   }
@@ -183,5 +206,10 @@ class CellTest extends FlatSpec with ShouldMatchers {
 
   it should "compute the ratio of the cell area against another location" in new WithLocation {
     cell.areaRatio(location) should be (1)
+  }
+
+  it should "detect intersections" in new WithIntersectedCells {
+    cell1.intersects(cell2) should be (true)
+    cell1.intersects(cell3) should be (false)
   }
 }

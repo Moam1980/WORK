@@ -56,6 +56,8 @@ case class Cell(
   def centroidDistance(location: Geometry): Double = coverageGeom.getCentroid.distance(location.getCentroid)
 
   def areaRatio(location: Geometry): Double = coverageGeom.getArea / location.getArea
+
+  def intersects(another: Cell): Boolean = coverageGeom.intersects(another.coverageGeom)
 }
 
 object Cell {

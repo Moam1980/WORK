@@ -31,7 +31,7 @@ class FlickeringCellsTest extends FlatSpec with ShouldMatchers {
       height = 25,
       azimuth = 0,
       beamwidth = 90,
-      range = 2530.3,
+      range = 10.3,
       coverageWkt = shapeWkt1)
 
     val cell2 = cell1.copy(cellId = 4465391, coverageWkt = shapeWkt2)
@@ -40,6 +40,6 @@ class FlickeringCellsTest extends FlatSpec with ShouldMatchers {
   }
 
   "FlickeringCell" should "generate a list of fields" in new WithFlickeringCell {
-    flickeringCells.fields(cellCatalogue) should be(fields)
+    flickeringCells.fields(cellCatalogue) should be (fields)
   }
 }

@@ -7,13 +7,36 @@ package sa.com.mobily.flickering
 import annotation.tailrec
 
 import sa.com.mobily.cell.Cell
+import sa.com.mobily.geometry.{CellCoverage, GeomUtils}
 
 object Flickering {
 
+  def analysis(flickeringCells: FlickeringCells, growthFactor: Float)
+      (implicit cellCatalogue: Map[(Int, Int), Cell]): Either[(Double, FlickeringCells), FlickeringCells] = {
+    val Seq(firstCellId, secondCellId) = flickeringCells.cells.toSeq
+    val firstCell = cellCatalogue(firstCellId)
+    val secondCell = cellCatalogue(secondCellId)
+    val firstCellGeometryGrown =
+      CellCoverage.cellShape(
+        cellLocation = firstCell.planarCoords.geometry,
+        azimuth = firstCell.azimuth,
+        beamwidth = firstCell.beamwidth,
+        range = firstCell.range * growthFactor)
+    val secondCellGeometryGrown =
+      CellCoverage.cellShape(
+        cellLocation = secondCell.planarCoords.geometry,
+        azimuth = secondCell.azimuth,
+        beamwidth = secondCell.beamwidth,
+        range = secondCell.range * growthFactor)
+    if (firstCellGeometryGrown.intersects(secondCellGeometryGrown))
+      Left(GeomUtils.intersectionRatio(firstCellGeometryGrown, secondCellGeometryGrown), flickeringCells)
+    else Right(flickeringCells)
+  }
+
   def detect(
-    byUserSortedCells: Seq[(Long, (Int, Int))],
-    timeWindow: Long)
-    (implicit cellCatalogue: Map[(Int, Int), Cell]): Set[FlickeringCells] = {
+      byUserSortedCells: Seq[(Long, (Int, Int))],
+      timeWindow: Long)
+      (implicit cellCatalogue: Map[(Int, Int), Cell]): Set[FlickeringCells] = {
 
     @tailrec
     def detect(
