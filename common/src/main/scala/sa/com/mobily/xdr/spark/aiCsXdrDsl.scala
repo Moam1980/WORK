@@ -9,6 +9,7 @@ import scala.language.implicitConversions
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.xdr._
@@ -34,6 +35,19 @@ class AiCsXdrWriter(self: RDD[AiCsXdr]) {
   def saveAsParquetFile(path: String): Unit = SparkWriter.saveAsParquetFile[AiCsXdr](self, path)
 }
 
+class AiCsXdrParser(self: RDD[AiCsXdr]) {
+
+  def toEvent: RDD[Event] = self.filter {
+    aiCs => (
+      aiCs.csUser.msisdn.isDefined &&
+        !aiCs.aiTime.csTime.begin.isEmpty &&
+        !aiCs.aiTime.csTime.end.isEmpty &&
+        aiCs.aiCell.csCell.firstLac.isDefined &&
+        aiCs.aiCell.firstCellId.isDefined &&
+        aiCs.aiCall.csCall.callType.isDefined)
+  }.map { _.toEvent }
+}
+
 trait AiCsXdrDsl {
 
   implicit def aiCsXdrCsvReader(self: RDD[String]): AiCsXdrCsvReader = new AiCsXdrCsvReader(self)
@@ -41,6 +55,8 @@ trait AiCsXdrDsl {
   implicit def aiCsXdrRowReader(self: RDD[Row]): AiCsXdrRowReader = new AiCsXdrRowReader(self)
 
   implicit def aiCsXdrWriter(aiCsXdrs: RDD[AiCsXdr]): AiCsXdrWriter = new AiCsXdrWriter(aiCsXdrs)
+
+  implicit def aiCsXdrParser(aiCsXdrs: RDD[AiCsXdr]): AiCsXdrParser = new AiCsXdrParser(aiCsXdrs)
 }
 
 object AiCsXdrDsl extends AiCsXdrDsl with ParsedItemsDsl
