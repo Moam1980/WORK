@@ -39,14 +39,10 @@ class UserPhoneCallsFunctions(self: RDD[UserPhoneCalls]) {
         (callDate.dayOfWeek.get, phoneCall.callHours))
     }).groupByKey
     byUserWeekYearRegion.mapValues(callsByWeek => {
-      val sortedCallsByWeek = callsByWeek.toSeq.sortBy(callsByDay => callsByDay._1)
-      val daysWithCalls = sortedCallsByWeek.map(dayCalls => dayCalls._1).toIndexedSeq
-      val activityHour = (1 to 7).flatMap(day =>
-        if (daysWithCalls.contains(day)) {
-          val hoursWithCalls = sortedCallsByWeek(daysWithCalls.indexOf(day))._2
-          (0 to 23).map(hour => if (hoursWithCalls.contains(hour)) 1D else 0D)
-        } else (0 to 23).map(_ => 0D))
-      Vectors.dense(activityHour.toArray)
+      val activityHoursByWeek = callsByWeek.flatMap((callsByDay: (Int, Seq[Int])) => {
+        callsByDay._2.map(hour => (weekHour(callsByDay._1, hour), 1D))
+      }).toSeq
+      Vectors.sparse(HoursInWeek, activityHoursByWeek)
     })
   }
 
