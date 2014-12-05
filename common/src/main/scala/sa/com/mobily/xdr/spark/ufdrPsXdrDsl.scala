@@ -57,7 +57,16 @@ class UfdrPsXdrFunctions(self: RDD[UfdrPsXdr]) {
 
 class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
 
-  def toEvent: RDD[Event] = self.map(_.toEvent)
+  def toEvent: RDD[Event] = self.filter { ufdrCs =>
+    ((!ufdrCs.user.imei.isEmpty ||
+        !ufdrCs.user.imsi.isEmpty ||
+        ufdrCs.user.msisdn > 0L) &&
+        ufdrCs.duration.beginTime > 0L &&
+        ufdrCs.duration.endTime > 0L &&
+        (!ufdrCs.cell.ci.isEmpty || !ufdrCs.cell.sac.isEmpty) &&
+        (!ufdrCs.cell.lac.isEmpty || !ufdrCs.cell.tac.isEmpty) &&
+        ufdrCs.protocol.category.identifier > 0)
+  }.map(_.toEvent)
 }
 
 trait UfdrPsXdrDsl {

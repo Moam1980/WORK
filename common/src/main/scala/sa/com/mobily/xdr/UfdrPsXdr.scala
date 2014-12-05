@@ -66,7 +66,7 @@ case class UfdrPsXdr(
 
   def toEvent: Event = {
     Event(
-      user,
+      user = user,
       beginTime = duration.beginTime,
       endTime = duration.endTime,
       lacTac = Integer.parseInt(Event.lacOrTac(cell.lac, cell.tac), BaseForHexadecimal),
