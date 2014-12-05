@@ -4,13 +4,13 @@
 
 package sa.com.mobily.xdr
 
-import scala.language.existentials
+import scala.language.{existentials, implicitConversions}
 
 import org.apache.spark.sql._
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{RowParser, CsvParser, OpenCsvParser}
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.EdmCoreUtils
 import sa.com.mobily.utils.EdmCoreUtils._
 
 case class Duration(
@@ -62,7 +62,20 @@ case class UfdrPsXdr(
     firstUri: Option[String],
     userAgent: Option[String],
     durationMsel : DurationMsel,
-    clickToContent: Option[Long])
+    clickToContent: Option[Long]) {
+
+  def toEvent: Event = {
+    Event(
+      user,
+      beginTime = duration.beginTime,
+      endTime = duration.endTime,
+      lacTac = Integer.parseInt(Event.lacOrTac(cell.lac, cell.tac), BaseForHexadecimal),
+      cellId = Integer.parseInt(Event.sacOrCi(cell.sac, cell.ci), BaseForHexadecimal),
+      eventType = protocol.category.identifier + "." + protocol.id,
+      subsequentLacTac = None,
+      subsequentCellId = None)
+  }
+}
 
 case class UfdrPsXdrHierarchy(
     hourTime: String,
