@@ -7,8 +7,10 @@ package sa.com.mobily.xdr
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
+import sa.com.mobily.utils.EdmCoreUtils._
 
 class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
@@ -142,6 +144,18 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       userArray ++
       protocolArray ++
       transferStatsArray
+
+    val ufdrPsXdrMod = ufdrPsXdr.copy(cell = ufdrCell.copy( sac = ""))
+
+    val event = Event(
+      user,
+      beginTime = 1414184401L * 1000,
+      endTime = 1414184401L * 1000,
+      lacTac = Integer.parseInt(ufdrCell.lac, BaseForHexadecimal),
+      cellId = Integer.parseInt(ufdrCell.sac, BaseForHexadecimal),
+      eventType = protocol.category.identifier + "." + protocol.id,
+      subsequentLacTac = None,
+      subsequentCellId = None)
   }
 
   "UfdrPsXdr" should "be built from CSV" in new WithUfdrPsXdr {
@@ -288,5 +302,13 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
   it should "generate string array for hierarchy aggregation" in new WithUfdrPsXdr {
     UfdrPsXdrHierarchyAgg.fields(ufdrPsXdrHierarchyAgg) should be (ufdrPsXdrHierarchyAggArray)
+  }
+
+  it should "parse UfdrPsXdr to Event" in new WithUfdrPsXdr {
+    ufdrPsXdr.toEvent should be(event)
+  }
+
+  it should "be discarded when UfdrPsXdr is wrong" in new WithUfdrPsXdr {
+    an[Exception] should be thrownBy ufdrPsXdrMod.toEvent
   }
 }

@@ -9,6 +9,7 @@ import scala.reflect.io.File
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.event.Event
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
 import sa.com.mobily.xdr._
@@ -59,7 +60,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val ufdrPsXdr1 = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
-      duration = Duration(beginTime = 1414184401L*1000, endTime = 1414184401L*1000),
+      duration = Duration(beginTime = 1414184401L * 1000, endTime = 1414184401L * 1000),
       protocol = protocol1,
       user = user1,
       msInet = Inet(
@@ -97,7 +98,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val ufdrPsXdr2 = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
-      duration = Duration(beginTime = 1414184401L*1000, endTime = 1414184401L*1000),
+      duration = Duration(beginTime = 1414184401L * 1000, endTime = 1414184401L * 1000),
       protocol = protocol1,
       user = user1,
       msInet = Inet(
@@ -135,7 +136,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val ufdrPsXdr3 = UfdrPsXdr(
       sid = 11692618241L,
       interfaceId = Gn,
-      duration = Duration(beginTime = 1414184401L*1000, endTime = 1414184401L*1000),
+      duration = Duration(beginTime = 1414184401L * 1000, endTime = 1414184401L * 1000),
       protocol = protocol1,
       user = user1,
       msInet = Inet(
@@ -176,7 +177,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
 
   trait WithUfdrPsXdrsRows {
 
-    val row = Row(11692618241L, Row(Gn.identifier), Row(1414184401L*1000, 1414184401L*1000),
+    val row = Row(11692618241L, Row(Gn.identifier), Row(1414184401L * 1000, 1414184401L * 1000),
       Row(Row(P2P.identifier), 1906), Row("357940040696441", "420034103554735", 200912053883L),
       Row("100.114.249.146", 56194), Row("207.46.194.10", 80), "WEB2", Row("84.23.103.137", ""),
       Row("84.23.98.115", "84.23.98.97"), "10.201.55.114",
@@ -185,7 +186,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       "c.bing.com", "c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd",
       "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36",
       Row(97, 98), None)
-    val row2 = Row(11692618241L, Row(Gn.identifier), Row(1414184401L*1000, 1414184401L*1000),
+    val row2 = Row(11692618241L, Row(Gn.identifier), Row(1414184401L * 1000, 1414184401L * 1000),
       Row(Row(P2P.identifier), 1906), Row("357940040696441", "420034103554735", 200912053883L),
       Row("100.114.249.146", 56194), Row("207.46.194.10", 80), "WEB2", Row("84.23.103.137", ""),
       Row("84.23.98.115", "84.23.98.97"), "10.201.55.114",
@@ -194,7 +195,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       "c.bing.com", "c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd",
       "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36",
       Row(97, 98), None)
-    val wrongRow = Row(11692618241L, Row(Gn.identifier), Row(1414184401L*1000, 1414184401L*1000),
+    val wrongRow = Row(11692618241L, Row(Gn.identifier), Row(1414184401L * 1000, 1414184401L * 1000),
       Row(Row(P2P.identifier), 1906), Row(200912053883L, "420034103554735", "357940040696441"),
       Row("100.114.249.146", 56194), Row("207.46.194.10", 80), "WEB2", Row("84.23.103.137", ""),
       Row("84.23.98.115", "84.23.98.97"), "10.201.55.114", Row(Null, "0FE7", "", "AF88", "", "", "", "420", "03"),
@@ -205,6 +206,22 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
 
     val rows = sc.parallelize(List(row, row2))
     val wrongRows = sc.parallelize(List(row, row2, wrongRow))
+  }
+
+  trait WithUfdrPsXdrEvents extends WithUfdrPsXdrsText {
+
+    val event1 = Event(
+      user = User("357940040696441", "420034103554735", 200912053883L),
+      beginTime = 1414184401L * 1000,
+      endTime = 1414184401L * 1000,
+      lacTac = 4071,
+      cellId = 44936,
+      eventType = "1.1906",
+      subsequentLacTac = None,
+      subsequentCellId = None)
+
+    val event2 = event1.copy(eventType = "5.1906")
+    val events = sc.parallelize(Array(event1, event2))
   }
 
   "UfdrPsXdrDsl" should "get correctly parsed ufdrPsXdrs" in new WithUfdrPsXdrsText {
@@ -235,6 +252,10 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
   }
 
   it should "aggregate ufdrPsXdrs by hour, cell, user and protocol" in new WithUfdrPsXdrs {
-    ufdrPsXdrs.perHourCellUserAndProtocol.collect should be(ufdrPsXdrsAggs.collect)
+    ufdrPsXdrs.perHourCellUserAndProtocol.collect should be (ufdrPsXdrsAggs.collect)
+  }
+
+  it should "parse RDD[UfdrPsXdrs] to RDD[Event]" in new WithUfdrPsXdrEvents {
+    ufdrPsXdrs.toUfdrPsXdr.toEvent.collect should be (events.collect)
   }
 }

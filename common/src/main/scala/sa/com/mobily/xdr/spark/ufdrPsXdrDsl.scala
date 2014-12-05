@@ -4,16 +4,18 @@
 
 package sa.com.mobily.xdr.spark
 
+
 import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
-import sa.com.mobily.xdr._
+import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.utils.EdmCoreUtils._
+import sa.com.mobily.xdr._
 
 class UfdrPsXdrCsvReader(self: RDD[String]) {
 
@@ -53,6 +55,11 @@ class UfdrPsXdrFunctions(self: RDD[UfdrPsXdr]) {
   }
 }
 
+class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
+
+  def toEvent: RDD[Event] = self.map(_.toEvent)
+}
+
 trait UfdrPsXdrDsl {
 
   implicit def ufdrPsXdrCsvReader(self: RDD[String]): UfdrPsXdrCsvReader = new UfdrPsXdrCsvReader(self)
@@ -62,6 +69,8 @@ trait UfdrPsXdrDsl {
   implicit def ufdrPsXdrWriter(ufdrPsXdrs: RDD[UfdrPsXdr]): UfdrPsXdrWriter = new UfdrPsXdrWriter(ufdrPsXdrs)
 
   implicit def ufdrPsXdrFunctions(ufdrPsXdrs: RDD[UfdrPsXdr]): UfdrPsXdrFunctions = new UfdrPsXdrFunctions(ufdrPsXdrs)
+
+  implicit def ufdrPsXdrParser(ufdrPsXdrs: RDD[UfdrPsXdr]): UfdrPsXdrParser = new UfdrPsXdrParser(ufdrPsXdrs)
 }
 
 object UfdrPsXdrDsl extends UfdrPsXdrDsl with ParsedItemsDsl
