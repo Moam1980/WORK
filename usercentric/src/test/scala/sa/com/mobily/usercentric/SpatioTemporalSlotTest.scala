@@ -42,7 +42,7 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
     implicit val cellCatalogue = Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3)
   }
 
-  trait WithSpatioTemporalSlot extends WithEvents {
+  trait WithSpatioTemporalSlots extends WithEvents {
 
     val slotWithTwoEvents = SpatioTemporalSlot(
       userId = 1,
@@ -50,34 +50,48 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
       endTime = 4,
       geomWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))",
       events = List(event1, event2))
-    val slotWithThreeEvents = SpatioTemporalSlot(
-      userId = 1,
-      startTime = 1,
-      endTime = 6,
-      geomWkt = "POLYGON ((0.5 1, 1 1, 1 0, 0.5 0, 0.5 1))",
-      events = List(event1, event2, event3))
     val event3SpatioTemporalSlot = SpatioTemporalSlot(
       userId = 1,
       startTime = 5,
       endTime = 6,
       geomWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))",
       events = List(event3))
+    val slotWithThreeEvents = SpatioTemporalSlot(
+      userId = 1,
+      startTime = 1,
+      endTime = 6,
+      geomWkt = "POLYGON ((0.5 1, 1 1, 1 0, 0.5 0, 0.5 1))",
+      events = List(event1, event2, event3))
   }
 
-  "SpatioTemporalSlot" should "build geometry from WKT" in new WithSpatioTemporalSlot {
+  "SpatioTemporalSlot" should "build geometry from WKT" in new WithSpatioTemporalSlots {
     slotWithTwoEvents.geom should
       equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
   }
 
-  it should "compute the set of cells seen" in new WithSpatioTemporalSlot {
+  it should "compute the set of cells seen" in new WithSpatioTemporalSlots {
     slotWithTwoEvents.cells should be (Set((1, 1), (1, 2)))
   }
 
-  it should "append another event" in new WithSpatioTemporalSlot with WithCellCatalogue {
+  it should "append another event" in new WithSpatioTemporalSlots with WithCellCatalogue {
     slotWithTwoEvents.append(event3) should be (slotWithThreeEvents)
   }
 
-  it should "build from event" in new WithSpatioTemporalSlot with WithCellCatalogue {
+  it should "build from event" in new WithSpatioTemporalSlots with WithCellCatalogue {
     SpatioTemporalSlot(event3) should be (event3SpatioTemporalSlot)
+  }
+
+  it should "append another SpatioTemporalSlot" in new WithSpatioTemporalSlots {
+    slotWithTwoEvents.append(event3SpatioTemporalSlot) should be (slotWithThreeEvents)
+  }
+
+  it should "have the proper header" in {
+    SpatioTemporalSlot.header should
+      be (Array("userId", "startTime", "endTime", "numEvents", "orderedCells", "geomWkt", "countryIsoCode"))
+  }
+
+  it should "return its fields for printing" in new WithSpatioTemporalSlots {
+    slotWithTwoEvents.fields should be (Array("1", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2",
+      "(1,1),(1,2)", "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", "sa"))
   }
 }

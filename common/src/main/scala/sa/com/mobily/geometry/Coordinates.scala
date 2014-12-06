@@ -76,4 +76,8 @@ object Coordinates {
   def isoCodeUtmSrid(isoCode: String): Int = isoCode match {
     case _ => SaudiArabiaUtmSrid
   }
+
+  def utmSridIsoCode(srid: Int): String = srid match {
+    case _ => CountryCode.SaudiArabiaIsoCode
+  }
 }

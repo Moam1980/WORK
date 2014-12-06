@@ -13,6 +13,7 @@ import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.roaming.CountryCode
+import sa.com.mobily.utils.EdmCoreUtils
 
 case class Journey(
     user: Long,
@@ -38,7 +39,6 @@ case class JourneyViaPoint(
 
 object Journey {
 
-  val MillisInSecond = 1000
   val ZeroSpeed = Some(0.0)
 
   // scalastyle:off method.length
@@ -102,8 +102,8 @@ object Journey {
 
   def secondsInBetween(firstEvent: Event, secondEvent: Event): Double = {
     val difference: Double = secondEvent.beginTime - firstEvent.beginTime
-    if (difference == 0) 1d / MillisInSecond
-    else difference / MillisInSecond
+    if (difference == 0) 1d / EdmCoreUtils.MillisInSecond
+    else difference / EdmCoreUtils.MillisInSecond
   }
 
   def nextInitPoint(
