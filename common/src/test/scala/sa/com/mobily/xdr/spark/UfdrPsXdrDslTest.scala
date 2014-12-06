@@ -285,6 +285,11 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val events = sc.parallelize(Array(event1, event3, event4, event5, event6, event7, event8, event9))
   }
 
+  trait WithSanity extends WithUfdrPsXdrs {
+
+    val metrics = List(("total", 3), ("ci", 3), ("tac", 3))
+  }
+
   "UfdrPsXdrDsl" should "get correctly parsed ufdrPsXdrs" in new WithUfdrPsXdrsText {
     ufdrPsXdrs.toUfdrPsXdr.count should be (2)
   }
@@ -325,5 +330,9 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     ufdrPsXdrs.saveErrors(path)
     sc.textFile(path).count should be (1)
     File(path).deleteRecursively
+  }
+
+  it should "take sanity metrics" in new WithSanity {
+    ufdrPsXdrs.sanity.collect.sameElements(metrics) should be (true)
   }
 }

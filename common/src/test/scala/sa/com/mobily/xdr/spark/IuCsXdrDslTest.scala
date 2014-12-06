@@ -73,6 +73,11 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
     val events = sc.parallelize(Array(event1, event2))
   }
 
+  trait WithSanity extends WithIuCsXdrAndEventText {
+
+    val metrics = List(("msisdn", 1), ("total", 3))
+  }
+
   "IuCsXdrDsl" should "get correctly parsed IuCS events" in new WithIuCsXdrText {
     iuCsXdrEvents.toIuCsXdr.count should be (2)
   }
@@ -107,5 +112,9 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
   it should "parse RDD[IuCsXdr] to RDD[Event]" in new WithIuCsXdrAndEventText {
     val iuCsEvents = iuCsXdrEvents.toIuCsXdr
     iuCsEvents.toEvent.collect should be (events.collect)
+  }
+
+  it should "take sanity metrics" in new WithSanity {
+    iuCsXdrEvents.toIuCsXdr.sanity.collect.sameElements(metrics) should be (true)
   }
 }

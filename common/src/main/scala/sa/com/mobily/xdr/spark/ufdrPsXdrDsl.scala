@@ -14,6 +14,7 @@ import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.utils.EdmCoreUtils._
+import sa.com.mobily.utils.SanityUtils
 import sa.com.mobily.xdr._
 
 class UfdrPsXdrCsvReader(self: RDD[String]) {
@@ -67,6 +68,25 @@ class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
       (ufdrPs.cell.id._1 != UfdrPSXdrCell.NonDefined && ufdrPs.cell.id._2 != UfdrPSXdrCell.NonDefined) &&
       ufdrPs.protocol.category.identifier > 0
   }.map(_.toEvent)
+
+  def sanity: RDD[(String, Int)] = self.flatMap(ufdrPs => {
+    val nonEmpty = List(
+      ("imei", ufdrPs.user.imei),
+      ("imsi", ufdrPs.user.imsi),
+      ("ci", ufdrPs.cell.ci),
+      ("sac", ufdrPs.cell.sac),
+      ("lac", ufdrPs.cell.lac),
+      ("tac", ufdrPs.cell.tac))
+    val greatThanZeroLong = List(("msisdn", ufdrPs.user.msisdn),
+      ("beginTime", ufdrPs.duration.beginTime),
+      ("endTime", ufdrPs.duration.endTime))
+    val greatThanZero = List(("category.identifier", ufdrPs.protocol.category.identifier))
+
+    List(("total", 1)) ++
+      SanityUtils.sanityMethod[String](nonEmpty, value => value.isEmpty) ++
+      SanityUtils.sanityMethod[Long](greatThanZeroLong, value => !(value > 0L)) ++
+      SanityUtils.sanityMethod[Int](greatThanZero, value => !(value > 0))
+  }).reduceByKey(_ + _)
 }
 
 trait UfdrPsXdrDsl {
