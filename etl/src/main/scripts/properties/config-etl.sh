@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # General properties to generate CSV files
-LINE_SIZE=3250
+LINE_SIZE=32000
 
 # Output directories
-OUTPUT_FILE_PATH=/Volumes/Users/Mobily-Data
+OUTPUT_FILE_PATH=/Users/vmrh/Mobily-Data
 ISOP_OUTPUT_FILE_PATH=${OUTPUT_FILE_PATH}/isop
 
 # Log directory
