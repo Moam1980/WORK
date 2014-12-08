@@ -4,6 +4,7 @@
 
 package sa.com.mobily.poi
 
+import java.io.File
 import scala.collection.immutable.IndexedSeq
 import scala.collection.Seq
 
@@ -29,17 +30,18 @@ object UserPhoneCalls {
   val HoursInWeek = 168
   val HoursInDay = 24
   val DaysInWeek = 7
-  val KMeansGraphPrefix = "kmeans-graph-"
+  val GraphPrefix = "kmeans-graph-"
+  val GraphSuffix = ".png"
 
   final val UserPhoneCallSeparator = ","
-  final val lineCsvParserObject = new OpenCsvParser(separator = ',', quote = '\'')
+  final val lineCsvParserObject = new OpenCsvParser
 
   implicit val fromCsv = new CsvParser[UserPhoneCalls] {
 
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): UserPhoneCalls = {
-      val Array(msisdn, timestamp, siteId, regionId, callHours, _) = fields
+      val Array(msisdn, timestamp, siteId, regionId, callHours) = fields
 
       UserPhoneCalls(
         msisdn = msisdn.toLong,
@@ -69,8 +71,10 @@ object UserPhoneCalls {
   def kMeansModelGraphs(kMeansModel: KMeansModel, outputPath: String): Unit = {
     val modelGraphs = for (centroid <- kMeansModel.clusterCenters;
       graphValues <- Seq(graphValues(centroid))) yield (centroid, graphValues)
-    for (graphNumber <- 0 until modelGraphs.length)
-      pngGraph(outputPath.concat(KMeansGraphPrefix + graphNumber), modelGraphs(graphNumber)._2)
+    for (graphNumber <- 1 until modelGraphs.length + 1)
+      pngGraph(
+        outputPath + File.separator + UserPhoneCalls.GraphPrefix + graphNumber + UserPhoneCalls.GraphSuffix,
+        modelGraphs(graphNumber - 1)._2)
   }
 
   def graphValues(centroid: Vector): IndexedSeq[(Int, Double)] = {
