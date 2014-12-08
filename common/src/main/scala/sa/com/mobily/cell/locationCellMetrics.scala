@@ -7,8 +7,30 @@ package sa.com.mobily.cell
 case class LocationCellMetrics(
     cellIdentifier: (Int, Int),
     cellWkt: String,
+    cellArea: Double,
+    technology: String,
+    cellType: String,
+    range: Double,
     centroidDistance: Double,
-    areaRatio: Double)
+    areaRatio: Double) {
+
+  def fields: Array[String] =
+    Array(
+      cellIdentifier.toString,
+      cellArea.toString,
+      technology,
+      cellType,
+      range.toString,
+      centroidDistance.toString,
+      areaRatio.toString,
+      cellWkt)
+}
+
+object LocationCellMetrics {
+
+  def header: Array[String] =
+    Array("Cell Identifier", "Area", "Technology", "Type", "Range", "Centroid Distance", "Area Ratio", "WKT")
+}
 
 case class LocationCellAggMetrics(
     cellsWkt: List[String],

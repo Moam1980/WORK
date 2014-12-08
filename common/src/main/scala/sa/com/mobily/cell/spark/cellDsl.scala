@@ -50,6 +50,10 @@ class CellFunctions(self: RDD[Cell]) {
       LocationCellMetrics(
         cellIdentifier = cell.identifier,
         cellWkt = cell.coverageWkt,
+        cellArea = cell.coverageGeom.getArea,
+        technology = cell.technology.identifier,
+        cellType = cell.cellType.value,
+        range = cell.range,
         centroidDistance = cell.centroidDistance(location),
         areaRatio = cell.areaRatio(location)))
 

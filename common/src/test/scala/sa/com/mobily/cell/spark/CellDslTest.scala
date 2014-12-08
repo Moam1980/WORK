@@ -193,12 +193,20 @@ class CellDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext wi
       LocationCellMetrics(
         cellIdentifier = (57, 4465390),
         cellWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
+        cellArea = 4,
+        technology = "4G_TDD",
+        cellType = "MACRO",
+        range = 2530.3,
         centroidDistance = 1,
         areaRatio = 1)
     val cellMetrics2 =
       LocationCellMetrics(
         cellIdentifier = (57, 4465391),
         cellWkt = "POLYGON ((2 0, 2 2, 5 2, 5 0, 2 0))",
+        cellArea = 6,
+        technology = "4G_TDD",
+        cellType = "MACRO",
+        range = 2530.3,
         centroidDistance = 1.5,
         areaRatio = 1.5)
     val aggMetrics =
