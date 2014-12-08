@@ -32,11 +32,10 @@ class UserPhoneCallsFunctions(self: RDD[UserPhoneCalls]) {
 
   import UserPhoneCalls._
 
-  def perUserAndSiteId: RDD[((Long, Int, Int, String, Long), Vector)] = {
-    val byUserWeekYearRegion: RDD[((Long, Int, Int, String, Long), Iterable[(Int, Seq[Int])])] = self.map(phoneCall => {
+  def perUserAndSiteId: RDD[((Long, String, Long), Vector)] = {
+    val byUserWeekYearRegion = self.map(phoneCall => {
       val callDate = new DateTime(phoneCall.timestamp, EdmCoreUtils.TimeZoneSaudiArabia)
-      ((phoneCall.msisdn, callDate.year.get, callDate.weekOfWeekyear.get, phoneCall.siteId, phoneCall.regionId),
-        (callDate.dayOfWeek.get, phoneCall.callHours))
+      ((phoneCall.msisdn, phoneCall.siteId, phoneCall.regionId), (callDate.dayOfWeek.get, phoneCall.callHours))
     }).groupByKey
     byUserWeekYearRegion.mapValues(callsByWeek => {
       val activityHoursByWeek = callsByWeek.flatMap((callsByDay: (Int, Seq[Int])) => {
@@ -47,9 +46,9 @@ class UserPhoneCallsFunctions(self: RDD[UserPhoneCalls]) {
   }
 
   def perUserAndSiteIdFilteringLittleActivity(
-    minimumActivityRatio: Double = DefaultMinActivityRatio): RDD[((Long, Int, Int, String, Long), Vector)] = {
-    val activityPercentageThreshold = HoursInWeek * minimumActivityRatio
-    perUserAndSiteId.filter(element => element._2.toArray.count(element => element == 1) > activityPercentageThreshold)
+    minimumActivityRatio: Double = DefaultMinActivityRatio): RDD[((Long, String, Long), Vector)] = {
+    val minNumberOfHours = HoursInWeek * minimumActivityRatio
+    perUserAndSiteId.filter(element => element._2.toArray.count(element => element == 1) > minNumberOfHours)
   }
 }
 

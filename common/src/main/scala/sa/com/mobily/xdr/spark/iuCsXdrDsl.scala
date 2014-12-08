@@ -38,13 +38,13 @@ class IuCsXdrWriter(self: RDD[IuCsXdr]) {
 class IuCsXdrParser(self: RDD[IuCsXdr]) {
 
   def toEvent: RDD[Event] = self.filter { iuCs =>
-    (iuCs.user.msisdn.isDefined &&
-        !iuCs.time.csTime.begin.isEmpty &&
-        !iuCs.time.csTime.end.isEmpty &&
-        iuCs.cell.csCell.firstLac.isDefined &&
-        iuCs.cell.firstSac.isDefined &&
-        iuCs.call.csCall.callType.isDefined)
-  }.map( _.toEvent)
+    iuCs.user.msisdn.isDefined &&
+      !iuCs.time.csTime.begin.isEmpty &&
+      !iuCs.time.csTime.end.isEmpty &&
+      iuCs.cell.csCell.firstLac.isDefined &&
+      iuCs.cell.firstSac.isDefined &&
+      iuCs.call.csCall.callType.isDefined
+  }.map(_.toEvent)
 }
 
 trait IuCsXdrDsl {

@@ -18,21 +18,35 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
   import UserPhoneCalls._
 
   trait WhitPhoneCallText {
-    val phoneCallText = "'0500001413','20140824',2541,'1','01, 02',"
-    val fields = Array("'0500001413'","'20140824'","2541","'1'","'01, 02',")
+    val phoneCallText = "0500001413|20140824|2541|1|1,2"
+    val fields = Array("0500001413","20140824","2541","1","1,2")
     val phoneCallsObjetct = UserPhoneCalls(500001413, DateTimeFormat.forPattern("yyyymmdd").
       withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"), "2541", 1, Seq(1, 2))
   }
 
   trait WithWeekPhoneCalls{
-    val phoneCall1 = UserPhoneCalls(1L,DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2541", 1, Seq(0, 1, 2))
-    val phoneCall2 = phoneCall1.copy(timestamp = DateTimeFormat.forPattern("yyyyMMdd").
-      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),callHours = Seq(0, 23))
-    val phoneCall3 = phoneCall1.copy(timestamp = DateTimeFormat.forPattern("yyyyMMdd").
-      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),callHours = Seq(1, 23))
-    val phoneCall4 = UserPhoneCalls(2L,DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140825"),"2566", 1, Seq(1, 2, 3))
+    val phoneCall1 =
+      UserPhoneCalls(
+        1L,
+        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"),
+        "2541",
+        1,
+        Seq(0, 1, 2))
+    val phoneCall2 = phoneCall1.copy(
+      timestamp =
+        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),
+      callHours = Seq(0, 23))
+    val phoneCall3 = phoneCall1.copy(
+      timestamp =
+        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),
+      callHours = Seq(1, 23))
+    val phoneCall4 =
+      UserPhoneCalls(
+        2L,
+        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140825"),
+        "2566",
+        1,
+        Seq(1, 2, 3))
 
     val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4))
     val phoneCallsVector = phoneCalls.perUserAndSiteId.map(element => element._2)
@@ -50,7 +64,7 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
   }
 
   it should "be discarded when the CSV format is wrong" in new WhitPhoneCallText {
-    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(2, "WrongRegionId"))
+    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(3, "WrongRegionId"))
   }
 
   it should "generate the cluster number and cost sequence" in new WithWeekPhoneCalls {
