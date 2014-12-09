@@ -67,7 +67,7 @@ class UserPhoneCallsDslTest extends  FlatSpec with ShouldMatchers with LocalSpar
         Seq(1, 2, 3))
 
     val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4))
-    val vectorResult = Vectors.sparse(UserPhoneCalls.HoursInWeek, Seq((1, 1.0), (2, 1.0), (3, 1.0)))
+    val vectorResult = Vectors.sparse(UserPhoneCalls.HoursInWeek, Seq((25, 1.0), (26, 1.0), (27, 1.0)))
   }
 
   trait WithWeekPhoneCallsLittleActivity {
