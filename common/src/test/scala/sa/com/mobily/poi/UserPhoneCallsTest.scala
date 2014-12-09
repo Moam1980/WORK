@@ -20,30 +20,35 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
   trait WhitPhoneCallText {
     val phoneCallText = "0500001413|20140824|2541|1|1,2"
     val fields = Array("0500001413","20140824","2541","1","1,2")
-    val phoneCallsObjetct = UserPhoneCalls(500001413, DateTimeFormat.forPattern("yyyymmdd").
-      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"), "2541", 1, Seq(1, 2))
+    val phoneCallsObjetct =
+      UserPhoneCalls(
+        500001413,
+        new DateTime(2014, 8, 24, 0, 0, EdmCoreUtils.TimeZoneSaudiArabia),
+        "2541",
+        1,
+        Seq(1, 2))
   }
 
   trait WithWeekPhoneCalls{
     val phoneCall1 =
       UserPhoneCalls(
         1L,
-        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"),
+        new DateTime(2014, 8, 24, 0, 0, EdmCoreUtils.TimeZoneSaudiArabia),
         "2541",
         1,
         Seq(0, 1, 2))
     val phoneCall2 = phoneCall1.copy(
       timestamp =
-        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),
+        new DateTime(2014, 8, 18, 0, 0, EdmCoreUtils.TimeZoneSaudiArabia),
       callHours = Seq(0, 23))
     val phoneCall3 = phoneCall1.copy(
       timestamp =
-        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),
+        new DateTime(2014, 8, 19, 0, 0, EdmCoreUtils.TimeZoneSaudiArabia),
       callHours = Seq(1, 23))
     val phoneCall4 =
       UserPhoneCalls(
         2L,
-        DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140825"),
+        new DateTime(2014, 8, 25, 0, 0, EdmCoreUtils.TimeZoneSaudiArabia),
         "2566",
         1,
         Seq(1, 2, 3))

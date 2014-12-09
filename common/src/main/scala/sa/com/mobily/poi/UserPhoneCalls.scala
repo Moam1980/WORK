@@ -46,7 +46,7 @@ object UserPhoneCalls {
       UserPhoneCalls(
         msisdn = msisdn.toLong,
         timestamp =
-          DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime(timestamp),
+          DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime(timestamp),
         siteId = siteId,
         regionId = regionId.toLong,
         callHours = callHours.split(UserPhoneCallSeparator).map(hs => hs.trim.toInt))
