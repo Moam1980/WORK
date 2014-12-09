@@ -35,7 +35,8 @@ class UserPhoneCallsFunctions(self: RDD[UserPhoneCalls]) {
   def perUserAndSiteId: RDD[((Long, String, Long), Vector)] = {
     val byUserWeekYearRegion = self.map(phoneCall => {
       val callDate = new DateTime(phoneCall.timestamp, EdmCoreUtils.TimeZoneSaudiArabia)
-      ((phoneCall.msisdn, phoneCall.siteId, phoneCall.regionId), (callDate.dayOfWeek.get, phoneCall.callHours))
+      ((phoneCall.msisdn, phoneCall.siteId, phoneCall.regionId),
+        (EdmCoreUtils.saudiDayOfWeek(callDate.dayOfWeek.get), phoneCall.callHours))
     }).groupByKey
     byUserWeekYearRegion.mapValues(callsByWeek => {
       val activityHoursByWeek = callsByWeek.flatMap((callsByDay: (Int, Seq[Int])) => {

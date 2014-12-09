@@ -16,7 +16,7 @@ import sa.com.mobily.roaming.CountryCallingCode
 /**
  * Generic utility class for External Data Monetization
  */
-object EdmCoreUtils {
+object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   val outputDateTimeFormat = "yyyy/MM/dd HH:mm:ss"
   final val TimeZoneSaudiArabia = DateTimeZone.forID("Asia/Riyadh")
@@ -27,6 +27,8 @@ object EdmCoreUtils {
   val SecondsInHour = 3600
   val Separator = "|"
   val IntraSequenceSeparator = ","
+  private val FirstDayOfWeekIndex = 1
+  private val LastDayOfWeekIndex = 7
 
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
@@ -144,5 +146,10 @@ object EdmCoreUtils {
     case "$null$" => ""
     case "_" => ""
     case _ => s
+  }
+
+  def saudiDayOfWeek(monToSunDayOfWeek: Int): Int = {
+    require (monToSunDayOfWeek >= 1 && monToSunDayOfWeek <= 7)
+    if (monToSunDayOfWeek == LastDayOfWeekIndex) FirstDayOfWeekIndex else monToSunDayOfWeek + 1
   }
 }

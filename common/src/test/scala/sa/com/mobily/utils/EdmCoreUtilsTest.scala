@@ -368,4 +368,16 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.parseString("") should be (None)
     EdmCoreUtils.parseString("$null$") should be (None)
   }
+
+  it should "only accept days from 1 to 7 when converting to saudi day of week (starting on Sunday)" in {
+    an[Exception] should be thrownBy(EdmCoreUtils.saudiDayOfWeek(9))
+  }
+
+  it should "get the saudi day of week (starting on Sunday)" in {
+    EdmCoreUtils.saudiDayOfWeek(4) should be (5)
+  }
+
+  it should "get the saudi day of week (starting on Sunday) when Joda day is Sunday" in {
+    EdmCoreUtils.saudiDayOfWeek(7) should be (1)
+  }
 }
