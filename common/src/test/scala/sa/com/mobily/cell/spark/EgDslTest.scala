@@ -6,6 +6,8 @@ package sa.com.mobily.cell.spark
 
 import org.scalatest._
 
+import sa.com.mobily.cell.{FourGTdd, ThreeG, EgBts}
+import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.utils.LocalSparkContext
 
 class EgDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
@@ -41,6 +43,49 @@ class EgDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
     val egBtsRdd = sc.parallelize(List(egBtsLine1, egBtsLine2, egBtsLine3))
   }
 
+  trait WithEgBts {
+
+    val egBts1 =
+      EgBts(
+        "2181",
+        "2181",
+        "New-Addition",
+        UtmCoordinates(-101643.8, 2392961.7, "EPSG:32638"),
+        "",
+        "",
+        2175,
+        "Node B",
+        "Ericsson",
+        "N212",
+        "42003021752181",
+        ThreeG,
+        "23",
+        "MACRO",
+        461.04367785,
+        658.63382551)
+    val egBts2 =
+      EgBts(
+        "2183",
+        "2183",
+        "New-Addition",
+        UtmCoordinates(-100312.1, 2394788.9, "EPSG:32638"),
+        "",
+        "",
+        3184,
+        "Node B",
+        "Ericsson",
+        "N212",
+        "42003021752183",
+        ThreeG,
+        "23.5",
+        "MACRO",
+        471.0663665,
+        672.95195215)
+    val egBts3 = egBts2.copy(lac = 3182, technology = FourGTdd)
+
+    val egBts = sc.parallelize(Array(egBts1, egBts2, egBts3))
+  }
+
   "EgContext" should "get correctly parsed EG cells" in new WithEgCellsText {
     egCells.toEgCell.count should be (2)
   }
@@ -63,5 +108,12 @@ class EgDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
   it should "get both correctly and wrongly parsed EG BTS" in new WithEgBtsText {
     egBtsRdd.toParsedEgCell.count should be (3)
+  }
+
+  it should "broadcast the BTS with (bts, regionId) as key" in new WithEgBts {
+    val egBtsMap = egBts.toBroadcastMapWithRegion.value
+    egBtsMap.size should be (2)
+    egBtsMap(("2181", 2)) should be (Iterable(egBts1))
+    egBtsMap(("2183", 3)) should be (Iterable(egBts2, egBts3))
   }
 }
