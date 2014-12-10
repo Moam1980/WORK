@@ -6,6 +6,8 @@ package sa.com.mobily.cell.spark
 
 import scala.language.implicitConversions
 
+import org.apache.spark.SparkContext._
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.{EgBts, EgCell}
@@ -39,9 +41,18 @@ class EgBtsReader(self: RDD[String]) {
   def toEgBtsErrors: RDD[ParsingError] = toParsedEgBts.errors
 }
 
+class EgBtsFunctions(self: RDD[EgBts]) {
+
+  def toBroadcastMapWithRegion: Broadcast[Map[(String, Short), Iterable[EgBts]]] =
+    self.sparkContext.broadcast(
+      self.keyBy(b => (b.bts, b.lac.toString.substring(0, 1).toShort)).groupByKey.collect.toMap)
+}
+
 trait EgBtsDsl {
 
   implicit def egBtsReader(csv: RDD[String]): EgBtsReader = new EgBtsReader(csv)
+
+  implicit def egBtsFunctions(egBts: RDD[EgBts]): EgBtsFunctions = new EgBtsFunctions(egBts)
 }
 
 object EgDsl extends EgCellDsl with EgBtsDsl with ParsedItemsDsl

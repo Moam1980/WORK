@@ -4,7 +4,7 @@
 
 package sa.com.mobily.cell
 
-import sa.com.mobily.geometry.{LatLongCoordinates, UtmCoordinates}
+import sa.com.mobily.geometry.{GeomUtils, LatLongCoordinates, UtmCoordinates}
 import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
@@ -24,7 +24,10 @@ case class EgBts(
     height: String,
     cellType: String,
     indoorCov: Double,
-    outdoorCov: Double)
+    outdoorCov: Double) {
+
+  lazy val geom = GeomUtils.circle(coords.geometry, outdoorCov)
+}
 
 object EgBts {
 
