@@ -9,11 +9,11 @@ import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
+import org.apache.spark.sql.Row
 
 import sa.com.mobily.event.Event
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.utils.EdmCoreUtils._
 import sa.com.mobily.xdr._
 

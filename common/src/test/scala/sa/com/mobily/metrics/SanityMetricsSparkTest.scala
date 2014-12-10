@@ -1,25 +1,22 @@
 package sa.com.mobily.metrics
 
 import com.github.nscala_time.time.Imports._
-import org.apache.spark.Accumulable
-import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.event.Event
+import sa.com.mobily.event.spark.EventDsl
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
-class
-SanityMetricsSparkTest extends FlatSpec with ShouldMatchers with LocalSparkContext with TableDrivenPropertyChecks {
+class SanityMetricsSparkTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+
+  import EventDsl._
 
   def toMillis(dateAsString: String): Long = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")
     .withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime(dateAsString).getMillis
 
-  /*
-   TODO: This test should be managed with traits for reuse the data. For now we don't know how to solve a
-   serialization exception between Scalatest with Spark
-  */
-  "TimeMetric" should "process a list of Events and grouping it" in {
+  trait WithEventsForMetrics {
+
     val event0 = Event(
       user = User(
         imei = "866173010386736",
@@ -47,12 +44,15 @@ SanityMetricsSparkTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val falseKey = MetricResultKey("Total-number-items", MetricKey(1311028212000L))
     val events = sc.parallelize(List(event0, event1, event2, event3, event4))
     implicit val accumulableParam = new MetricResultParam[Measurable]()
-    val accumulable: Accumulable[MetricResult, Measurable] = sc.accumulable(MetricResult(), "sanity")
-    events.map(event => accumulable += event).collect()
-    accumulable.value.metricValue.get(key0) should be(Some(1))
-    accumulable.value.metricValue.get(falseKey) should be(None)
-    accumulable.value.metricValue.get(key4) should be(Some(2))
-    accumulable.value.metricValue.get(key5) should be(Some(2))
-    accumulable.value.metricValue.get(key6) should be(Some(1))
+    val accumulable = sc.accumulable(MetricResult(), "sanity")
+  }
+
+  "TimeMetric" should "process a list of Events and group it" in new WithEventsForMetrics {
+    val metrics: MetricResult = events.metrics
+    metrics.metricValue.get(key0) should be(Some(1))
+    metrics.metricValue.get(falseKey) should be(None)
+    metrics.metricValue.get(key4) should be(Some(2))
+    metrics.metricValue.get(key5) should be(Some(2))
+    metrics.metricValue.get(key6) should be(Some(1))
   }
 }
