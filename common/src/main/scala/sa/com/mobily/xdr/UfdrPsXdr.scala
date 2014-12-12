@@ -42,7 +42,23 @@ case class UfdrPSXdrCell(
     tac: String,
     eci: String,
     mcc: String,
-    mnc: String)
+    mnc: String) {
+
+  lazy val id: (Int, Int) =
+    (Integer.parseInt(Event.lacOrTac(lac, tac), BaseForHexadecimal),
+      Integer.parseInt(Event.sacOrCi(sac, eci), BaseForHexadecimal))
+
+  def fields: Array[String] = Array(rat.identifier.toString, lac, rac, sac, ci, tac, eci, mcc, mnc)
+
+  def idFields: Array[String] = Array(id._1.toString, id._2.toString)
+}
+
+object UfdrPSXdrCell {
+
+  def header: Array[String] = Array("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
+
+  def idHeader: Array[String] = Array("LacTac", "SacEci")
+}
 
 case class UfdrPsXdr(
     sid: Long,
@@ -85,48 +101,25 @@ case class UfdrPsXdrHierarchy(
 
 case class UfdrPsXdrHierarchyAgg(
     hierarchy: UfdrPsXdrHierarchy,
-    transferStats: TransferStats)
+    transferStats: TransferStats) {
 
-object UfdrPSXdrCell {
-
-  def header: Array[String] = {
-    Array[String]("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
-  }
-
-  def fields(ufdrPSXdrCell: UfdrPSXdrCell): Array[String] = {
-    Array[String](
-      ufdrPSXdrCell.rat.identifier.toString,
-      ufdrPSXdrCell.lac,
-      ufdrPSXdrCell.rac,
-      ufdrPSXdrCell.sac,
-      ufdrPSXdrCell.ci,
-      ufdrPSXdrCell.tac,
-      ufdrPSXdrCell.eci,
-      ufdrPSXdrCell.mcc,
-      ufdrPSXdrCell.mnc)
-  }
+  def fields: Array[String] =
+    Array(hierarchy.hourTime) ++
+      hierarchy.cell.idFields ++
+      hierarchy.user.fields ++
+      Array(
+        hierarchy.protocol.category.identifier.toString,
+        hierarchy.protocol.id.toString) ++
+      transferStats.fields
 }
 
 object UfdrPsXdrHierarchyAgg {
 
-  def header: Array[String] = {
-    Array[String]("Date Hour") ++
-      UfdrPSXdrCell.header ++
-      User.header ++
-      Array[String]("catelogory id", "protocol id") ++
+  def header: Array[String] =
+    Array("Date Hour") ++ UfdrPSXdrCell.idHeader ++ User.header ++ Array("catelogory id", "protocol id") ++
       TransferStats.header
-  }
-
-  def fields(ufdrPsXdrHierarchyAgg: UfdrPsXdrHierarchyAgg): Array[String] = {
-    Array[String](ufdrPsXdrHierarchyAgg.hierarchy.hourTime) ++
-      UfdrPSXdrCell.fields(ufdrPsXdrHierarchyAgg.hierarchy.cell) ++
-      ufdrPsXdrHierarchyAgg.hierarchy.user.fields ++
-      Array[String](
-        ufdrPsXdrHierarchyAgg.hierarchy.protocol.category.identifier.toString,
-        ufdrPsXdrHierarchyAgg.hierarchy.protocol.id.toString) ++
-      TransferStats.fields(ufdrPsXdrHierarchyAgg.transferStats)
-  }
 }
+
 
 object UfdrPsXdr {
 
