@@ -120,7 +120,7 @@ object UfdrPsXdrHierarchyAgg {
   def fields(ufdrPsXdrHierarchyAgg: UfdrPsXdrHierarchyAgg): Array[String] = {
     Array[String](ufdrPsXdrHierarchyAgg.hierarchy.hourTime) ++
       UfdrPSXdrCell.fields(ufdrPsXdrHierarchyAgg.hierarchy.cell) ++
-      User.fields(ufdrPsXdrHierarchyAgg.hierarchy.user) ++
+      ufdrPsXdrHierarchyAgg.hierarchy.user.fields ++
       Array[String](
         ufdrPsXdrHierarchyAgg.hierarchy.protocol.category.identifier.toString,
         ufdrPsXdrHierarchyAgg.hierarchy.protocol.id.toString) ++
