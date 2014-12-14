@@ -20,13 +20,6 @@ trait CountryGeometry {
   lazy val geom: Geometry = GeomUtils.parseWkt(geomWkt, Coordinates.isoCodeUtmSrid(countryIsoCode))
 }
 
-trait CellSequence {
-
-  val orderedCells: List[(Int, Int)]
-
-  lazy val cells: Set[(Int, Int)] = orderedCells.toSet
-}
-
 object UserModel {
 
   @tailrec
@@ -37,7 +30,7 @@ object UserModel {
       (implicit cellCatalogue: Map[(Int, Int), Cell]): List[SpatioTemporalSlot] = events match {
     case Nil => result ++ previous
     case event :: tail if previous.isDefined =>
-      if (previous.get.events.last.lacTac == event.lacTac && previous.get.events.last.cellId == event.cellId)
+      if (previous.get.cells.contains((event.lacTac, event.cellId)))
         aggSameCell(tail, Some(previous.get.append(event)), result)
       else
         aggSameCell(tail, Some(SpatioTemporalSlot(event)), result :+ previous.get)
@@ -73,7 +66,10 @@ object UserModel {
           aggregateCompatible(before ++ List(previousToMergedItemWithScore, mergedItem))
       } else {
         val mergedSlotNoScore = slots.head.append(slots(1))
-        val mergedSlot = mergedSlotNoScore.copy(score = Some(CompatibilityScore.score(mergedSlotNoScore, slots(2))))
+        val mergedSlot =
+          if (slots.isDefinedAt(2))
+            mergedSlotNoScore.copy(score = Some(CompatibilityScore.score(mergedSlotNoScore, slots(2))))
+          else mergedSlotNoScore
         aggregateCompatible(List(mergedSlot) ++ slots.drop(2))
       }
     }

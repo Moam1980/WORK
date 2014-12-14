@@ -26,7 +26,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   val MillisInSecond = 1000
   val SecondsInHour = 3600
   val Separator = "|"
-  val IntraSequenceSeparator = ","
+  val IntraSequenceSeparator = ";"
   private val FirstDayOfWeekIndex = 1
   private val LastDayOfWeekIndex = 7
 

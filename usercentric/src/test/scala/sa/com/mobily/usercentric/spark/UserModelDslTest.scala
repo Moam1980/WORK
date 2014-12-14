@@ -57,13 +57,13 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       startTime = 1,
       endTime = 2,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      events = List(event1))
+      cells = Set((1, 1)))
     val slot2 = SpatioTemporalSlot(
       userId = 1,
       startTime = 2,
       endTime = 5,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      events = List(event2))
+      cells = Set((1, 2)))
     val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0)))
   }
 
@@ -84,7 +84,7 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       startTime = 0,
       endTime = 10,
       geomWkt = prefixWkt,
-      events = List(event1, event2),
+      cells = Set((1, 1), (1, 2)),
       score = Some(CompatibilityScore(0, 0)))
     val slot1 = prefixSlot.copy(
       startTime = 10,
@@ -101,7 +101,7 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val mergedSlot = slot1.copy(
       endTime = 30,
       geomWkt = mergedWkt,
-      events = List(event1, event2, event1, event2),
+      cells = Set((1, 1), (1, 2)),
       score = Some(CompatibilityScore(0, 0)))
 
     val slot1After = prefixSlot.copy(
@@ -119,7 +119,7 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val merged2Slot = slot1After.copy(
       endTime = 60,
       geomWkt = merged2Wkt,
-      events = List(event1, event2, event1, event2),
+      cells = Set((1, 1), (1, 2)),
       score = Some(CompatibilityScore(0, 0)))
 
     val slots =

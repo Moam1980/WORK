@@ -15,13 +15,9 @@ case class SpatioTemporalSlot(
     startTime: Long,
     endTime: Long,
     geomWkt: String,
-    events: List[Event],
+    cells: Set[(Int, Int)],
     countryIsoCode: String = CountryCode.SaudiArabiaIsoCode,
-    score: Option[CompatibilityScore] = None) extends CountryGeometry with CellSequence {
-
-  override lazy val orderedCells: List[(Int, Int)] = events.map(event => (event.lacTac, event.cellId))
-
-  override lazy val cells: Set[(Int, Int)] = orderedCells.toSet
+    score: Option[CompatibilityScore] = None) extends CountryGeometry {
 
   def append(event: Event)(implicit cellCatalogue: Map[(Int, Int), Cell]): SpatioTemporalSlot =
     SpatioTemporalSlot(
@@ -29,7 +25,7 @@ case class SpatioTemporalSlot(
       startTime = startTime,
       endTime = event.endTime,
       geomWkt = GeomUtils.wkt(geom.intersection(cellCatalogue((event.lacTac, event.cellId)).coverageGeom)),
-      events = events :+ event,
+      cells = cells + ((event.lacTac, event.cellId)),
       countryIsoCode = countryIsoCode)
 
   def append(slot: SpatioTemporalSlot): SpatioTemporalSlot =
@@ -38,7 +34,7 @@ case class SpatioTemporalSlot(
       startTime = startTime,
       endTime = slot.endTime,
       geomWkt = GeomUtils.wkt(geom.intersection(slot.geom)),
-      events = events ++ slot.events,
+      cells = cells ++ slot.cells,
       countryIsoCode = countryIsoCode)
 
   def fields: Array[String] =
@@ -46,8 +42,7 @@ case class SpatioTemporalSlot(
       userId.toString,
       EdmCoreUtils.fmt.print(startTime),
       EdmCoreUtils.fmt.print(endTime),
-      events.size.toString,
-      orderedCells.mkString(EdmCoreUtils.IntraSequenceSeparator),
+      cells.mkString(EdmCoreUtils.IntraSequenceSeparator),
       geomWkt,
       countryIsoCode)
 }
@@ -60,9 +55,9 @@ object SpatioTemporalSlot {
       startTime = event.beginTime,
       endTime = event.endTime,
       geomWkt = cellCatalogue((event.lacTac, event.cellId)).coverageWkt,
-      events = List(event),
+      cells = Set((event.lacTac, event.cellId)),
       countryIsoCode = Coordinates.utmSridIsoCode(cellCatalogue.head._2.planarCoords.srid))
 
   def header: Array[String] =
-    Array("userId", "startTime", "endTime", "numEvents", "orderedCells", "geomWkt", "countryIsoCode")
+    Array("userId", "startTime", "endTime", "cells", "geomWkt", "countryIsoCode")
 }

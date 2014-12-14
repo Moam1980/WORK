@@ -17,8 +17,8 @@ class CompatibilityScoreTest extends FlatSpec with ShouldMatchers {
 
   trait WithSpatioTemporalSlots {
 
-    val slot1 = SpatioTemporalSlot(1, 3600000, 7200000, "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", List())
-    val slot2 = SpatioTemporalSlot(1, 10800000, 12600000, "POLYGON ((0.5 0, 1.5 0, 1.5 1, 0.5 1, 0.5 0))", List())
+    val slot1 = SpatioTemporalSlot(1, 3600000, 7200000, "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", Set())
+    val slot2 = SpatioTemporalSlot(1, 10800000, 12600000, "POLYGON ((0.5 0, 1.5 0, 1.5 1, 0.5 1, 0.5 0))", Set())
     val slot1And2CompatibilityScore = CompatibilityScore(0.5, 1)
   }
 

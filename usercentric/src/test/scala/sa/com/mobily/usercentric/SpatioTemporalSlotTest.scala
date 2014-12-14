@@ -49,28 +49,24 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
       startTime = 1,
       endTime = 4,
       geomWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))",
-      events = List(event1, event2))
+      cells = Set((1, 1), (1, 2)))
     val event3SpatioTemporalSlot = SpatioTemporalSlot(
       userId = 1,
       startTime = 5,
       endTime = 6,
       geomWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))",
-      events = List(event3))
+      cells = Set((1, 3)))
     val slotWithThreeEvents = SpatioTemporalSlot(
       userId = 1,
       startTime = 1,
       endTime = 6,
       geomWkt = "POLYGON ((0.5 1, 1 1, 1 0, 0.5 0, 0.5 1))",
-      events = List(event1, event2, event3))
+      cells = Set((1, 1), (1, 2), (1, 3)))
   }
 
   "SpatioTemporalSlot" should "build geometry from WKT" in new WithSpatioTemporalSlots {
     slotWithTwoEvents.geom should
       equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
-  }
-
-  it should "compute the set of cells seen" in new WithSpatioTemporalSlots {
-    slotWithTwoEvents.cells should be (Set((1, 1), (1, 2)))
   }
 
   it should "append another event" in new WithSpatioTemporalSlots with WithCellCatalogue {
@@ -87,11 +83,11 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
 
   it should "have the proper header" in {
     SpatioTemporalSlot.header should
-      be (Array("userId", "startTime", "endTime", "numEvents", "orderedCells", "geomWkt", "countryIsoCode"))
+      be (Array("userId", "startTime", "endTime", "cells", "geomWkt", "countryIsoCode"))
   }
 
   it should "return its fields for printing" in new WithSpatioTemporalSlots {
-    slotWithTwoEvents.fields should be (Array("1", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2",
-      "(1,1),(1,2)", "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", "sa"))
+    slotWithTwoEvents.fields should be (Array("1", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "(1,1);(1,2)",
+      "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", "sa"))
   }
 }

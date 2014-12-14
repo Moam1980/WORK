@@ -21,10 +21,10 @@ case class Journey(
     startTime: Long,
     endTime: Long,
     geomWkt: String,
-    orderedCells: List[(Int, Int)],
+    cells: Set[(Int, Int)],
     firstEventBeginTime: Long,
     lastEventEndTime: Long,
-    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry with CellSequence
+    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry
 
 case class JourneyViaPoint(
     user: Long,
@@ -32,10 +32,10 @@ case class JourneyViaPoint(
     startTime: Long,
     endTime: Long,
     geomWkt: String,
-    orderedCells: List[(Int, Int)],
+    cells: Set[(Int, Int)],
     firstEventBeginTime: Long,
     lastEventEndTime: Long,
-    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry with CellSequence
+    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry
 
 object Journey {
 
