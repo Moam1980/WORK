@@ -20,6 +20,7 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     val poly = geomFactory.createPolygon(
       Array(new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1),
         new Coordinate(0, 0)))
+    val polyPoints = Map((1, (0D, 0D)), (2, (1D, 0D)), (3, (1D, 1D)), (4, (0D, 1D)), (5, (0D, 0D)))
 
     val position = geomFactory.createPoint(new Coordinate(0, 0))
 
@@ -248,5 +249,9 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   it should "calculate the intersection ratio between two geometries" in new WithIntersectionCells {
     GeomUtils.intersectionRatio(geometry1, geometry2) should be (intersectRatio +- rangeTolerance)
     GeomUtils.intersectionRatio(geometry2, geometry1) should be (intersectRatio +- rangeTolerance)
+  }
+
+  it should "return coordinates as a Map including position" in new WithShapes {
+    GeomUtils.geomAsPoints(poly) should be (polyPoints)
   }
 }

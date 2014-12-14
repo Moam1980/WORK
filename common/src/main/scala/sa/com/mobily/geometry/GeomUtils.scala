@@ -158,4 +158,7 @@ object GeomUtils {
     val intersectArea = first.intersection(second).getArea
     if (firstArea >= secondArea) intersectArea / secondArea else intersectArea / firstArea
   }
+
+  def geomAsPoints(geom: Geometry): Map[Int, (Double, Double)] =
+    geom.getCoordinates.zipWithIndex.map { e => (e._2 + 1, (e._1.x, e._1.y)) }.toMap
 }
