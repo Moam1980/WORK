@@ -7,6 +7,7 @@ package sa.com.mobily.geometry
 import scala.math._
 
 import com.vividsolutions.jts.geom._
+import com.vividsolutions.jts.geom.util.PolygonExtracter
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.util.GeometricShapeFactory
 import org.geotools.geometry.jts.JTS
@@ -132,6 +133,11 @@ object GeomUtils {
     else if (!p.getPrecisionModel.isFloating)
       p.buffer(2 / p.getPrecisionModel.getScale).intersection(geom).getCentroid
     else p.buffer(p.distance(geom) * 2).intersection(geom).getCentroid
+
+  def intersectionOrFirst(first: Geometry, second: Geometry): Geometry =
+    if (first.intersects(second))
+      first.getFactory.buildGeometry(PolygonExtracter.getPolygons(first.intersection(second)))
+    else first
 
   private def buildShape(
       xCoords: List[Double],

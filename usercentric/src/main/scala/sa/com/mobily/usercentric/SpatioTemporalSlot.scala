@@ -23,8 +23,9 @@ case class SpatioTemporalSlot(
     SpatioTemporalSlot(
       userId = userId,
       startTime = startTime,
-      endTime = event.endTime,
-      geomWkt = GeomUtils.wkt(geom.intersection(cellCatalogue((event.lacTac, event.cellId)).coverageGeom)),
+      endTime = if (event.endTime > endTime) event.endTime else endTime,
+      geomWkt = GeomUtils.wkt(
+        GeomUtils.intersectionOrFirst(geom, cellCatalogue((event.lacTac, event.cellId)).coverageGeom)),
       cells = cells + ((event.lacTac, event.cellId)),
       countryIsoCode = countryIsoCode)
 

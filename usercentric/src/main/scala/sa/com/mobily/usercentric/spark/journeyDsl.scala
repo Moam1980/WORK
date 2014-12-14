@@ -18,14 +18,9 @@ import sa.com.mobily.utils.EdmCoreUtils
 
 class JourneyFunctions(byUserChronologically: RDD[(Long, List[Event])]) {
 
-  def withMinSpeeds(cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[Event])] = {
-    val eventsJoiningCellCatalogue = byUserChronologically.map(byUser => {
-      val matchingEvents = byUser._2.filter(e => cellCatalogue.value.isDefinedAt((e.lacTac, e.cellId)))
-      (byUser._1, matchingEvents)
-    })
-    eventsJoiningCellCatalogue.map(userEvents =>
+  def withMinSpeeds(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[Event])] =
+    byUserChronologically.map(userEvents =>
       (userEvents._1, Journey.computeMinSpeed(userEvents._2, cellCatalogue.value)))
-  }
 
   def segmentsAndGeometries(cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[String])] = {
     val wkt = Event.geomWkt(cellCatalogue.value) _

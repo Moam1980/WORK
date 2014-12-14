@@ -184,6 +184,16 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     val intersectRatio = 0.034577
   }
 
+  trait WithIntersectionShapes {
+
+    val poly1 = GeomUtils.parseWkt("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", Coordinates.SaudiArabiaUtmSrid)
+    val poly2 = GeomUtils.parseWkt("POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))", Coordinates.SaudiArabiaUtmSrid)
+    val poly3 = GeomUtils.parseWkt("POLYGON ((3 3, 3 4, 4 4, 4 3, 3 3))", Coordinates.SaudiArabiaUtmSrid)
+
+    val poly1And2Intersection =
+      GeomUtils.parseWkt("POLYGON ((0.5 1, 1 1, 1 0, 0.5 0, 0.5 1))", Coordinates.SaudiArabiaUtmSrid)
+  }
+
   "GeomUtils" should "parse WKT text and assign SRID" in new WithShapes {
     GeomUtils.parseWkt(polygonWkt, sridPlanar) should equalGeometry (poly)
   }
@@ -254,4 +264,12 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   it should "return coordinates as a Map including position" in new WithShapes {
     GeomUtils.geomAsPoints(poly) should be (polyPoints)
   }
+
+  it should "intersect two geometries when they intersect" in new WithIntersectionShapes {
+    GeomUtils.intersectionOrFirst(poly1, poly2) should be (poly1And2Intersection)
+  }
+
+  it should "default to the first geometry when the pair of geometries don't intersect" in new WithIntersectionShapes {
+      GeomUtils.intersectionOrFirst(poly1, poly3) should be (poly1)
+    }
 }

@@ -29,6 +29,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       minSpeedPointWkt = Some("POINT (1 1)"))
     val event2 = event1.copy(beginTime = 3, endTime = 4, cellId = 2)
     val event3 = event1.copy(beginTime = 5, endTime = 6, cellId = 3)
+    val event4 = event1.copy(beginTime = 1, endTime = 3, cellId = 4)
   }
 
   trait WithCellCatalogue {
@@ -37,8 +38,9 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
     val cell2 = cell1.copy(cellId = 2, coverageWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))")
     val cell3 = cell1.copy(cellId = 3, coverageWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))")
+    val cell4 = cell1.copy(cellId = 4, coverageWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))")
 
-    implicit val cellCatalogue = Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3)
+    implicit val cellCatalogue = Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3, (1, 4) -> cell4)
   }
 
   trait WithSpatioTemporalSlots extends WithEvents {
@@ -56,6 +58,10 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
       cells = Set((1, 2)))
     val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0)))
+    val slot1And4 = slot1.copy(
+      endTime = 3,
+      geomWkt = "POLYGON ((1.5 0, 0.5 0, 0.5 1, 1.5 1, 1.5 0))",
+      cells = Set((1, 1), (1, 4)))
   }
 
   trait WithCompatibilitySlots extends WithEvents {
@@ -116,25 +122,31 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
 
   "UserModel" should "return an empty list with no events when aggregating same cells" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List()) should be(List())
+      UserModel.aggTemporalOverlapAndSameCell(List()) should be(List())
     }
   
   it should "return a single spatio-temporal item with a list with a single element when aggregating same cells" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List(event1)) should be (List(SpatioTemporalSlot(event1)))
+      UserModel.aggTemporalOverlapAndSameCell(List(event1)) should be (List(SpatioTemporalSlot(event1)))
     }
 
   it should "return different spatio-temporal items with a list with no events with the same cell " +
       "when aggregating same cells" in new WithSpatioTemporalSlots with WithCellCatalogue {
-    UserModel.aggSameCell(List(event1, event2, event3)) should
+    UserModel.aggTemporalOverlapAndSameCell(List(event1, event2, event3)) should
       be(List(SpatioTemporalSlot(event1), SpatioTemporalSlot(event2), SpatioTemporalSlot(event3)))
   }
 
   it should "aggregate consecutive events having the same cell" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List(event1, event1, event1, event2)) should be (List(slot1, SpatioTemporalSlot(event2)))
+      UserModel.aggTemporalOverlapAndSameCell(List(event1, event1, event1, event2)) should
+        be (List(slot1, SpatioTemporalSlot(event2)))
     }
-  
+
+  it should "aggregate consecutive events overlapping in time" in
+    new WithSpatioTemporalSlots with WithCellCatalogue {
+      UserModel.aggTemporalOverlapAndSameCell(List(event1, event1, event4, event1)) should be (List(slot1And4))
+    }
+
   it should "do nothing when computing scores for an empty list" in new WithSpatioTemporalSlots {
     UserModel.computeScores(List()) should be (List())
   }
