@@ -4,7 +4,6 @@
 
 package sa.com.mobily.xdr.spark
 
-
 import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
@@ -63,8 +62,7 @@ class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
       ufdrPs.user.msisdn > 0L) &&
       ufdrPs.duration.beginTime > 0L &&
       ufdrPs.duration.endTime > 0L &&
-      (!ufdrPs.cell.ci.isEmpty || !ufdrPs.cell.sac.isEmpty) &&
-      (!ufdrPs.cell.lac.isEmpty || !ufdrPs.cell.tac.isEmpty) &&
+      (ufdrPs.cell.id._1 != UfdrPSXdrCell.NonDefined && ufdrPs.cell.id._2 != UfdrPSXdrCell.NonDefined) &&
       ufdrPs.protocol.category.identifier > 0
   }.map(_.toEvent)
 }

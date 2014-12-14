@@ -153,8 +153,20 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       user,
       beginTime = 1414184401L * 1000,
       endTime = 1414184401L * 1000,
-      lacTac = Integer.parseInt(ufdrCell.lac, BaseForHexadecimal),
-      cellId = Integer.parseInt(ufdrCell.sac, BaseForHexadecimal),
+      lacTac = 4071,
+      cellId = 44936,
+      eventType = protocol.category.identifier + "." + protocol.id,
+      subsequentLacTac = None,
+      subsequentCellId = None)
+
+    val ufdrPsXdrTacEci = ufdrPsXdr.copy(cell = ufdrCell.copy(lac = "", tac = "0F0F", sac = "", eci = "F0F0"))
+
+    val eventTacEci = Event(
+      user,
+      beginTime = 1414184401L * 1000,
+      endTime = 1414184401L * 1000,
+      lacTac = 3855,
+      cellId = 61680,
       eventType = protocol.category.identifier + "." + protocol.id,
       subsequentLacTac = None,
       subsequentCellId = None)
@@ -172,6 +184,9 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       eci = "",
       mcc = "420",
       mnc = "03")
+    val ufdrCellLacSacId = (4071, 44936)
+    val ufdrCellLac = ufdrCellLacSac.copy(sac = "")
+    val ufdrCellLacId = (4071, -1)
     val ufdrCellLacSacSame = UfdrPSXdrCell(
       rat = Utran,
       lac = "0FE7",
@@ -182,8 +197,11 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       eci = "",
       mcc = "",
       mnc = "")
+    val ufdrCellLacSacSameId = (4071, 44936)
     val ufdrCellSecondLac = ufdrCellLacSac.copy(lac = "0F0F")
+    val ufdrCellSecondLacId = (3855, 44936)
     val ufdrCellSecondSac = ufdrCellLacSac.copy(sac = "F0F0")
+    val ufdrCellSecondSacId = (4071, 61680)
 
     val ufdrCellTacEci = UfdrPSXdrCell(
       rat = Null,
@@ -195,6 +213,11 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       eci = "AF88",
       mcc = "420",
       mnc = "03")
+    val ufdrCellTacEciId = (4071, 44936)
+    val ufdrCellTac = ufdrCellTacEci.copy(eci = "")
+    val ufdrCellTacId = (4071, -1)
+    val ufdrCellTacCi = ufdrCellTacEci.copy(eci = "", ci = "AAAA")
+    val ufdrCellTacCiId = (4071, 43690)
     val ufdrCellTacEciSame = UfdrPSXdrCell(
       rat = Utran,
       lac = "",
@@ -205,10 +228,25 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       eci = "AF88",
       mcc = "",
       mnc = "")
+    val ufdrCellTacEciSameId = (4071, 44936)
     val ufdrCellSecondTac = ufdrCellTacEci.copy(tac = "0F0F")
-    val ufdrCellSecondEci = ufdrCellTacEci.copy(sac = "F0F0")
+    val ufdrCellSecondTacId = (3855, 44936)
+    val ufdrCellSecondEci = ufdrCellTacEci.copy(eci = "F0F0")
+    val ufdrCellSecondEciId = (4071, 61680)
 
     val ufdrCellDifferentObject = Array("0FE7", "AF88")
+
+    val ufdrCellEmpty = UfdrPSXdrCell(
+      rat = Utran,
+      lac = "",
+      rac = "",
+      sac = "",
+      ci = "",
+      tac = "",
+      eci = "",
+      mcc = "",
+      mnc = "")
+    val ufdrCellEmptyId = (-1, -1)
   }
 
   "UfdrPsXdr" should "be built from CSV" in new WithUfdrPsXdr {
@@ -377,8 +415,8 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
     ufdrPsXdr.toEvent should be(event)
   }
 
-  it should "be discarded when UfdrPsXdr is wrong" in new WithUfdrPsXdr {
-    an[Exception] should be thrownBy ufdrPsXdrMod.toEvent
+  it should "parse UfdrPsXdr to Event with TAC Eci" in new WithUfdrPsXdr {
+    ufdrPsXdrTacEci.toEvent should be(eventTacEci)
   }
 
   it should "compare to true two cells with the same lac/tac sac/eci" in new WithEqualityCells {
@@ -409,5 +447,35 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
     ufdrCellTacEci == ufdrCellDifferentObject should be(false)
     ufdrCellTacEci.equals(ufdrCellDifferentObject) should be(false)
+  }
+
+  it should "return lac/sac as identifier" in new WithEqualityCells {
+    ufdrCellLacSac.id should be(ufdrCellLacSacId)
+    ufdrCellLacSacSame.id should be(ufdrCellLacSacSameId)
+    ufdrCellSecondLac.id should be(ufdrCellSecondLacId)
+    ufdrCellSecondSac.id should be(ufdrCellSecondSacId)
+  }
+
+  it should "return tac/eci as identifier" in new WithEqualityCells {
+    ufdrCellTacEci.id should be(ufdrCellTacEciId)
+    ufdrCellTacEciSame.id should be(ufdrCellTacEciSameId)
+    ufdrCellSecondTac.id should be(ufdrCellSecondTacId)
+    ufdrCellSecondEci.id should be(ufdrCellSecondEciId)
+  }
+
+  it should "return tac/ci as identifier when no eci definned, but ci" in new WithEqualityCells {
+    ufdrCellTacCi.id should be(ufdrCellTacCiId)
+  }
+
+  it should "return lac/-1 as identifier when no sac definned" in new WithEqualityCells {
+    ufdrCellLac.id should be(ufdrCellLacId)
+  }
+
+  it should "return tac/-1 as identifier when no eci/ci definned" in new WithEqualityCells {
+    ufdrCellTac.id should be(ufdrCellTacId)
+  }
+
+  it should "return -1/-1 as identifier when no lac/tac and no sac/eci/ci definned" in new WithEqualityCells {
+    ufdrCellEmpty.id should be(ufdrCellEmptyId)
   }
 }
