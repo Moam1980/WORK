@@ -53,14 +53,14 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
     val protocol = Protocol(
       category = P2P,
       id = 1906)
-    val protocolArray = Array[String](
+    val protocolArray = Array(
       P2P.identifier.toString,
       "1906")
     val user = User(
       imei = "357940040696441",
       imsi = "420034103554735",
       msisdn = 200912053883L)
-    val userArray = Array[String]("357940040696441", "420034103554735", "200912053883", "420", "03")
+    val userArray = Array("357940040696441", "420034103554735", "200912053883", "420", "03")
 
     val ufdrCell = UfdrPSXdrCell(
       rat = Null,
@@ -72,10 +72,10 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       eci = "",
       mcc = "420",
       mnc = "03")
-    val ufdrCellArray = Array[String](Null.identifier.toString, "0FE7", "", "AF88", "", "", "", "420", "03")
+    val ufdrCellArray = Array(Null.identifier.toString, "0FE7", "", "AF88", "", "", "", "420", "03")
 
     val ufdrCellIdentifier = (4071, 44936)
-    val ufdrCellIdentifierArray = Array[String]("4071", "44936")
+    val ufdrCellIdentifierArray = Array("4071", "44936")
 
     val transferStats = TransferStats(
       l4UlThroughput = 504L,
@@ -86,7 +86,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       dataTransDwDuration = 0L,
       ulLostRate = 0,
       dwLostRate = 0)
-    val transferStatsArray = Array[String]("504", "40", "1", "1", "0", "0", "0", "0")
+    val transferStatsArray = Array("504", "40", "1", "1", "0", "0", "0", "0")
 
     val ufdrPsXdr = UfdrPsXdr(
       sid = 11692618241L,
@@ -112,15 +112,15 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       transferStats = transferStats,
       host = Some("c.bing.com"),
       firstUri = Some("c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd"),
-      userAgent = Some("Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)" +
-        "Chrome/38.0.2125.104Safari/537.36"),
+      userAgent =
+        Some("Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36"),
       durationMsel = DurationMsel(beginTimeMsel = 97, endTimeMsel = 98),
       clickToContent = None)
 
-    val cellHeader = Array[String]("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
-    val cellIdentifierHeader = Array[String]("LacTac", "SacEci")
-    val userHeader = Array[String]("imei", "imsi", "msisdn", "mcc", "mnc")
-    val transferStatsHeader = Array[String](
+    val cellHeader = Array("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
+    val cellIdentifierHeader = Array("LacTac", "SacEci")
+    val userHeader = Array("imei", "imsi", "msisdn", "mcc", "mnc")
+    val transferStatsHeader = Array(
       "l4UlThroughput",
       "l4DwThroughput",
       "l4UlPackets",
@@ -129,25 +129,23 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       "dataTransDwDuration",
       "ulLostRate",
       "dwLostRate")
-    val hierarchyAggHeader = Array[String]("Date Hour") ++
-      cellIdentifierHeader ++
-      userHeader ++
-      Array[String]("catelogory id", "protocol id") ++
-      transferStatsHeader
+    val hierarchyHeader =
+      Array("Date Hour") ++ cellIdentifierHeader ++ userHeader ++ Array("category id", "protocol id")
+    val hierarchyAggHeader = hierarchyHeader ++ transferStatsHeader
 
-    val ufdrPsXdrHierarchyAgg = UfdrPsXdrHierarchyAgg(
-      hierarchy = UfdrPsXdrHierarchy(
-        hourTime = "2014/10/25 01:01:00",
-        cell = ufdrCell,
-        user = user,
-        protocol = protocol),
-      transferStats = transferStats)
+    val ufdrPsXdrHierarchy = UfdrPsXdrHierarchy(
+      hourTime = "2014/10/25 01:01:00",
+      cell = ufdrCell,
+      user = user,
+      protocol = protocol)
+    val ufdrPsXdrHierarchyAgg = UfdrPsXdrHierarchyAgg(hierarchy = ufdrPsXdrHierarchy, transferStats = transferStats)
 
-    val ufdrPsXdrHierarchyAggArray = Array[String]("2014/10/25 01:01:00") ++
-      ufdrCellIdentifierArray ++
-      userArray ++
-      protocolArray ++
-      transferStatsArray
+    val ufdrPsXdrHierarchyArray =
+      Array("2014/10/25 01:01:00") ++
+        ufdrCellIdentifierArray ++
+        userArray ++
+        protocolArray
+    val ufdrPsXdrHierarchyAggArray = ufdrPsXdrHierarchyArray ++ transferStatsArray
 
     val ufdrPsXdrMod = ufdrPsXdr.copy(cell = ufdrCell.copy( sac = ""))
 
@@ -160,6 +158,57 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       eventType = protocol.category.identifier + "." + protocol.id,
       subsequentLacTac = None,
       subsequentCellId = None)
+  }
+
+  trait WithEqualityCells {
+
+    val ufdrCellLacSac = UfdrPSXdrCell(
+      rat = Null,
+      lac = "0FE7",
+      rac = "",
+      sac = "AF88",
+      ci = "",
+      tac = "",
+      eci = "",
+      mcc = "420",
+      mnc = "03")
+    val ufdrCellLacSacSame = UfdrPSXdrCell(
+      rat = Utran,
+      lac = "0FE7",
+      rac = "",
+      sac = "AF88",
+      ci = "",
+      tac = "",
+      eci = "",
+      mcc = "",
+      mnc = "")
+    val ufdrCellSecondLac = ufdrCellLacSac.copy(lac = "0F0F")
+    val ufdrCellSecondSac = ufdrCellLacSac.copy(sac = "F0F0")
+
+    val ufdrCellTacEci = UfdrPSXdrCell(
+      rat = Null,
+      lac = "",
+      rac = "",
+      sac = "",
+      ci = "",
+      tac = "0FE7",
+      eci = "AF88",
+      mcc = "420",
+      mnc = "03")
+    val ufdrCellTacEciSame = UfdrPSXdrCell(
+      rat = Utran,
+      lac = "",
+      rac = "",
+      sac = "",
+      ci = "",
+      tac = "0FE7",
+      eci = "AF88",
+      mcc = "",
+      mnc = "")
+    val ufdrCellSecondTac = ufdrCellTacEci.copy(tac = "0F0F")
+    val ufdrCellSecondEci = ufdrCellTacEci.copy(sac = "F0F0")
+
+    val ufdrCellDifferentObject = Array("0FE7", "AF88")
   }
 
   "UfdrPsXdr" should "be built from CSV" in new WithUfdrPsXdr {
@@ -308,8 +357,16 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
     ufdrCell.idFields should be (ufdrCellIdentifierArray)
   }
 
+  it should "generate header for hierarchy" in new WithUfdrPsXdr {
+    UfdrPsXdrHierarchy.header should be (hierarchyHeader)
+  }
+
   it should "generate header for hierarchy aggregation" in new WithUfdrPsXdr {
     UfdrPsXdrHierarchyAgg.header should be (hierarchyAggHeader)
+  }
+
+  it should "generate string array for hierarchy" in new WithUfdrPsXdr {
+    ufdrPsXdrHierarchy.fields should be (ufdrPsXdrHierarchyArray)
   }
 
   it should "generate string array for hierarchy aggregation" in new WithUfdrPsXdr {
@@ -322,5 +379,35 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
   it should "be discarded when UfdrPsXdr is wrong" in new WithUfdrPsXdr {
     an[Exception] should be thrownBy ufdrPsXdrMod.toEvent
+  }
+
+  it should "compare to true two cells with the same lac/tac sac/eci" in new WithEqualityCells {
+    ufdrCellLacSac == ufdrCellLacSacSame should be(true)
+    ufdrCellLacSac.equals(ufdrCellLacSacSame) should be(true)
+
+    ufdrCellTacEci == ufdrCellTacEciSame should be(true)
+    ufdrCellTacEci.equals(ufdrCellTacEciSame) should be(true)
+  }
+
+  it should "compare to false two cells with different lac/tac" in new WithEqualityCells {
+    ufdrCellLacSac == ufdrCellSecondLac should be(false)
+    ufdrCellLacSac.equals(ufdrCellSecondLac) should be(false)
+
+    ufdrCellLacSac == ufdrCellSecondSac should be(false)
+    ufdrCellLacSac.equals(ufdrCellSecondSac) should be(false)
+
+    ufdrCellTacEci == ufdrCellSecondTac should be(false)
+    ufdrCellTacEci.equals(ufdrCellSecondTac) should be(false)
+
+    ufdrCellTacEci == ufdrCellSecondEci should be(false)
+    ufdrCellTacEci.equals(ufdrCellSecondEci) should be(false)
+  }
+
+  it should "compare to false two different objects" in new WithEqualityCells {
+    ufdrCellLacSac == ufdrCellDifferentObject should be(false)
+    ufdrCellLacSac.equals(ufdrCellDifferentObject) should be(false)
+
+    ufdrCellTacEci == ufdrCellDifferentObject should be(false)
+    ufdrCellTacEci.equals(ufdrCellDifferentObject) should be(false)
   }
 }

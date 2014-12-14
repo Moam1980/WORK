@@ -27,6 +27,7 @@ class UserTest extends FlatSpec with ShouldMatchers {
     val secondUserImsi = firstUserImsi.copy(imei = "secondImei", msisdn = 2)
     val firstUserMsisdn = User("firstImei", "firstImsi", 1)
     val secondUserMsisdn = firstUserMsisdn.copy(imei = "secondImei", imsi = "secondImsi")
+    val userAnotherClass = Array("firstImei", "firstImsi", "1")
   }
 
   "User" should "identify MCC from IMSI" in new WithUser {
@@ -75,5 +76,10 @@ class UserTest extends FlatSpec with ShouldMatchers {
   it should "compare to false two users with different fields" in new WithEqualityUsers {
     firstUserImei == secondUserImsi should be(false)
     firstUserImei.equals(secondUserImsi) should be(false)
+  }
+
+  it should "compare to false a user with a different class" in new WithEqualityUsers {
+    firstUserImei == userAnotherClass should be(false)
+    firstUserImei.equals(userAnotherClass) should be(false)
   }
 }
