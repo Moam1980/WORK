@@ -48,13 +48,13 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       startTime = 1,
       endTime = 2,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      events = List(event1))
+      cells = Set((1, 1)))
     val slot2 = SpatioTemporalSlot(
       userId = 1,
       startTime = 2,
       endTime = 5,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      events = List(event2))
+      cells = Set((1, 2)))
     val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0)))
   }
 
@@ -75,7 +75,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       startTime = 0,
       endTime = 10,
       geomWkt = prefixWkt,
-      events = List(event1, event2),
+      cells = Set((1, 1), (1, 2)),
       score = Some(CompatibilityScore(0, 0)))
     val slot1 = prefixSlot.copy(
       startTime = 10,
@@ -92,7 +92,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val mergedSlot = slot1.copy(
       endTime = 30,
       geomWkt = mergedWkt,
-      events = List(event1, event2, event1, event2),
+      cells = Set((1, 1), (1, 2)),
       score = Some(CompatibilityScore(0, 0)))
 
     val slot1After = prefixSlot.copy(
@@ -110,7 +110,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val merged2Slot = slot1After.copy(
       endTime = 60,
       geomWkt = merged2Wkt,
-      events = List(event1, event2, event1, event2),
+      cells = Set((1, 1), (1, 2)),
       score = Some(CompatibilityScore(0, 0)))
   }
 
@@ -132,8 +132,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
 
   it should "aggregate consecutive events having the same cell" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggSameCell(List(event1, event1, event1, event2)) should
-        be (List(slot1.copy(events = List(event1, event1, event1)), SpatioTemporalSlot(event2)))
+      UserModel.aggSameCell(List(event1, event1, event1, event2)) should be (List(slot1, SpatioTemporalSlot(event2)))
     }
   
   it should "do nothing when computing scores for an empty list" in new WithSpatioTemporalSlots {
@@ -154,8 +153,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "not merge any slot when the max score is zero" in new WithCompatibilitySlots {
-    UserModel.aggregateCompatible(List(prefixSlot, suffixSlot)) should
-      be (List(prefixSlot, suffixSlot))
+    UserModel.aggregateCompatible(List(prefixSlot, suffixSlot)) should be (List(prefixSlot, suffixSlot))
   }
 
   it should "merge slots when they are in between other slots (and recompute scores)" in new WithCompatibilitySlots {
@@ -163,13 +161,17 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       be (List(prefixSlot, mergedSlot, suffixSlot))
   }
 
-  it should "merge slots when they are no slots before (and recompute scores)" in new WithCompatibilitySlots {
+  it should "merge slots when there are no slots before (and recompute scores)" in new WithCompatibilitySlots {
     UserModel.aggregateCompatible(List(slot1, slot2, suffixSlot)) should be (List(mergedSlot, suffixSlot))
   }
 
-  it should "merge slots when they are no slots after (and recompute scores)" in new WithCompatibilitySlots {
+  it should "merge slots when there are no slots after (and recompute scores)" in new WithCompatibilitySlots {
     UserModel.aggregateCompatible(List(prefixSlot, slot1, slot2)) should
       be (List(prefixSlot, mergedSlot.copy(score = None)))
+  }
+
+  it should "merge slots when there are no slots before and after" in new WithCompatibilitySlots {
+    UserModel.aggregateCompatible(List(slot1, slot2)) should be (List(mergedSlot.copy(score = None)))
   }
 
   it should "merge slots when there are several pairs with the same score (and recompute scores)" in

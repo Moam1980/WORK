@@ -18,7 +18,7 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       startTime = 1,
       endTime = 10,
       geomWkt = "POLYGON ((3 3, 3 6, 6 6, 6 3, 3 3))",
-      orderedCells = List((2, 4), (2, 6), (2, 6), (2, 4)),
+      cells = Set((2, 4), (2, 6)),
       firstEventBeginTime = 3,
       lastEventEndTime = 9)
   }
@@ -26,9 +26,5 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   "Dwell" should "build geometry from WKT" in new WithDwell {
     dwell.geom should
       equalGeometry(GeomUtils.parseWkt("POLYGON ((3 3, 3 6, 6 6, 6 3, 3 3))", Coordinates.SaudiArabiaUtmSrid))
-  }
-
-  it should "compute the set of cells seen" in new WithDwell {
-    dwell.cells should be (Set((2, 4), (2, 6)))
   }
 }

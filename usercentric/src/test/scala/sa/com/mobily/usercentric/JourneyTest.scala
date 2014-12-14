@@ -89,7 +89,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
       startTime = 1,
       endTime = 10,
       geomWkt = "LINESTRING (0.5 0.5, 0.5 0.5)",
-      orderedCells = List((1, 1), (1, 1)),
+      cells = Set((1, 1)),
       firstEventBeginTime = 3,
       lastEventEndTime = 8)
     val journeyVp = JourneyViaPoint(
@@ -98,7 +98,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
       startTime = 3,
       endTime = 8,
       geomWkt = "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
-      orderedCells = List((1, 1), (1, 1)),
+      cells = Set((1, 1)),
       firstEventBeginTime = 3,
       lastEventEndTime = 8)
   }
@@ -226,16 +226,8 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
       equalGeometry(GeomUtils.parseWkt("LINESTRING (0.5 0.5, 0.5 0.5)", Coordinates.SaudiArabiaUtmSrid))
   }
 
-  it should "compute the set of cells seen" in new WithJourney {
-    journey.cells should be (Set((1, 1)))
-  }
-
   "JourneyViaPoint" should "build geometry from WKT" in new WithJourney {
     journeyVp.geom should
       equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", Coordinates.SaudiArabiaUtmSrid))
-  }
-
-  it should "compute the set of cells seen" in new WithJourney {
-    journeyVp.cells should be (Set((1, 1)))
   }
 }
