@@ -57,15 +57,15 @@ class UfdrPsXdrFunctions(self: RDD[UfdrPsXdr]) {
 
 class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
 
-  def toEvent: RDD[Event] = self.filter { ufdrCs =>
-    ((!ufdrCs.user.imei.isEmpty ||
-        !ufdrCs.user.imsi.isEmpty ||
-        ufdrCs.user.msisdn > 0L) &&
-        ufdrCs.duration.beginTime > 0L &&
-        ufdrCs.duration.endTime > 0L &&
-        (!ufdrCs.cell.ci.isEmpty || !ufdrCs.cell.sac.isEmpty) &&
-        (!ufdrCs.cell.lac.isEmpty || !ufdrCs.cell.tac.isEmpty) &&
-        ufdrCs.protocol.category.identifier > 0)
+  def toEvent: RDD[Event] = self.filter { ufdrPs =>
+    (!ufdrPs.user.imei.isEmpty ||
+      !ufdrPs.user.imsi.isEmpty ||
+      ufdrPs.user.msisdn > 0L) &&
+      ufdrPs.duration.beginTime > 0L &&
+      ufdrPs.duration.endTime > 0L &&
+      (!ufdrPs.cell.ci.isEmpty || !ufdrPs.cell.sac.isEmpty) &&
+      (!ufdrPs.cell.lac.isEmpty || !ufdrPs.cell.tac.isEmpty) &&
+      ufdrPs.protocol.category.identifier > 0
   }.map(_.toEvent)
 }
 

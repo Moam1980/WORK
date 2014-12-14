@@ -51,6 +51,15 @@ case class UfdrPSXdrCell(
   def fields: Array[String] = Array(rat.identifier.toString, lac, rac, sac, ci, tac, eci, mcc, mnc)
 
   def idFields: Array[String] = Array(id._1.toString, id._2.toString)
+
+  override def equals(other: Any): Boolean = other match {
+    case that: UfdrPSXdrCell => (that canEqual this) && (this.id == that.id)
+    case _ => false
+  }
+
+  override def hashCode: Int = id.hashCode
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[UfdrPSXdrCell]
 }
 
 object UfdrPSXdrCell {
@@ -97,27 +106,31 @@ case class UfdrPsXdrHierarchy(
     hourTime: String,
     cell: UfdrPSXdrCell,
     user: User,
-    protocol: Protocol)
+    protocol: Protocol) {
+
+  def fields: Array[String] =
+    Array(hourTime) ++
+      cell.idFields ++
+      user.fields ++
+      Array(protocol.category.identifier.toString, protocol.id.toString)
+}
+
+object UfdrPsXdrHierarchy {
+
+  def header: Array[String] =
+    Array("Date Hour") ++ UfdrPSXdrCell.idHeader ++ User.header ++ Array("category id", "protocol id")
+}
 
 case class UfdrPsXdrHierarchyAgg(
     hierarchy: UfdrPsXdrHierarchy,
     transferStats: TransferStats) {
 
-  def fields: Array[String] =
-    Array(hierarchy.hourTime) ++
-      hierarchy.cell.idFields ++
-      hierarchy.user.fields ++
-      Array(
-        hierarchy.protocol.category.identifier.toString,
-        hierarchy.protocol.id.toString) ++
-      transferStats.fields
+  def fields: Array[String] = hierarchy.fields ++ transferStats.fields
 }
 
 object UfdrPsXdrHierarchyAgg {
 
-  def header: Array[String] =
-    Array("Date Hour") ++ UfdrPSXdrCell.idHeader ++ User.header ++ Array("catelogory id", "protocol id") ++
-      TransferStats.header
+  def header: Array[String] = UfdrPsXdrHierarchy.header ++ TransferStats.header
 }
 
 
