@@ -12,9 +12,32 @@ case class TransferStats(
     dataTransUlDuration: Long = 0L,
     dataTransDwDuration: Long = 0L,
     ulLostRate: Int = 0,
-    dwLostRate: Int = 0)
+    dwLostRate: Int = 0) {
+
+  def fields: Array[String] =
+    Array(
+      l4UlThroughput.toString,
+      l4DwThroughput.toString,
+      l4UlPackets.toString,
+      l4DwPackets.toString,
+      dataTransUlDuration.toString,
+      dataTransDwDuration.toString,
+      ulLostRate.toString,
+      dwLostRate.toString)
+}
 
 object TransferStats {
+
+  def header: Array[String] =
+    Array(
+      "l4UlThroughput",
+      "l4DwThroughput",
+      "l4UlPackets",
+      "l4DwPackets",
+      "dataTransUlDuration",
+      "dataTransDwDuration",
+      "ulLostRate",
+      "dwLostRate")
 
   def aggregate(t1: Option[TransferStats], t2: Option[TransferStats]): TransferStats = {
     (t1, t2) match {
@@ -35,29 +58,5 @@ object TransferStats {
       dataTransDwDuration = t1.dataTransDwDuration + t2.dataTransDwDuration,
       ulLostRate = t1.ulLostRate + t2.ulLostRate,
       dwLostRate = t1.dwLostRate + t2.dwLostRate)
-  }
-
-  def header: Array[String] = {
-    Array[String](
-      "l4UlThroughput",
-      "l4DwThroughput",
-      "l4UlPackets",
-      "l4DwPackets",
-      "dataTransUlDuration",
-      "dataTransDwDuration",
-      "ulLostRate",
-      "dwLostRate")
-  }
-
-  def fields(transferStats: TransferStats): Array[String] = {
-    Array[String](
-      transferStats.l4UlThroughput.toString,
-      transferStats.l4DwThroughput.toString,
-      transferStats.l4UlPackets.toString,
-      transferStats.l4DwPackets.toString,
-      transferStats.dataTransUlDuration.toString,
-      transferStats.dataTransDwDuration.toString,
-      transferStats.ulLostRate.toString,
-      transferStats.dwLostRate.toString)
   }
 }

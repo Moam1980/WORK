@@ -78,11 +78,11 @@ class TransferStatsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return fields as String for t1" in new WithTransferStats {
-    TransferStats.fields(t1) should be (t1Fields)
+    t1.fields should be (t1Fields)
   }
 
   it should "return fields as String for t2" in new WithTransferStats {
-    TransferStats.fields(t2) should be (t2Fields)
+    t2.fields should be (t2Fields)
   }
 
   it should "return header as String" in new WithTransferStats {

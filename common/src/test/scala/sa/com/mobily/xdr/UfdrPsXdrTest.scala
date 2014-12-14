@@ -74,6 +74,9 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       mnc = "03")
     val ufdrCellArray = Array[String](Null.identifier.toString, "0FE7", "", "AF88", "", "", "", "420", "03")
 
+    val ufdrCellIdentifier = (4071, 44936)
+    val ufdrCellIdentifierArray = Array[String]("4071", "44936")
+
     val transferStats = TransferStats(
       l4UlThroughput = 504L,
       l4DwThroughput = 40L,
@@ -115,6 +118,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       clickToContent = None)
 
     val cellHeader = Array[String]("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
+    val cellIdentifierHeader = Array[String]("LacTac", "SacEci")
     val userHeader = Array[String]("imei", "imsi", "msisdn", "mcc", "mnc")
     val transferStatsHeader = Array[String](
       "l4UlThroughput",
@@ -126,7 +130,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       "ulLostRate",
       "dwLostRate")
     val hierarchyAggHeader = Array[String]("Date Hour") ++
-      cellHeader ++
+      cellIdentifierHeader ++
       userHeader ++
       Array[String]("catelogory id", "protocol id") ++
       transferStatsHeader
@@ -140,7 +144,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       transferStats = transferStats)
 
     val ufdrPsXdrHierarchyAggArray = Array[String]("2014/10/25 01:01:00") ++
-      ufdrCellArray ++
+      ufdrCellIdentifierArray ++
       userArray ++
       protocolArray ++
       transferStatsArray
@@ -292,8 +296,16 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
     UfdrPSXdrCell.header should be (cellHeader)
   }
 
+  it should "generate header for cell identifier" in new WithUfdrPsXdr {
+    UfdrPSXdrCell.idHeader should be (cellIdentifierHeader)
+  }
+
   it should "generate string array for cell" in new WithUfdrPsXdr {
-    UfdrPSXdrCell.fields(ufdrCell) should be (ufdrCellArray)
+    ufdrCell.fields should be (ufdrCellArray)
+  }
+
+  it should "generate string array for cell identifier" in new WithUfdrPsXdr {
+    ufdrCell.idFields should be (ufdrCellIdentifierArray)
   }
 
   it should "generate header for hierarchy aggregation" in new WithUfdrPsXdr {
@@ -301,7 +313,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "generate string array for hierarchy aggregation" in new WithUfdrPsXdr {
-    UfdrPsXdrHierarchyAgg.fields(ufdrPsXdrHierarchyAgg) should be (ufdrPsXdrHierarchyAggArray)
+    ufdrPsXdrHierarchyAgg.fields should be (ufdrPsXdrHierarchyAggArray)
   }
 
   it should "parse UfdrPsXdr to Event" in new WithUfdrPsXdr {
