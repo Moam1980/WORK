@@ -25,6 +25,8 @@ class UfdrPsXdrCsvReader(self: RDD[String]) {
   def toUfdrPsXdr: RDD[UfdrPsXdr] = toParsedUfdrPsXdr.values
 
   def toUfdrPsXdrErrors: RDD[ParsingError] = toParsedUfdrPsXdr.errors
+
+  def saveErrors(path: String): Unit = toUfdrPsXdrErrors.map(_.line).saveAsTextFile(path)
 }
 
 class UfdrPsXdrRowReader(self: RDD[Row]) {

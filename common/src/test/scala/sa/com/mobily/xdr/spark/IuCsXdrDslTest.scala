@@ -94,8 +94,14 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
   }
 
   it should "get correctly parsed IuCS to Events" in new WithIuCsXdrAndEventText {
-    val iuCsEvents = iuCsXdrEvents.toIuCsXdr
-    iuCsEvents.toEvent.count should be (2)
+    iuCsXdrEvents.toIuCsXdr.toEvent.count should be (2)
+  }
+
+  it should "save bad formatted records in a CSV file" in new WithIuCsXdrText {
+    val path = File.makeTemp().name
+    iuCsXdrEvents.saveErrors(path)
+    sc.textFile(path).count should be (1)
+    File(path).deleteRecursively
   }
 
   it should "parse RDD[IuCsXdr] to RDD[Event]" in new WithIuCsXdrAndEventText {

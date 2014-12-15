@@ -100,4 +100,11 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
   it should "parse RDD[AiCsXdr] to RDD[Event]" in new WithAiCsEventsToParse {
     aiCsXdrs.toAiCsXdr.toEvent.collect should be(eventsParsed.collect)
   }
+
+  it should "save bad formatted records in a CSV file" in new WithAiCsEvents {
+    val path = File.makeTemp().name
+    aiCsXdrs.saveErrors(path)
+    sc.textFile(path).count should be (1)
+    File(path).deleteRecursively
+  }
 }
