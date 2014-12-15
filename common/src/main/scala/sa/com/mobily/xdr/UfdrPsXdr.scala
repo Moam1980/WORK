@@ -45,8 +45,15 @@ case class UfdrPSXdrCell(
     mnc: String) {
 
   lazy val id: (Int, Int) =
-    (Integer.parseInt(Event.lacOrTac(lac, tac), BaseForHexadecimal),
-      Integer.parseInt(Event.sacOrCi(sac, eci), BaseForHexadecimal))
+    if (!lac.isEmpty)
+      if (!sac.isEmpty) (Integer.parseInt(lac, BaseForHexadecimal), Integer.parseInt(sac, BaseForHexadecimal))
+      else (Integer.parseInt(lac, BaseForHexadecimal), UfdrPSXdrCell.NonDefined)
+    else if (!tac.isEmpty)
+      if (!eci.isEmpty) (Integer.parseInt(tac, BaseForHexadecimal), Integer.parseInt(eci, BaseForHexadecimal))
+      else if (!ci.isEmpty) (Integer.parseInt(tac, BaseForHexadecimal), Integer.parseInt(ci, BaseForHexadecimal))
+      else (Integer.parseInt(tac, BaseForHexadecimal), UfdrPSXdrCell.NonDefined)
+    else (UfdrPSXdrCell.NonDefined, UfdrPSXdrCell.NonDefined)
+
 
   def fields: Array[String] = Array(rat.identifier.toString, lac, rac, sac, ci, tac, eci, mcc, mnc)
 
@@ -63,6 +70,8 @@ case class UfdrPSXdrCell(
 }
 
 object UfdrPSXdrCell {
+
+  final val NonDefined: Int = -1
 
   def header: Array[String] = Array("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
 
@@ -94,8 +103,8 @@ case class UfdrPsXdr(
       user = user,
       beginTime = duration.beginTime,
       endTime = duration.endTime,
-      lacTac = Integer.parseInt(Event.lacOrTac(cell.lac, cell.tac), BaseForHexadecimal),
-      cellId = Integer.parseInt(Event.sacOrCi(cell.sac, cell.ci), BaseForHexadecimal),
+      lacTac = cell.id._1,
+      cellId = cell.id._2,
       eventType = protocol.category.identifier + "." + protocol.id,
       subsequentLacTac = None,
       subsequentCellId = None)
@@ -159,7 +168,7 @@ object UfdrPsXdr {
         interfaceId = parseNetworkInterface(interfaceIdText),
         duration = Duration(beginTime = beginTimeText.toLong * 1000, endTime = endTimeText.toLong * 1000),
         protocol = Protocol(category = parseProtocolCategory(protocolCategoryText), id = protocolIdText.toInt),
-        user = User(imei = imeiText, imsi = imsiText, msisdn = msisdnText.toLong),
+        user = User(imei = imeiText, imsi = imsiText, msisdn = parseLong(msisdnText).getOrElse(0L)),
         msInet = Inet(ip = msIpText, port = msPortText.toInt),
         serverInet = Inet(ip = serverIpText, port = serverPortText.toInt),
         apn = apnText,

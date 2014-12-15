@@ -208,7 +208,62 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val wrongRows = sc.parallelize(List(row, row2, wrongRow))
   }
 
-  trait WithUfdrPsXdrEvents extends WithUfdrPsXdrsText {
+  trait WithUfdrPsXdrEvents {
+
+    val ufdrPsXdrLine1 = "11692618241|1|1414184401|1414184401|1|1906|200912053883|420034103554735|357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|0FE7||" +
+      "AF88||||504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98||||420|03"
+    val ufdrPsXdrLine2 = "560917079|420034122616618|1|866173010386736"
+    val ufdrPsXdrLine3 = "11692618241|3|1414184401|1414184401|5|1906|200912053883|420034103554735|357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|0FE7||" +
+      "AF88||||504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine4 = "11692618241|3|1414184401|1414184401|1|1906|200912053883|420034103554735|357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|||" +
+      "||0F0F|F0F0|504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine5 = "11692618241|3|1414184401|1414184401|1|1906|200912053883||357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|||" +
+      "||0F0F|F0F0|504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine6 = "11692618241|3|1414184401|1414184401|1|1906||420034103554735|357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|||" +
+      "||0F0F|F0F0|504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine7 = "11692618241|3|1414184401|1414184401|1|1906|||357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|||" +
+      "||0F0F|F0F0|504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine8 = "11692618241|3|1414184401|1414184401|1|1906||420034103554735||" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|||" +
+      "||0F0F|F0F0|504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine9 = "11692618241|3|1414184401|1414184401|1|1906|200912053883|||" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|||" +
+      "||0F0F|F0F0|504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98|1|1|1|420|03"
+    val ufdrPsXdrLine10 = "11692618241|1||1414184401|1|1906|200912053883|420034103554735|357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|0FE7||" +
+      "AF88||||504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98||||420|03"
+    val ufdrPsXdrLine11 = "11692618241|1|1414184401||1|1906|200912053883|420034103554735|357940040696441|" +
+      "100.114.249.146|207.46.194.10|56194|80|WEB2|84.23.103.137|84.23.98.115||84.23.98.97|10.201.55.114|0|0FE7||" +
+      "AF88||||504|40|1|1||0|c.bing.com|c.bing.com/c.gif?anx_uid=4894933205928070566&red3=msan_pd|" +
+      "Mozilla/5.0(WindowsNT6.1;WOW64)AppleWebKit/537.36(KHTML-likeGecko)Chrome/38.0.2125.104Safari/537.36|" +
+      "97|98||||420|03"
+    val ufdrPsXdrs = sc.parallelize(
+      List(ufdrPsXdrLine1, ufdrPsXdrLine2, ufdrPsXdrLine3, ufdrPsXdrLine4, ufdrPsXdrLine5, ufdrPsXdrLine6,
+        ufdrPsXdrLine7, ufdrPsXdrLine8, ufdrPsXdrLine9, ufdrPsXdrLine10, ufdrPsXdrLine11))
 
     val event1 = Event(
       user = User("357940040696441", "420034103554735", 200912053883L),
@@ -220,8 +275,14 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       subsequentLacTac = None,
       subsequentCellId = None)
 
-    val event2 = event1.copy(eventType = "5.1906")
-    val events = sc.parallelize(Array(event1, event2))
+    val event3 = event1.copy(eventType = "5.1906")
+    val event4 = event1.copy(lacTac = 3855, cellId = 61680)
+    val event5 = event4.copy(user = User("", "420034103554735", 200912053883L))
+    val event6 = event4.copy(user = User("357940040696441", "420034103554735", 0L))
+    val event7 = event4.copy(user = User("357940040696441", "", 0L))
+    val event8 = event4.copy(user = User("", "420034103554735", 0L))
+    val event9 = event4.copy(user = User("", "", 200912053883L))
+    val events = sc.parallelize(Array(event1, event3, event4, event5, event6, event7, event8, event9))
   }
 
   "UfdrPsXdrDsl" should "get correctly parsed ufdrPsXdrs" in new WithUfdrPsXdrsText {
