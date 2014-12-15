@@ -258,4 +258,11 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
   it should "parse RDD[UfdrPsXdrs] to RDD[Event]" in new WithUfdrPsXdrEvents {
     ufdrPsXdrs.toUfdrPsXdr.toEvent.collect should be (events.collect)
   }
+
+  it should "save bad formatted records in a CSV file" in new WithUfdrPsXdrsText {
+    val path = File.makeTemp().name
+    ufdrPsXdrs.saveErrors(path)
+    sc.textFile(path).count should be (1)
+    File(path).deleteRecursively
+  }
 }

@@ -23,6 +23,8 @@ class AiCsXdrCsvReader(self: RDD[String]) {
   def toAiCsXdr: RDD[AiCsXdr] = toParsedAiCsXdr.values
 
   def toAiCsXdrErrors: RDD[ParsingError] = toParsedAiCsXdr.errors
+
+  def saveErrors(path: String): Unit = toAiCsXdrErrors.map(_.line).saveAsTextFile(path)
 }
 
 class AiCsXdrRowReader(self: RDD[Row]) {
