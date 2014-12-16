@@ -41,29 +41,31 @@ class AiCsXdrWriter(self: RDD[AiCsXdr]) {
 
 class AiCsXdrParser(self: RDD[AiCsXdr]) {
 
-  def toEvent: RDD[Event] = self.filter {
-    aiCs =>
-      aiCs.csUser.msisdn.isDefined &&
-        !aiCs.aiTime.csTime.begin.isEmpty &&
-        !aiCs.aiTime.csTime.end.isEmpty &&
-        aiCs.aiCell.csCell.firstLac.isDefined &&
-        aiCs.aiCell.firstCellId.isDefined &&
-        aiCs.aiCall.csCall.callType.isDefined
+  def toEvent: RDD[Event] = self.filter { aiCs =>
+    (aiCs.csUser.imei.isDefined ||
+      aiCs.csUser.imsi.isDefined ||
+      aiCs.csUser.msisdn.isDefined) &&
+    !aiCs.aiTime.csTime.begin.isEmpty &&
+    !aiCs.aiTime.csTime.end.isEmpty &&
+    aiCs.aiCell.csCell.firstLac.isDefined &&
+    aiCs.aiCell.firstCellId.isDefined &&
+    aiCs.aiCall.csCall.callType.isDefined
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
-    val nonEmptyOption = List(
+    val nonEmptyOptionString = List(
       ("imei", aiCs.csUser.imei),
       ("imsi", aiCs.csUser.imsi),
       ("cellId", aiCs.aiCell.firstCellId),
-      ("msisdn", aiCs.csUser.msisdn),
       ("firstLac", aiCs.aiCell.csCell.firstLac))
     val nonEmptyOptionShort = List(("type", aiCs.aiCall.csCall.callType))
+    val nonEmptyOptionLong = List(("msisdn", aiCs.csUser.msisdn))
     val nonEmptyString = List(("beginTime", aiCs.aiTime.csTime.begin), ("endTime", aiCs.aiTime.csTime.end))
 
     List(("total", 1)) ++
-      SanityUtils.sanityMethod[Option[String]](nonEmptyOption, value => !value.isDefined) ++
+      SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => !value.isDefined) ++
       SanityUtils.sanityMethod[Option[Short]](nonEmptyOptionShort, value => !value.isDefined) ++
+      SanityUtils.sanityMethod[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
       SanityUtils.sanityMethod[String](nonEmptyString, value => value.isEmpty)
   }).reduceByKey(_ + _)
 }

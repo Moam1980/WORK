@@ -7,7 +7,7 @@ package sa.com.mobily.xdr
 case class CsUser(
     imei: Option[String],
     imsi: Option[String],
-    msisdn: Option[String],
+    msisdn: Option[Long],
     imeisv: Option[String],
     tmsi: Option[String],
     oldTmsi: Option[String])

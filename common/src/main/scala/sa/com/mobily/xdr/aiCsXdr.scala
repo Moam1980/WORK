@@ -124,11 +124,11 @@ final case class  AiCsXdr(
       User(
         imei = csUser.imei.getOrElse(""),
         imsi = csUser.imsi.getOrElse(""),
-        msisdn = csUser.msisdn.get.toLong),
-      beginTime = java.lang.Long.parseLong(aiTime.csTime.begin, BaseForHexadecimal),
-      endTime = java.lang.Long.parseLong(aiTime.csTime.end, BaseForHexadecimal),
-      lacTac = Integer.parseInt(aiCell.csCell.firstLac.get, BaseForHexadecimal),
-      cellId = Integer.parseInt(aiCell.firstCellId.get, BaseForHexadecimal),
+        msisdn = csUser.msisdn.getOrElse(0L)),
+      beginTime = hexToLong(aiTime.csTime.begin),
+      endTime = hexToLong(aiTime.csTime.end),
+      lacTac = hexToInt(aiCell.csCell.firstLac.get),
+      cellId = hexToInt(aiCell.firstCellId.get),
       eventType = aiCall.csCall.callType.get.toString,
       subsequentLacTac = Try { aiCell.csCell.secondLac.get.toInt }.toOption,
       subsequentCellId = Try { aiCell.secondCellId.get.toInt }.toOption)
@@ -247,7 +247,7 @@ object AiCsXdr {
         csUser = CsUser(
           imei = parseString(imei),
           imsi = parseString(imsi),
-          msisdn = parseString(msisdn),
+          msisdn = parseLong(msisdn),
           imeisv = parseString(imeisv),
           tmsi = parseString(tmsi),
           oldTmsi = parseString(oldTmsi)),
@@ -496,7 +496,7 @@ object AiCsXdr {
         csUser = CsUser(
           imei = stringOption(imei),
           imsi = stringOption(imsi),
-          msisdn = stringOption(msisdn),
+          msisdn = longOption(msisdn),
           imeisv = stringOption(imeisv),
           tmsi = stringOption(tmsi),
           oldTmsi = stringOption(oldTmsi)),

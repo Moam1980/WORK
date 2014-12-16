@@ -63,10 +63,10 @@ class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
     (!ufdrPs.user.imei.isEmpty ||
       !ufdrPs.user.imsi.isEmpty ||
       ufdrPs.user.msisdn > 0L) &&
-      ufdrPs.duration.beginTime > 0L &&
-      ufdrPs.duration.endTime > 0L &&
-      (ufdrPs.cell.id._1 != UfdrPSXdrCell.NonDefined && ufdrPs.cell.id._2 != UfdrPSXdrCell.NonDefined) &&
-      ufdrPs.protocol.category.identifier > 0
+    ufdrPs.duration.beginTime > 0L &&
+    ufdrPs.duration.endTime > 0L &&
+    (ufdrPs.cell.id._1 != UfdrPSXdrCell.NonDefined && ufdrPs.cell.id._2 != UfdrPSXdrCell.NonDefined) &&
+    ufdrPs.protocol.category.identifier > 0
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(ufdrPs => {

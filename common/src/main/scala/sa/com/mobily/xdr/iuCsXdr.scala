@@ -120,7 +120,7 @@ case class IuCsXdr(
       User(
         imei = user.imei.getOrElse(""),
         imsi = user.imsi.getOrElse(""),
-        msisdn = user.msisdn.get.toLong),
+        msisdn = user.msisdn.getOrElse(0L)),
       beginTime = hexToLong(time.csTime.begin),
       endTime = hexToLong(time.csTime.end),
       lacTac = hexToInt(cell.csCell.firstLac.get),
@@ -184,7 +184,7 @@ object IuCsXdr {
         user = CsUser(
           parseString(imei),
           imsi = parseString(imsi),
-          msisdn = parseString(callingNumber),
+          msisdn = parseLong(callingNumber),
           imeisv = parseString(imeisv),
           tmsi = parseString(tmsi),
           oldTmsi = parseString(tmsiOld)),
@@ -394,7 +394,7 @@ object IuCsXdr {
         user = CsUser(
           imsi = stringOption(imsi),
           imei = stringOption(imei),
-          msisdn = stringOption(msisdn),
+          msisdn = longOption(msisdn),
           imeisv = stringOption(imeisv),
           tmsi = stringOption(tmsi),
           oldTmsi = stringOption(tmsiOld)),
