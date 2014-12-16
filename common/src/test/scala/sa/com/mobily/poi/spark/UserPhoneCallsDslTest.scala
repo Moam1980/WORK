@@ -7,12 +7,13 @@ package sa.com.mobily.poi.spark
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.mllib.linalg.Vectors
 import org.scalatest._
+
 import sa.com.mobily.poi.UserPhoneCalls
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
-class UserPhoneCallsDslTest extends  FlatSpec with ShouldMatchers with LocalSparkContext{
+class UserPhoneCallsDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
-  import sa.com.mobily.poi.spark.UserPhoneCallsDsl._
+  import UserPhoneCallsDsl._
 
   trait WithPhoneCallsDslText {
 
