@@ -274,4 +274,11 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     eventsWithNonMatchingCell.length should be (1)
     eventsWithNonMatchingCell should contain (event3)
   }
+
+  it should "save as CSV metrics of events" in new WithEvents {
+    val path = File.makeTemp().name
+    events.saveMetrics(path)
+    events.sparkContext.textFile(path).count should be (5)
+    File(path).deleteRecursively
+  }
 }

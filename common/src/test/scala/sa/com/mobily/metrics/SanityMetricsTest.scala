@@ -79,4 +79,10 @@ class SanityMetricsTest extends FlatSpec with ShouldMatchers with LocalSparkCont
     MetricResultKey("Total-number-items", MetricKey(1311028200000L, Some(MetricKey(859)))).toString should
       be("Total-number-items: 1311028200000-859")
   }
+
+  it should "return fields on CSV format" in new WithEventsForMetrics {
+    key0.canEqual(event1) should be(false)
+    MetricResultKey("Total-number-items", MetricKey(1311028200000L, Some(MetricKey(859)))).toString should
+      be("Total-number-items: 1311028200000-859")
+  }
 }

@@ -9,13 +9,14 @@ import scala.language.implicitConversions
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
+import org.apache.spark.sql.Row
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event._
 import sa.com.mobily.flickering.{Flickering, FlickeringCells}
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
+import sa.com.mobily.metrics.{Measurable, MetricResult, MetricResultParam}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 
 class EventCsvReader(self: RDD[String]) {
 
@@ -72,6 +73,19 @@ class EventWriter(self: RDD[Event]) {
   def saveAsParquetFile(path: String): Unit = SparkWriter.saveAsParquetFile[Event](self, path)
 }
 
+class EventStatistics(self: RDD[Event]) {
+
+  def metrics: MetricResult = {
+    implicit val accumulableParam = new MetricResultParam[Measurable]()
+    val accumulable = self.context.accumulable(MetricResult(), "sanity")
+
+    self.foreach(event => accumulable += event)
+    accumulable.value
+  }
+
+  def saveMetrics(file: String): Unit = self.context.parallelize(metrics.toCsvFields).saveAsTextFile(file)
+}
+
 trait EventDsl {
 
   implicit def eventCsvReader(self: RDD[String]): EventCsvReader = new EventCsvReader(self)
@@ -81,6 +95,8 @@ trait EventDsl {
   implicit def eventFunctions(events: RDD[Event]): EventFunctions = new EventFunctions(events)
 
   implicit def eventWriter(events: RDD[Event]): EventWriter = new EventWriter(events)
+
+  implicit def eventStatistics(events: RDD[Event]): EventStatistics = new EventStatistics(events)
 }
 
 object EventDsl extends EventDsl with ParsedItemsDsl

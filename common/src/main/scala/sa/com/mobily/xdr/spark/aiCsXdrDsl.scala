@@ -7,11 +7,11 @@ package sa.com.mobily.xdr.spark
 import scala.language.implicitConversions
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
+import org.apache.spark.sql.Row
 
 import sa.com.mobily.event.Event
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.xdr._
 
 class AiCsXdrCsvReader(self: RDD[String]) {

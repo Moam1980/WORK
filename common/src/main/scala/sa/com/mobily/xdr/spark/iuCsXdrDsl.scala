@@ -10,8 +10,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
 import sa.com.mobily.event.Event
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.xdr.IuCsXdr
 
 class IuCsXdrCsvReader(self: RDD[String]) {

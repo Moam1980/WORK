@@ -13,7 +13,7 @@ import sa.com.mobily.parsing.{CsvParser, ParsedItem, RowParser}
 
 object SparkParser {
 
-  def  fromCsv[T](lines: RDD[String])(implicit parser: CsvParser[T]): RDD[ParsedItem[T]] =
+  def fromCsv[T](lines: RDD[String])(implicit parser: CsvParser[T]): RDD[ParsedItem[T]] =
     lines.map(line => CsvParser.fromLine(line))
 
   def fromRow[T:ClassTag](rows: RDD[Row])(implicit parser: RowParser[T]): RDD[T] =
