@@ -6,12 +6,14 @@ package sa.com.mobily.xdr.spark
 
 import scala.language.implicitConversions
 
+import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
 import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
+import sa.com.mobily.utils.SanityUtils
 import sa.com.mobily.xdr.IuCsXdr
 
 class IuCsXdrCsvReader(self: RDD[String]) {
@@ -47,6 +49,22 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
       iuCs.cell.firstSac.isDefined &&
       iuCs.call.csCall.callType.isDefined
   }.map(_.toEvent)
+
+  def sanity: RDD[(String, Int)] = self.flatMap(iuCs => {
+    val nonEmptyOption = List(
+      ("imei", iuCs.user.imei),
+      ("msisdn", iuCs.user.msisdn),
+      ("imsi", iuCs.user.imsi),
+      ("firstLac", iuCs.cell.csCell.firstLac),
+      ("firstSac", iuCs.cell.firstSac))
+    val nonEmptyOptionShort = List(("type", iuCs.call.csCall.callType))
+    val nonEmptyString = List(("beginTime", iuCs.time.csTime.begin), ("endTime", iuCs.time.csTime.end))
+
+    List(("total", 1)) ++
+      SanityUtils.sanityMethod[Option[String]](nonEmptyOption, value => value.isEmpty) ++
+      SanityUtils.sanityMethod[Option[Short]](nonEmptyOptionShort, value => !value.isDefined) ++
+      SanityUtils.sanityMethod[String](nonEmptyString, value => value.isEmpty)
+  }).reduceByKey(_ + _)
 }
 
 trait IuCsXdrDsl {
