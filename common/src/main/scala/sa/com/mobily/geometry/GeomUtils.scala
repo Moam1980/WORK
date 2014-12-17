@@ -16,6 +16,7 @@ import org.geotools.referencing.CRS
 object GeomUtils {
 
   val DefaultNumPoints = 50
+  val PointInsideGeometryBufferFactor = 10
 
   def geomFactory(srid: Integer, precisionModel: PrecisionModel = Coordinates.UtmPrecisionModel): GeometryFactory =
     new GeometryFactory(precisionModel, srid)
@@ -131,8 +132,8 @@ object GeomUtils {
   def ensureNearestPointInGeom(p: Point, geom: Geometry): Point =
     if (p.intersects(geom)) p
     else if (!p.getPrecisionModel.isFloating)
-      p.buffer(2 / p.getPrecisionModel.getScale).intersection(geom).getCentroid
-    else p.buffer(p.distance(geom) * 2).intersection(geom).getCentroid
+      p.buffer(PointInsideGeometryBufferFactor / p.getPrecisionModel.getScale).intersection(geom).getCentroid
+    else p.buffer(p.distance(geom) * PointInsideGeometryBufferFactor).intersection(geom).getCentroid
 
   def intersectionOrFirst(first: Geometry, second: Geometry): Geometry =
     if (first.intersects(second))
