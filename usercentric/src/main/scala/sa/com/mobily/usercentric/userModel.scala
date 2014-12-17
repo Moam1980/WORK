@@ -23,18 +23,19 @@ trait CountryGeometry {
 object UserModel {
 
   @tailrec
-  def aggSameCell(
+  def aggTemporalOverlapAndSameCell(
       events: List[Event],
       previous: Option[SpatioTemporalSlot] = None,
       result: List[SpatioTemporalSlot] = List())
       (implicit cellCatalogue: Map[(Int, Int), Cell]): List[SpatioTemporalSlot] = events match {
     case Nil => result ++ previous
     case event :: tail if previous.isDefined =>
-      if (previous.get.cells.contains((event.lacTac, event.cellId)))
-        aggSameCell(tail, Some(previous.get.append(event)), result)
+      if ((previous.get.endTime > event.beginTime) || previous.get.cells.contains((event.lacTac, event.cellId)))
+        aggTemporalOverlapAndSameCell(tail, Some(previous.get.append(event)), result)
       else
-        aggSameCell(tail, Some(SpatioTemporalSlot(event)), result :+ previous.get)
-    case event :: tail if !previous.isDefined => aggSameCell(tail, Some(SpatioTemporalSlot(event)), result)
+        aggTemporalOverlapAndSameCell(tail, Some(SpatioTemporalSlot(event)), result :+ previous.get)
+    case event :: tail if !previous.isDefined =>
+      aggTemporalOverlapAndSameCell(tail, Some(SpatioTemporalSlot(event)), result)
   }
 
   @tailrec

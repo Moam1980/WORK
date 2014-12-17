@@ -30,6 +30,7 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
       minSpeedPointWkt = Some("POINT (1 1)"))
     val event2 = event1.copy(beginTime = 3, endTime = 4, cellId = 2)
     val event3 = event1.copy(beginTime = 5, endTime = 6, cellId = 3)
+    val event4 = event1.copy(beginTime = 2, endTime = 3, cellId = 3)
   }
 
   trait WithCellCatalogue {

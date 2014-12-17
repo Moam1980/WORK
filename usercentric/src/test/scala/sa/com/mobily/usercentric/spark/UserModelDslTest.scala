@@ -33,10 +33,11 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       minSpeedPointWkt = Some("POINT (1 1)"))
     val event2 = event1.copy(beginTime = 3, endTime = 4, cellId = 2)
     val event3 = event1.copy(beginTime = 5, endTime = 6, cellId = 3)
-    val event4 = event1.copy(beginTime = 7, endTime = 8, cellId = 1)
+    val event4 = event1.copy(beginTime = 7, endTime = 9, cellId = 1)
+    val event5 = event1.copy(beginTime = 8, endTime = 10, cellId = 4)
 
-    val events = sc.parallelize(Array(event1, event2, event3))
-    val withSameCellEvents = sc.parallelize(Array(event1, event1, event2, event3, event3, event3, event4))
+    val events = sc.parallelize(Array(event1, event2, event3, event5))
+    val withSameCellEvents = sc.parallelize(Array(event1, event1, event2, event3, event3, event3, event4, event5))
   }
 
   trait WithCellCatalogue {
@@ -45,9 +46,9 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
     val cell2 = cell1.copy(cellId = 2, coverageWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))")
     val cell3 = cell1.copy(cellId = 3, coverageWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))")
+    val cell4 = cell1.copy(cellId = 4, coverageWkt = "POLYGON ((4 4, 4 5, 5 5, 5 4, 4 4))")
 
-    implicit val cellCatalogue = Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3)
-    implicit val bcCellCatalogue = sc.parallelize(Array(cell1, cell2, cell3)).toBroadcastMap
+    implicit val bcCellCatalogue = sc.parallelize(Array(cell1, cell2, cell3, cell4)).toBroadcastMap
   }
 
   trait WithSpatioTemporalSlots extends WithEvents {
@@ -127,14 +128,14 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val onlySlot = sc.parallelize(Array((1L, List(prefixSlot))))
   }
 
-  "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell" in
-    new WithSpatioTemporalSlots with WithCellCatalogue {
-      events.byUserChronologically.aggSameCell.first._2.size should be (3)
+  "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell " +
+    "(or overlapping in time)" in new WithSpatioTemporalSlots with WithCellCatalogue {
+      events.byUserChronologically.aggTemporalOverlapAndSameCell.first._2.size should be (4)
     }
 
-  it should "aggregate consecutive events having the same cell" in
+  it should "aggregate consecutive events having the same cell (or overlapping in time)" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      withSameCellEvents.byUserChronologically.aggSameCell.first._2.size should be(4)
+      withSameCellEvents.byUserChronologically.aggTemporalOverlapAndSameCell.first._2.size should be(4)
     }
 
   it should "merge compatible slots" in new WithCompatibilitySlots {

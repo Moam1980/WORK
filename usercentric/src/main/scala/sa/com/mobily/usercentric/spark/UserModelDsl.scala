@@ -18,8 +18,10 @@ import sa.com.mobily.usercentric.{UserModel, SpatioTemporalSlot}
 
 class UserModelEventFunctions(userEventsWithMatchingCell: RDD[(Long, List[Event])]) {
 
-  def aggSameCell(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[SpatioTemporalSlot])] =
-    userEventsWithMatchingCell.mapValues(events => UserModel.aggSameCell(events)(cellCatalogue.value))
+  def aggTemporalOverlapAndSameCell(
+      implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[SpatioTemporalSlot])] =
+    userEventsWithMatchingCell.mapValues(
+      events => UserModel.aggTemporalOverlapAndSameCell(events)(cellCatalogue.value))
 }
 
 class UserModelSlotFunctions(userSlots: RDD[(Long, List[SpatioTemporalSlot])]) {
