@@ -203,7 +203,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         assignedUplinkMaximumBitRate = None))
     val iuCsXdrEvent2 = iuCsXdrEvent.copy(
       user = iuCsXdrEvent.user.copy(
-        imei = Some("8636190157279614"), imsi = Some("420032275422214"), msisdn = Some("666666666")),
+        imei = Some("8636190157279614"), imsi = Some("420032275422214"), msisdn = Some(666666666L)),
       call = iuCsXdrEvent.call.copy(
         csCall = iuCsXdrEvent.call.csCall.copy(
           callType = Some(0))))
