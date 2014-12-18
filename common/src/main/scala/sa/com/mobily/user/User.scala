@@ -24,9 +24,11 @@ case class User(
 
   override def id: Long = msisdn
 
-  override def equals(other: Any): Boolean = other match {
+  override def equals(other: Any): Boolean = other match {// scalastyle:ignore cyclomatic.complexity
     case that: User =>
-      (that canEqual this) && (this.imei == that.imei || this.imsi == that.imsi || this.msisdn == that.msisdn)
+      (that canEqual this) && ((!this.imei.isEmpty && !that.imei.isEmpty && this.imei == that.imei) ||
+        (!this.imsi.isEmpty && !that.imsi.isEmpty && this.imsi == that.imsi) ||
+        (this.msisdn > 0 && that.msisdn > 0 && this.msisdn == that.msisdn))
     case _ => false
   }
 
