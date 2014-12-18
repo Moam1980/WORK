@@ -10,16 +10,18 @@ class CompatibilityScoreTest extends FlatSpec with ShouldMatchers {
 
   trait WithCompatibilityScore {
 
-    val compScoreZeroTimeDiff = CompatibilityScore(0.6, 0)
-    val compScoreWithTimeDiff = CompatibilityScore(0.6, 1)
-    val compScoreWithNoIntersection = CompatibilityScore(0, 0.2)
+    val compScoreZeroTimeDiff = CompatibilityScore(0.6, 0, 0)
+    val compScoreWithTimeDiff = CompatibilityScore(0.6, 1, 0)
+    val compScoreWithNoIntersection = CompatibilityScore(0, 0.2, 0)
+    val compScoreWithHighMinSpeed = CompatibilityScore(0.6, 0.2, 5)
   }
 
   trait WithSpatioTemporalSlots {
 
-    val slot1 = SpatioTemporalSlot(1, 3600000, 7200000, "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", Set())
-    val slot2 = SpatioTemporalSlot(1, 10800000, 12600000, "POLYGON ((0.5 0, 1.5 0, 1.5 1, 0.5 1, 0.5 0))", Set())
-    val slot1And2CompatibilityScore = CompatibilityScore(0.5, 1)
+    val slot1 = SpatioTemporalSlot(1, 3600000, 7200000, "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", Set(), 1.25, 0, 1)
+    val slot2 =
+      SpatioTemporalSlot(1, 10800000, 12600000, "POLYGON ((0.5 0, 1.5 0, 1.5 1, 0.5 1, 0.5 0))", Set(), 0, 0, 1)
+    val slot1And2CompatibilityScore = CompatibilityScore(0.5, 1, 1.25)
   }
 
   "CompatibilityScore" should "have the maximum time difference ratio when there's no time difference" in
@@ -37,6 +39,10 @@ class CompatibilityScoreTest extends FlatSpec with ShouldMatchers {
 
   it should "compute the CompatibilityScore ratio when intersection ratio is 0" in new WithCompatibilityScore {
     compScoreWithNoIntersection.ratio should be(0)
+  }
+
+  it should "compute the CompatibilityScore ratio when minimum speed is high" in new WithCompatibilityScore {
+    compScoreWithHighMinSpeed.ratio should be(0)
   }
 
   it should "compare with another CompatibilityScore (using only ratio)" in new WithCompatibilityScore {
