@@ -10,7 +10,7 @@ import scala.collection.Seq
 
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.mllib.clustering.{KMeansModel, KMeans}
-import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.{Vectors, Vector}
 import org.apache.spark.rdd.RDD
 import scalax.chart.api._
 
@@ -87,4 +87,12 @@ object UserPhoneCalls {
   }
 
   def weekHour(day: Int, hour: Int): Int = ((day - 1) * HoursInDay) + hour
+
+  def activityAverageVector(vectors: Seq[Vector]): Vector =
+    Vectors.dense(zipWith(vectors.map(_.toArray))(seq => seq.sum / seq.size).toArray)
+
+  def zipWith[A](activityArrays: Seq[Array[A]])(f: (Seq[A]) => A): List[A] = activityArrays.head.isEmpty match {
+    case true => Nil
+    case false => f(activityArrays.map(_.head)) :: (zipWith(activityArrays.map(_.tail))(f))
+  }
 }
