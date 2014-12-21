@@ -17,7 +17,17 @@ case class CsCell(
     secondLac: Option[String],
     thirdLac: Option[String],
     oldLac: Option[String],
-    newLac: Option[String])
+    newLac: Option[String]) {
+
+  def fields: Array[String] =
+    Array(firstLac.getOrElse(""), secondLac.getOrElse(""), thirdLac.getOrElse(""), oldLac.getOrElse(""),
+      newLac.getOrElse(""))
+}
+
+object CsCell {
+
+  def header: Array[String] = Array("firstLac", "secondLac", "thirdLac", "oldLac", "newLac")
+}
 
 case class CsCall(callType: Option[Short], calledSsn: Option[Short])
 

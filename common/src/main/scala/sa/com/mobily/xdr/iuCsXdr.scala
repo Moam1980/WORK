@@ -25,7 +25,40 @@ final case class IuCell(
     firstSac: Option[String],
     secondSac: Option[String],
     thirdSac: Option[String],
-    targetCellId: Option[String])
+    targetCellId: Option[String]) {
+
+  lazy val id: (Option[Int], Option[Int]) =
+    if (csCell.firstLac.isDefined && !csCell.firstLac.get.isEmpty)
+      if (firstSac.isDefined && !firstSac.get.isEmpty) (hexToDecimal(csCell.firstLac.get), hexToDecimal(firstSac.get))
+      else (hexToDecimal(csCell.firstLac.get), None)
+    else
+      if (firstSac.isDefined && !firstSac.get.isEmpty) (None, Some(hexToInt(firstSac.get)))
+      else (None, None)
+
+  def fields: Array[String] =
+    csCell.fields ++ Array(mcc.getOrElse(""), mnc.getOrElse(""), firstRac.getOrElse(""), secondRac.getOrElse(""),
+      thirdRac.getOrElse(""), firstSac.getOrElse(""), secondSac.getOrElse(""), thirdSac.getOrElse(""),
+      targetCellId.getOrElse(""))
+
+  def idFields: Array[String] = Array(id._1.getOrElse("").toString, id._2.getOrElse("").toString)
+
+  override def equals(other: Any): Boolean = other match {
+    case that: IuCell => (that canEqual this) && (this.id == that.id)
+    case _ => false
+  }
+
+  override def hashCode: Int = id.hashCode
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[IuCell]
+}
+
+object IuCell {
+
+  def header: Array[String] = CsCell.header ++
+    Array("mcc", "mnc", "firstRac", "secondRac", "thirdRac", "firstSac", "secondSac", "thirdSac", "targetCellId")
+
+  def idHeader: Array[String] = Array("Lac", "SacCellId")
+}
 
 final case class IuCall(
     csCall: CsCall,
@@ -123,8 +156,8 @@ case class IuCsXdr(
         msisdn = user.msisdn.getOrElse(0L)),
       beginTime = hexToLong(time.csTime.begin),
       endTime = hexToLong(time.csTime.end),
-      lacTac = hexToInt(cell.csCell.firstLac.get),
-      cellId = hexToInt(cell.firstSac.get),
+      lacTac = cell.id._1.get,
+      cellId = cell.id._2.get,
       eventType = call.csCall.callType.get.toString,
       subsequentLacTac = Try { cell.csCell.secondLac.get.toInt }.toOption,
       subsequentCellId = Try { cell.secondSac.get.toInt }.toOption)
