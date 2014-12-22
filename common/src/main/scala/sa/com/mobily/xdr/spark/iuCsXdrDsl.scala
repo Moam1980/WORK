@@ -47,8 +47,8 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
       iuCs.user.msisdn.isDefined) &&
     !iuCs.time.csTime.begin.isEmpty &&
     !iuCs.time.csTime.end.isEmpty &&
-    iuCs.cell.csCell.firstLac.isDefined &&
-    iuCs.cell.firstSac.isDefined &&
+    iuCs.cell.id._1.isDefined &&
+    iuCs.cell.id._2.isDefined &&
     iuCs.call.csCall.callType.isDefined
   }.map(_.toEvent)
 

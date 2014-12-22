@@ -221,6 +221,53 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       None)
   }
 
+  trait WithIuCell {
+
+    val cell = IuCell(
+      csCell = CsCell(
+        firstLac = Some("d4b"),
+        secondLac = None,
+        thirdLac = Some("d4b"),
+        oldLac = Some("ef9"),
+        newLac = Some("d4b")),
+      mcc = Some("420"),
+      mnc = Some("03"),
+      firstRac = None,
+      secondRac = None,
+      thirdRac = None,
+      firstSac = Some("82eb"),
+      secondSac = None,
+      thirdSac = Some("82eb"),
+      targetCellId = None)
+
+    val cellEqual = cell.copy(mcc = Some("222"),
+      mnc = Some("44"),
+      firstRac = Some("0001"),
+      secondRac = Some("0002"),
+      thirdRac = Some("0003"),
+      secondSac = Some("1002"),
+      thirdSac = Some("1003"),
+      targetCellId = Some("1111"))
+
+    val cellDistinctFirstLac = cell.copy(csCell = cell.csCell.copy(firstLac = Some("FFFF")))
+    val cellDistinctFirstSac = cell.copy(firstSac = Some("FFFF"))
+
+    val cellWithoutFirstLac = cell.copy(csCell = cell.csCell.copy(firstLac = None))
+    val cellWithoutFirstSac = cell.copy(firstSac = None)
+    val cellWithoutId = cellWithoutFirstLac.copy(firstSac = None)
+
+    val cellHeader = Array("firstLac", "secondLac", "thirdLac", "oldLac", "newLac") ++
+      Array("mcc", "mnc", "firstRac", "secondRac", "thirdRac", "firstSac", "secondSac", "thirdSac", "targetCellId")
+    val cellIdHeader = Array("Lac", "SacCellId")
+
+    val cellFields = Array("d4b", "", "d4b", "ef9", "d4b", "420", "03", "", "", "", "82eb", "", "82eb", "")
+    val cellIdFields = Array("3403", "33515")
+
+    val cellWithoutFirstLacIdFields = Array("", "33515")
+    val cellWithoutFirstSacIdFields = Array("3403", "")
+    val cellWithoutIdFields = Array("", "")
+  }
+
   "IuCsXdr" should "be built from CSV" in new WithIuCsXdrEvent {
     CsvParser.fromLine(iuCsXdrLine).value.get should be (iuCsXdrEvent)
   }
@@ -243,5 +290,58 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
 
   it should "be discarded when IuCsXdr is wrong" in new WithIuCsXdrEvent {
     an[Exception] should be thrownBy iuCsXdrEvent.toEvent
+  }
+
+  "IuCell" should "return correct header" in new WithIuCell {
+    IuCell.header should be (cellHeader)
+  }
+
+  "IuCell" should "return correct header for id" in new WithIuCell {
+    IuCell.idHeader should be (cellIdHeader)
+  }
+
+  "IuCell" should "return correct fields" in new WithIuCell {
+    cell.fields should be (cellFields)
+  }
+
+  "IuCell" should "return correct fields for id" in new WithIuCell {
+    cell.idFields should be (cellIdFields)
+  }
+
+  "IuCell" should "return correct fields for id without first lac" in new WithIuCell {
+    cellWithoutFirstLac.idFields should be (cellWithoutFirstLacIdFields)
+  }
+
+  "IuCell" should "return correct fields for id without first sac" in new WithIuCell {
+    cellWithoutFirstSac.idFields should be (cellWithoutFirstSacIdFields)
+  }
+
+  "IuCell" should "return correct fields for id without neither first lac nor first sac" in new WithIuCell {
+    cellWithoutId.idFields should be (cellWithoutIdFields)
+  }
+
+  "IuCell" should "return true when equals and id is the same" in new WithIuCell {
+    cell == cellEqual should be (true)
+    cell.equals(cellEqual) should be (true)
+  }
+
+  "IuCell" should "return false when equals and lac is different" in new WithIuCell {
+    cell == cellDistinctFirstLac should be (false)
+    cell.equals(cellDistinctFirstLac) should be (false)
+  }
+
+  "IuCell" should "return false when equals and sac is different" in new WithIuCell {
+    cell == cellDistinctFirstSac should be (false)
+    cell.equals(cellDistinctFirstSac) should be (false)
+  }
+
+  "IuCell" should "return false when equals and different objects" in new WithIuCell {
+    cell == cellFields should be (false)
+    cell.equals(cellFields) should be (false)
+  }
+
+  "IuCell" should "return true when checking hash codes" in new WithIuCell {
+    cell.hashCode  == cell.id.hashCode should be (true)
+    cell.hashCode.equals(cell.id.hashCode) should be (true)
   }
 }
