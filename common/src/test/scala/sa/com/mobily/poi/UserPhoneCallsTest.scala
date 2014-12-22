@@ -7,8 +7,8 @@ package sa.com.mobily.poi
 import scala.reflect.io.Directory
 
 import com.github.nscala_time.time.Imports._
+import org.apache.spark.mllib.linalg.Vectors
 import org.scalatest._
-
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.poi.spark.UserPhoneCallsDsl._
 import sa.com.mobily.utils.{LocalSparkContext, EdmCoreUtils}
@@ -17,7 +17,8 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
 
   import UserPhoneCalls._
 
-  trait WhitPhoneCallText {
+  trait WithPhoneCallText {
+
     val phoneCallText = "0500001413|20140824|2541|1|1,2"
     val fields = Array("0500001413","20140824","2541","1","1,2")
     val phoneCallsObjetct =
@@ -29,7 +30,8 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
         Seq(1, 2))
   }
 
-  trait WithWeekPhoneCalls{
+  trait WithWeekPhoneCalls {
+
     val phoneCall1 =
       UserPhoneCalls(
         1L,
@@ -64,11 +66,28 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
     }
   }
 
-  "UserPhoneCalls" should "be built from CSV" in new WhitPhoneCallText {
+  trait WithAverageActivity {
+
+    val user1ActivityVectorWeek1 = Vectors.sparse(UserPhoneCalls.HoursInWeek, Seq((0, 1.0), (2, 1.0), (5, 1.0)))
+    val user1ActivityVectorWeek2 = Vectors.sparse(UserPhoneCalls.HoursInWeek, Seq((0, 1.0), (5, 1.0)))
+    val user1ActivityVectorWeek3 = Vectors.sparse(UserPhoneCalls.HoursInWeek, Seq((0, 1.0)))
+    val user1ActivityVectors = Seq(
+      user1ActivityVectorWeek1,
+      user1ActivityVectorWeek2,
+      user1ActivityVectorWeek3)
+    val user1ExpectedAverageVector = Vectors.sparse(
+      UserPhoneCalls.HoursInWeek,
+      Seq(
+        (0, 1.0),
+        (2, 0.3333333333333333),
+        (5, 0.6666666666666666)))
+  }
+
+  "UserPhoneCalls" should "be built from CSV" in new WithPhoneCallText {
     CsvParser.fromLine(phoneCallText).value.get should be (phoneCallsObjetct)
   }
 
-  it should "be discarded when the CSV format is wrong" in new WhitPhoneCallText {
+  it should "be discarded when the CSV format is wrong" in new WithPhoneCallText {
     an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(3, "WrongRegionId"))
   }
 
@@ -91,5 +110,9 @@ class UserPhoneCallsTest extends FlatSpec with ShouldMatchers with LocalSparkCon
     weekHour(1, 5) should be(5)
     weekHour(2, 0) should be(24)
     weekHour(7, 23) should be(167)
+  }
+
+  it should "compute the average for activity vectors" in new WithAverageActivity {
+    activityAverageVector(user1ActivityVectors) should be(user1ExpectedAverageVector)
   }
 }
