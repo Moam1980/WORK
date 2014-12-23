@@ -201,6 +201,8 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         requestedUplinkGuranteedBitRate = None,
         assignedDownlinkMaximumBitRate = None,
         assignedUplinkMaximumBitRate = None))
+    val iuCsXdrEventWrong = iuCsXdrEvent.copy(time = iuCsXdrEvent.time.copy(
+      csTime = iuCsXdrEvent.time.csTime.copy(begin = "")))
     val iuCsXdrEvent2 = iuCsXdrEvent.copy(
       user = iuCsXdrEvent.user.copy(
         imei = Some("8636190157279614"), imsi = Some("420032275422214"), msisdn = Some(666666666L)),
@@ -213,7 +215,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       1416156748435L,
       3403,
       33515,
-      "0",
+      "2",
       None,
       None,
       None,
@@ -289,7 +291,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   }
 
   it should "be discarded when IuCsXdr is wrong" in new WithIuCsXdrEvent {
-    an[Exception] should be thrownBy iuCsXdrEvent.toEvent
+    an[Exception] should be thrownBy iuCsXdrEventWrong.toEvent
   }
 
   "IuCell" should "return correct header" in new WithIuCell {

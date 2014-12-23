@@ -158,7 +158,7 @@ case class IuCsXdr(
       endTime = hexToLong(time.csTime.end),
       lacTac = cell.id._1.get,
       cellId = cell.id._2.get,
-      eventType = call.csCall.callType.get.toString,
+      eventType = parseNullString(connection.dialogueIndicator),
       subsequentLacTac = Try { cell.csCell.secondLac.get.toInt }.toOption,
       subsequentCellId = Try { cell.secondSac.get.toInt }.toOption)
   }

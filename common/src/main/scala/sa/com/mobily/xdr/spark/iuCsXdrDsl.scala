@@ -49,7 +49,7 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
     !iuCs.time.csTime.end.isEmpty &&
     iuCs.cell.id._1.isDefined &&
     iuCs.cell.id._2.isDefined &&
-    iuCs.call.csCall.callType.isDefined
+    !iuCs.connection.dialogueIndicator.isEmpty
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(iuCs => {
@@ -58,14 +58,17 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
       ("imsi", iuCs.user.imsi),
       ("firstLac", iuCs.cell.csCell.firstLac),
       ("firstSac", iuCs.cell.firstSac))
-    val nonEmptyOptionShort = List(("type", iuCs.call.csCall.callType))
-    val nonEmptyOptionLong = List(("msisdn", iuCs.user.msisdn))
-    val nonEmptyString = List(("beginTime", iuCs.time.csTime.begin), ("endTime", iuCs.time.csTime.end))
+      val nonEmptyOptionLong = List(("msisdn", iuCs.user.msisdn))
+      val nonEmptyShort = List(("type", iuCs.ttype.iuDialogue))
+      val nonEmptyString = List(
+        ("beginTime", iuCs.time.csTime.begin),
+        ("endTime", iuCs.time.csTime.end),
+        ("dialogueIndicator", iuCs.connection.dialogueIndicator))
 
     List(("total", 1)) ++
       SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => value.isEmpty) ++
-      SanityUtils.sanityMethod[Option[Short]](nonEmptyOptionShort, value => !value.isDefined) ++
       SanityUtils.sanityMethod[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
+      SanityUtils.sanityMethod[Short](nonEmptyShort, value => !value.isInstanceOf[Short]) ++
       SanityUtils.sanityMethod[String](nonEmptyString, value => value.isEmpty)
   }).reduceByKey(_ + _)
 }
