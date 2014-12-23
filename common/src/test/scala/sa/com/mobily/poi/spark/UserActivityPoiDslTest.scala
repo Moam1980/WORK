@@ -12,6 +12,7 @@ import org.scalatest._
 import sa.com.mobily.cell.{TwoG, EgBts}
 import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.poi._
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
 class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
@@ -27,8 +28,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val firstUserRegionId = 10.toShort
     val secondUserRegionId = 20.toShort
     val phoneCall1 =
-      UserPhoneCalls(
-        firstUserMsisdn,
+      UserActivityCdr(
+        User("", "", firstUserMsisdn),
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"),
         firstUserSiteId,
         firstUserRegionId,
@@ -36,14 +37,14 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val phoneCall2 = phoneCall1.copy(
       timestamp =
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),
-      callHours = Seq(0, 23))
+      activityHours = Seq(0, 23))
     val phoneCall3 = phoneCall1.copy(
       timestamp =
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),
-      callHours = Seq(1, 23))
+      activityHours = Seq(1, 23))
     val phoneCall4 =
-      UserPhoneCalls(
-        secondUserMsisdn,
+      UserActivityCdr(
+        User("", "", secondUserMsisdn),
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140825"),
         secondUserSiteId,
         secondUserRegionId,
@@ -68,7 +69,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
 
   trait WithUserActivity extends WithWeekPhoneCalls with WithBtsCatalogue {
 
-    import UserPhoneCallsDsl._
+    import UserActivityCdrDsl._
 
     val userActivity = phoneCalls.perUserAndSiteId
     val model =
@@ -97,16 +98,18 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val userActivityPoisList = pois.collect.toList
 
     userActivityPoisList.length should be(2)
-    userActivityPoisList(0) should be((firstUserMsisdn, firstUserSiteId, firstUserRegionId), Work)
-    userActivityPoisList(1) should be((secondUserMsisdn, secondUserSiteId, secondUserRegionId), Home)
+    userActivityPoisList(0) should be((User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId), Work)
+    userActivityPoisList(1) should be((User("", "", secondUserMsisdn), secondUserSiteId, secondUserRegionId), Home)
   }
 
   it should "group the pois by user" in new WithUserActivity {
     val userPoisList = userPois.collect.toList
 
     userPoisList.length should be(2)
-    userPoisList(0) should be((firstUserMsisdn, List((Work, List((firstUserSiteId, firstUserRegionId))))))
-    userPoisList(1) should be((secondUserMsisdn, List((Home, List((secondUserSiteId, secondUserRegionId))))))
+    userPoisList(0) should be((User("", "", firstUserMsisdn), List((Work, List((firstUserSiteId, firstUserRegionId))))))
+    userPoisList(1) should be(
+      User("", "", secondUserMsisdn),
+      List((Home, List((secondUserSiteId, secondUserRegionId)))))
   }
 
   it should "return an RDD with user msisdn, poi type and its geometries" in new WithUserActivity {
@@ -115,8 +118,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(2)
-    userPoisWithGeomsList(0) should be(firstUserMsisdn, Work, Seq(egBts1.geom, egBts2.geom))
-    userPoisWithGeomsList(1) should be(secondUserMsisdn, Home, Seq(egBts2.geom))
+    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, Seq(egBts1.geom, egBts2.geom)))
+    userPoisWithGeomsList(1) should be((User("", "", secondUserMsisdn), Home, Seq(egBts2.geom)))
   }
 
   it should "return the user Pois and their aggregated geoms applying the default function" in new WithUserActivity {
@@ -125,8 +128,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       userActivity.userPoisWithAggregatedGeoms()(model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(2)
-    userPoisWithGeomsList(0) should be(firstUserMsisdn, Work, egBts1.geom.intersection(egBts2.geom))
-    userPoisWithGeomsList(1) should be(secondUserMsisdn, Home, egBts2.geom)
+    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, egBts1.geom.intersection(egBts2.geom)))
+    userPoisWithGeomsList(1) should be((User("", "", secondUserMsisdn), Home, egBts2.geom))
   }
 
   it should "return the user Pois and their aggregated geoms applying another function" in new WithUserActivity {
@@ -136,7 +139,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
         itGeoms => itGeoms.reduce(_.union(_)))(model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(2)
-    userPoisWithGeomsList(0) should be(firstUserMsisdn, Work, egBts1.geom.union(egBts2.geom))
-    userPoisWithGeomsList(1) should be(secondUserMsisdn, Home, egBts2.geom)
+    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, egBts1.geom.union(egBts2.geom)))
+    userPoisWithGeomsList(1) should be((User("", "", secondUserMsisdn), Home, egBts2.geom))
   }
 }
