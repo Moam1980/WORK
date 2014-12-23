@@ -8,12 +8,13 @@ import com.github.nscala_time.time.Imports._
 import org.apache.spark.mllib.linalg.Vectors
 import org.scalatest._
 
-import sa.com.mobily.poi.UserPhoneCalls
+import sa.com.mobily.poi.UserActivityCdr
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
-class UserPhoneCallsDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class UserActivityCdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
 
-  import UserPhoneCallsDsl._
+  import UserActivityCdrDsl._
 
   trait WithPhoneCallsDslText {
 
@@ -28,16 +29,25 @@ class UserPhoneCallsDslTest extends FlatSpec with ShouldMatchers with LocalSpark
 
   trait WithPhoneCalls{
 
-    val phoneCall1 = UserPhoneCalls(1L,DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2541", 1, Seq(1, 2))
-    val phoneCall2 = UserPhoneCalls(1L,DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2555", 1, Seq(1, 2))
-    val phoneCall3 = UserPhoneCalls(2L,DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2566", 1, Seq(1, 2))
-    val phoneCall4 = UserPhoneCalls(2L,DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2566", 1, Seq(1, 2, 3))
-    val phoneCall5 = UserPhoneCalls(3L,DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2577", 1, Seq(1, 2))
+    val phoneCall1 = UserActivityCdr(
+      User("", "", 1L),
+      DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140824"),"2541", 1, Seq(1, 2))
+    val phoneCall2 = UserActivityCdr(
+      User("", "", 1L),
+      DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140824"),"2555", 1, Seq(1, 2))
+    val phoneCall3 = UserActivityCdr(
+      User("", "", 2L),
+      DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140824"),"2566", 1, Seq(1, 2))
+    val phoneCall4 = UserActivityCdr(
+      User("", "", 2L),
+      DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140824"),"2566", 1, Seq(1, 2, 3))
+    val phoneCall5 = UserActivityCdr(User("", "", 3L),
+      DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140824"),"2577", 1, Seq(1, 2))
 
     val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4, phoneCall5))
   }
@@ -45,8 +55,8 @@ class UserPhoneCallsDslTest extends FlatSpec with ShouldMatchers with LocalSpark
   trait WithWeekPhoneCalls{
 
     val phoneCall1 =
-      UserPhoneCalls(
-        1L,
+      UserActivityCdr(
+        User("", "", 1L),
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"),
         "2541",
         1,
@@ -54,39 +64,43 @@ class UserPhoneCallsDslTest extends FlatSpec with ShouldMatchers with LocalSpark
     val phoneCall2 = phoneCall1.copy(
       timestamp =
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),
-      callHours = Seq(0, 23))
+      activityHours = Seq(0, 23))
     val phoneCall3 = phoneCall1.copy(
       timestamp =
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),
-      callHours = Seq(1, 23))
+      activityHours = Seq(1, 23))
     val phoneCall4 =
-      UserPhoneCalls(
-        2L,
+      UserActivityCdr(
+        User("", "", 2L),
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140825"),
         "2566",
         1,
         Seq(1, 2, 3))
 
     val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4))
-    val vectorResult = Vectors.sparse(UserPhoneCalls.HoursInWeek, Seq((25, 1.0), (26, 1.0), (27, 1.0)))
+    val vectorResult = Vectors.sparse(UserActivityCdr.HoursInWeek, Seq((25, 1.0), (26, 1.0), (27, 1.0)))
   }
 
   trait WithWeekPhoneCallsLittleActivity {
 
-    val phoneCall1 = UserPhoneCalls(1L,DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140824"),"2541", 1, Seq(0, 1, 2, 4, 5, 6, 7))
+    val phoneCall1 = UserActivityCdr(
+      User("", "", 1L),
+      DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140824"),"2541", 1, Seq(0, 1, 2, 4, 5, 6, 7))
     val phoneCall2 = phoneCall1.copy(timestamp = DateTimeFormat.forPattern("yyyyMMdd").
-      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),callHours = Seq(0, 1, 2, 3, 4, 5, 6, 7))
+      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),activityHours = Seq(0, 1, 2, 3, 4, 5, 6, 7))
     val phoneCall3 = phoneCall1.copy(timestamp = DateTimeFormat.forPattern("yyyyMMdd").
-      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),callHours = Seq(1, 23))
-    val phoneCall4 = UserPhoneCalls(2L,DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
-      .parseDateTime("20140825"),"2566", 1, Seq(1, 2, 3))
+      withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),activityHours = Seq(1, 23))
+    val phoneCall4 = UserActivityCdr(
+      User("", "", 2L),
+      DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+        .parseDateTime("20140825"),"2566", 1, Seq(1, 2, 3))
 
     val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4))
   }
 
   "PhoneCallsDsl" should "get correctly parsed phoneCalls" in new WithPhoneCallsDslText {
-    phoneCalls.toParsedPhoneCalls.count() should be (5)
+    phoneCalls.toParsedUserActivityCdr.count() should be (5)
   }
 
   it should "get errors when parsing phoneCalls" in new WithPhoneCallsDslText {
@@ -94,13 +108,13 @@ class UserPhoneCallsDslTest extends FlatSpec with ShouldMatchers with LocalSpark
   }
 
   it should "get both correctly and wrongly parsed phoneCalls" in new WithPhoneCallsDslText {
-    phoneCalls.toPhoneCalls.count should be (4)
+    phoneCalls.toUserActivityCdr.count should be (4)
   }
 
   it should "calculate the vector to home clustering correctly" in new WithWeekPhoneCalls {
     val homes = phoneCalls.perUserAndSiteId.collect
     homes.length should be (2)
-    homes.tail.head._2 should be (vectorResult)
+    homes.tail.head.activityVector should be (vectorResult)
   }
 
   it should "calculate the vector to home clustering filtering little activity users" in

@@ -15,16 +15,17 @@ import org.apache.spark.rdd.RDD
 import scalax.chart.api._
 
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
-case class UserPhoneCalls(
-    msisdn: Long,
+case class UserActivityCdr(
+    user: User,
     timestamp: DateTime,
     siteId: String,
-    regionId: Long,
-    callHours: Seq[Int])
+    regionId: Short,
+    activityHours: Seq[Int])
 
-object UserPhoneCalls {
+object UserActivityCdr {
 
   val DefaultMinActivityRatio = 0.1
   val HoursInWeek = 168
@@ -36,20 +37,20 @@ object UserPhoneCalls {
   final val UserPhoneCallSeparator = ","
   final val lineCsvParserObject = new OpenCsvParser
 
-  implicit val fromCsv = new CsvParser[UserPhoneCalls] {
+  implicit val fromCsv = new CsvParser[UserActivityCdr] {
 
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
-    override def fromFields(fields: Array[String]): UserPhoneCalls = {
-      val Array(msisdn, timestamp, siteId, regionId, callHours) = fields
+    override def fromFields(fields: Array[String]): UserActivityCdr = {
+      val Array(msisdn, timestamp, siteId, regionId, activityHours) = fields
 
-      UserPhoneCalls(
-        msisdn = msisdn.toLong,
+      UserActivityCdr(
+        user = User("", "", msisdn.toLong),
         timestamp =
           DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime(timestamp),
         siteId = siteId,
-        regionId = regionId.toLong,
-        callHours = callHours.split(UserPhoneCallSeparator).map(hs => hs.trim.toInt))
+        regionId = regionId.toShort,
+        activityHours = activityHours.split(UserPhoneCallSeparator).map(hs => hs.trim.toInt))
     }
   }
 
@@ -73,7 +74,7 @@ object UserPhoneCalls {
       graphValues <- Seq(graphValues(centroid))) yield (centroid, graphValues)
     for (graphNumber <- 1 until modelGraphs.length + 1)
       pngGraph(
-        outputPath + File.separator + UserPhoneCalls.GraphPrefix + graphNumber + UserPhoneCalls.GraphSuffix,
+        outputPath + File.separator + UserActivityCdr.GraphPrefix + graphNumber + UserActivityCdr.GraphSuffix,
         modelGraphs(graphNumber - 1)._2)
   }
 
@@ -87,12 +88,4 @@ object UserPhoneCalls {
   }
 
   def weekHour(day: Int, hour: Int): Int = ((day - 1) * HoursInDay) + hour
-
-  def activityAverageVector(vectors: Seq[Vector]): Vector =
-    Vectors.dense(zipWith(vectors.map(_.toArray))(seq => seq.sum / seq.size).toArray)
-
-  def zipWith[A](activityArrays: Seq[Array[A]])(f: (Seq[A]) => A): List[A] = activityArrays.head.isEmpty match {
-    case true => Nil
-    case false => f(activityArrays.map(_.head)) :: (zipWith(activityArrays.map(_.tail))(f))
-  }
 }

@@ -10,19 +10,21 @@ import com.vividsolutions.jts.geom.Geometry
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.mllib.clustering.KMeansModel
-import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.EgBts
-import sa.com.mobily.poi.{UserActivityPoi, PoiType}
+import sa.com.mobily.poi.{PoiType, UserActivity, UserActivityPoi}
+import sa.com.mobily.user.User
 
-class UserActivityPoiFunctions(self: RDD[((Long, String, Long), Vector)]) {
+class UserActivityPoiFunctions(self: RDD[UserActivity]) {
 
-  def pois(model: KMeansModel, centroidMapping: Map[Int, PoiType]): RDD[((Long, String, Long), PoiType)] =
-    self.map(element => (element._1, centroidMapping(model.predict(element._2))))
+  def pois(model: KMeansModel, centroidMapping: Map[Int, PoiType]): RDD[((User, String, Short), PoiType)] =
+    self.map(userActivity =>
+      ((userActivity.user, userActivity.siteId, userActivity.regionId),
+        centroidMapping(model.predict(userActivity.activityVector))))
 
   def userPois(implicit model: KMeansModel, centroidMapping: Map[Int, PoiType]):
-      RDD[(Long, Seq[(PoiType, Iterable[(String, Short)])])] = {
+      RDD[(User, Seq[(PoiType, Iterable[(String, Short)])])] = {
     val poisPerUser = pois(model, centroidMapping).map(usrBtsPoi =>
       (usrBtsPoi._1._1, (usrBtsPoi._2, (usrBtsPoi._1._2, usrBtsPoi._1._3.toShort)))).groupByKey
     poisPerUser.map(userPoiBts => {
@@ -35,7 +37,7 @@ class UserActivityPoiFunctions(self: RDD[((Long, String, Long), Vector)]) {
   def userPoisWithGeoms(
       implicit model: KMeansModel,
       centroidMapping: Map[Int, PoiType],
-      btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(Long, PoiType, Iterable[Geometry])] = {
+      btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(User, PoiType, Iterable[Geometry])] = {
     for (userPois <- userPois(model, centroidMapping); poi <- userPois._2)
     yield (userPois._1, poi._1, UserActivityPoi.findGeometries(poi._2, btsCatalogue.value))
   }
@@ -44,7 +46,7 @@ class UserActivityPoiFunctions(self: RDD[((Long, String, Long), Vector)]) {
       aggregateGeometries: Iterable[Geometry] => Geometry = itGeoms => itGeoms.reduce(_.intersection(_)))
       (implicit model: KMeansModel,
       centroidMapping: Map[Int, PoiType],
-      btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(Long, PoiType, Geometry)] = {
+      btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(User, PoiType, Geometry)] = {
     userPoisWithGeoms(model, centroidMapping, btsCatalogue).map(userPoi =>
       (userPoi._1, userPoi._2, aggregateGeometries(userPoi._3)))
   }
@@ -52,8 +54,8 @@ class UserActivityPoiFunctions(self: RDD[((Long, String, Long), Vector)]) {
 
 trait UserActivityPoiDsl {
 
-  implicit def activityPoiFunctions(activity: RDD[((Long, String, Long), Vector)]): UserActivityPoiFunctions =
+  implicit def activityPoiFunctions(activity: RDD[UserActivity]): UserActivityPoiFunctions =
     new UserActivityPoiFunctions(activity)
 }
 
-object UserActivityPoiDsl extends UserActivityPoiDsl with UserPhoneCallsDsl
+object UserActivityPoiDsl extends UserActivityPoiDsl with UserActivityCdrDsl
