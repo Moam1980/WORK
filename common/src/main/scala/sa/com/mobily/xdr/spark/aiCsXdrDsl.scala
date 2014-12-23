@@ -47,8 +47,8 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
       aiCs.csUser.msisdn.isDefined) &&
     !aiCs.aiTime.csTime.begin.isEmpty &&
     !aiCs.aiTime.csTime.end.isEmpty &&
-    aiCs.aiCell.csCell.firstLac.isDefined &&
-    aiCs.aiCell.firstCellId.isDefined &&
+    aiCs.aiCell.id._1.isDefined &&
+    aiCs.aiCell.id._2.isDefined &&
     !aiCs.aiCall.scenario.isEmpty
   }.map(_.toEvent)
 

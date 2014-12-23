@@ -181,12 +181,13 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   trait WithAiCsEventsToParse extends WithAiCsEvents {
 
     val aiCsXdrMod = aiCsXdr.copy(csUser = CsUser(
-      imei = Some("42104770740"),
-      imsi = Some("420034104770740"),
-      msisdn = Some(352387063L),
-      tmsi = Some("61c5f3e5"),
-      imeisv = Some("3523870633105423"),
-      oldTmsi = Some("61c5f3e5")))
+        imei = Some("42104770740"),
+        imsi = Some("420034104770740"),
+        msisdn = Some(352387063L),
+        tmsi = Some("61c5f3e5"),
+        imeisv = Some("3523870633105423"),
+        oldTmsi = Some("61c5f3e5")),
+      aiCell = aiCsXdr.aiCell.copy(servingCellId = Some("413a")))
     val event = Event(
       User("42104770740", "420034104770740", 352387063),
       1416156582290L,
@@ -199,6 +200,50 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       None,
       None,
       None)
+  }
+
+  trait WithAiCell {
+
+    val cell = AiCell(
+      csCell = CsCell(
+        firstLac = Some("d4b"),
+        secondLac = None,
+        thirdLac = Some("d4b"),
+        oldLac = Some("ef9"),
+        newLac = Some("d4b")),
+      oldMcc = Some("420"),
+      oldMnc = Some("03"),
+      firstCellId = Some("82eb"),
+      secondCellId = Some("2001"),
+      thirdCellId = Some("82eb"),
+      servingLac = None,
+      servingCellId = Some("82EB"),
+      cic = None)
+
+    val cellEqual = cell.copy(oldMcc = Some("222"),
+      oldMnc = Some("44"),
+      secondCellId = Some("1002"),
+      thirdCellId = Some("1003"),
+      servingLac = Some("3001"),
+      cic = None)
+
+    val cellDistinctFirstLac = cell.copy(csCell = cell.csCell.copy(firstLac = Some("FFFF")))
+    val cellDistinctFirstCellId = cell.copy(firstCellId = Some("FFFF"))
+
+    val cellWithoutFirstLac = cell.copy(csCell = cell.csCell.copy(firstLac = None))
+    val cellWithoutFirstCellId = cell.copy(servingCellId = None)
+    val cellWithoutId = cellWithoutFirstLac.copy(servingCellId = None)
+
+    val cellHeader = Array("firstLac", "secondLac", "thirdLac", "oldLac", "newLac") ++
+      Array("oldMcc", "oldMnc", "firstCellId", "secondCellId", "thirdCellId")
+    val cellIdHeader = Array("Lac", "firstCellId")
+
+    val cellFields = Array("d4b", "", "d4b", "ef9", "d4b", "420", "03", "82eb", "2001", "82eb")
+    val cellIdFields = Array("3403", "33515")
+
+    val cellWithoutFirstLacIdFields = Array("", "33515")
+    val cellWithoutFirstSacIdFields = Array("3403", "")
+    val cellWithoutIdFields = Array("", "")
   }
 
   "aiCsXdr" should "be built from CSV" in new WithAiCsEvents {
@@ -223,5 +268,58 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
 
   it should "be discarded when AiCsXdr is wrong" in new WithAiCsEvents {
     an[Exception] should be thrownBy aiCsXdrException.toEvent
+  }
+
+  "AiCell" should "return correct header" in new WithAiCell {
+    AiCell.header should be(cellHeader)
+  }
+
+  "AiCell" should "return correct header for id" in new WithAiCell {
+    AiCell.idHeader should be(cellIdHeader)
+  }
+
+  "AiCell" should "return correct fields" in new WithAiCell {
+    cell.fields should be(cellFields)
+  }
+
+  "AiCell" should "return correct fields for id" in new WithAiCell {
+    cell.idFields should be(cellIdFields)
+  }
+
+  "AiCell" should "return correct fields for id without first lac" in new WithAiCell {
+    cellWithoutFirstLac.idFields should be(cellWithoutFirstLacIdFields)
+  }
+
+  "AiCell" should "return correct fields for id without first sac" in new WithAiCell {
+    cellWithoutFirstCellId.idFields should be(cellWithoutFirstSacIdFields)
+  }
+
+  "AiCell" should "return correct fields for id without neither first lac nor first sac" in new WithAiCell {
+    cellWithoutId.idFields should be(cellWithoutIdFields)
+  }
+
+  "AiCell" should "return true when equals and id is the same" in new WithAiCell {
+    cell == cellEqual should be(true)
+    cell.equals(cellEqual) should be(true)
+  }
+
+  "AiCell" should "return false when equals and lac is different" in new WithAiCell {
+    cell == cellDistinctFirstLac should be(false)
+    cell.equals(cellDistinctFirstLac) should be(false)
+  }
+
+  "AiCell" should "return false when equals and sac is different" in new WithAiCell {
+    cell == cellDistinctFirstLac should be(false)
+    cell.equals(cellDistinctFirstLac) should be(false)
+  }
+
+  "AiCell" should "return false when equals and different objects" in new WithAiCell {
+    cell == cellFields should be(false)
+    cell.equals(cellFields) should be(false)
+  }
+
+  "AiCell" should "return true when checking hash codes" in new WithAiCell {
+    cell.hashCode == cell.id.hashCode should be(true)
+    cell.hashCode.equals(cell.id.hashCode) should be(true)
   }
 }
