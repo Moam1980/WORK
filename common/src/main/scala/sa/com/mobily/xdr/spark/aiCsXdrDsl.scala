@@ -49,7 +49,7 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
     !aiCs.aiTime.csTime.end.isEmpty &&
     aiCs.aiCell.csCell.firstLac.isDefined &&
     aiCs.aiCell.firstCellId.isDefined &&
-    aiCs.aiCall.csCall.callType.isDefined
+    !aiCs.aiCall.scenario.isEmpty
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
@@ -58,13 +58,12 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
       ("imsi", aiCs.csUser.imsi),
       ("cellId", aiCs.aiCell.firstCellId),
       ("firstLac", aiCs.aiCell.csCell.firstLac))
-    val nonEmptyOptionShort = List(("type", aiCs.aiCall.csCall.callType))
     val nonEmptyOptionLong = List(("msisdn", aiCs.csUser.msisdn))
-    val nonEmptyString = List(("beginTime", aiCs.aiTime.csTime.begin), ("endTime", aiCs.aiTime.csTime.end))
+    val nonEmptyString = List(("beginTime", aiCs.aiTime.csTime.begin), ("endTime", aiCs.aiTime.csTime.end),
+      ("type", aiCs.aiCall.scenario))
 
     List(("total", 1)) ++
       SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => !value.isDefined) ++
-      SanityUtils.sanityMethod[Option[Short]](nonEmptyOptionShort, value => !value.isDefined) ++
       SanityUtils.sanityMethod[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
       SanityUtils.sanityMethod[String](nonEmptyString, value => value.isEmpty)
   }).reduceByKey(_ + _)

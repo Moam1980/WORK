@@ -129,7 +129,7 @@ final case class  AiCsXdr(
       endTime = hexToLong(aiTime.csTime.end),
       lacTac = hexToInt(aiCell.csCell.firstLac.get),
       cellId = hexToInt(aiCell.firstCellId.get),
-      eventType = aiCall.csCall.callType.get.toString,
+      eventType = hexToInt(aiCall.scenario).toString,
       subsequentLacTac = Try { aiCell.csCell.secondLac.get.toInt }.toOption,
       subsequentCellId = Try { aiCell.secondCellId.get.toInt }.toOption)
   }
