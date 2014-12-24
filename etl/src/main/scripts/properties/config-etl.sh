@@ -4,7 +4,7 @@
 LINE_SIZE=32000
 
 # Output directories
-OUTPUT_FILE_PATH=/Users/vmrh/Mobily-Data
+OUTPUT_FILE_PATH=/data/landing
 ISOP_OUTPUT_FILE_PATH=${OUTPUT_FILE_PATH}/isop
 
 # Log directory
