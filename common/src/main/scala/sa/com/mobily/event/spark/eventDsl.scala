@@ -8,8 +8,10 @@ import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
+import org.joda.time.{Period, DateTime}
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event._
@@ -17,6 +19,8 @@ import sa.com.mobily.flickering.{Flickering, FlickeringCells}
 import sa.com.mobily.metrics.{Measurable, MetricResult, MetricResultParam}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
+import sa.com.mobily.poi.UserActivity
+import sa.com.mobily.utils.EdmCoreUtils
 
 class EventCsvReader(self: RDD[String]) {
 
@@ -48,6 +52,8 @@ class EventRowReader(self: RDD[Row]) {
 
 class EventFunctions(self: RDD[Event]) {
 
+  import Event._
+
   def byUserChronologically: RDD[(Long, List[Event])] = self.keyBy(_.user.msisdn).groupByKey.map(idEvent =>
     (idEvent._1, idEvent._2.toList.sortBy(_.beginTime)))
 
@@ -66,6 +72,34 @@ class EventFunctions(self: RDD[Event]) {
 
   def withNonMatchingCell(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[Event] =
     self.filter(event => !cellCatalogue.value.isDefinedAt((event.lacTac, event.cellId)))
+
+  def toUserActivity(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
+    val byUserWeekYearRegion = withMatchingCell(cellCatalogue).flatMap(event => {
+      val beginDate = new DateTime(event.beginTime, EdmCoreUtils.TimeZoneSaudiArabia).minuteOfHour().setCopy(0)
+      val endDate = new DateTime(event.endTime, EdmCoreUtils.TimeZoneSaudiArabia).minuteOfHour().setCopy(0)
+      val hours = new Period(beginDate, endDate).getHours
+      (0 to hours).map(hourToSum => {
+        val dateToEmit = beginDate.plusHours(hourToSum)
+        val bts = cellCatalogue.value(event.lacTac, event.cellId).bts.get.toShort
+        ((event.user, event.regionId.toString, bts),
+          (EdmCoreUtils.saudiDayOfWeek(dateToEmit.dayOfWeek.get), dateToEmit.hourOfDay.get))
+      })
+    }).groupByKey
+    byUserWeekYearRegion.map(keyCallsByWeek => {
+      val callsByWeek = keyCallsByWeek._2
+      val key = keyCallsByWeek._1
+      val activityHoursByWeek = callsByWeek.map(dayHour => (((dayHour._1 - 1) * HoursInDay) + dayHour._2, 1D)).toSeq
+      UserActivity(key._1, key._2, key._3, Vectors.sparse(HoursInWeek, activityHoursByWeek))
+    })
+  }
+
+  def perUserAndSiteIdFilteringLittleActivity(
+    minimumActivityRatio: Double = DefaultMinActivityRatio)
+    (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
+    val minNumberOfHours = HoursInWeek * minimumActivityRatio
+    toUserActivity(cellCatalogue).filter(
+      element => element.activityVector.toArray.count(element => element == 1) > minNumberOfHours)
+  }
 }
 
 class EventWriter(self: RDD[Event]) {

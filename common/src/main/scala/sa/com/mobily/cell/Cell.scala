@@ -47,7 +47,8 @@ case class Cell(
     range: Double,
     coverageWkt: String,
     mcc: String = Cell.SaudiArabiaMcc,
-    mnc: String = Cell.MobilyMnc) {
+    mnc: String = Cell.MobilyMnc,
+    bts: Option[String] = None) {
 
   lazy val coverageGeom: Geometry = GeomUtils.parseWkt(coverageWkt, planarCoords.srid)
 
