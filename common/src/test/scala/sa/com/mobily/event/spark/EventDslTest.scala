@@ -6,6 +6,8 @@ package sa.com.mobily.event.spark
 
 import scala.reflect.io.File
 
+import com.github.nscala_time.time.Imports._
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
@@ -15,7 +17,7 @@ import sa.com.mobily.event.Event
 import sa.com.mobily.flickering.FlickeringCells
 import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.LocalSparkSqlContext
+import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkSqlContext}
 
 class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
@@ -202,6 +204,71 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     val events = sc.parallelize(Array(event1, event2, event3))
   }
 
+  trait WithWeekEvents{
+    val cell = Cell(
+      cellId = 4465390,
+      lacTac = 51,
+      planarCoords = UtmCoordinates(-228902.5, 3490044.0),
+      technology = FourGTdd,
+      cellType = Macro,
+      height = 25.0,
+      azimuth = 0.0,
+      beamwidth = 216,
+      range = 681.54282813,
+      coverageWkt = "POLYGON ((0 0, 1 1, 2 2, 0 2, 0 0))",
+      mcc = "420",
+      mnc = "03",
+      bts = Some ("1"))
+    val beginTime1 =
+      DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818")
+    val beginTime2 =
+      DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824")
+    val beginTime3 =
+      DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819")
+    val beginTime4 =
+      DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140825")
+
+    val event1 = Event(
+      user = User(imei = "0134160098258500", imsi = "420034120446250", msisdn = 560917079L),
+      beginTime = beginTime1.hourOfDay.setCopy(0).getMillis,
+      endTime = beginTime1.hourOfDay.setCopy(2).getMillis,
+      lacTac = cell.lacTac,
+      cellId = cell.cellId,
+      eventType = "1",
+      subsequentLacTac = Some(1326),
+      subsequentCellId = Some(12566))
+    val event2 = event1.copy(
+      beginTime = beginTime2.hourOfDay.setCopy(0).getMillis,
+      endTime = beginTime2.hourOfDay.setCopy(0).getMillis)
+    val event3 = event1.copy(
+      beginTime = beginTime2.hourOfDay.setCopy(23).getMillis,
+      endTime = beginTime2.hourOfDay.setCopy(23).getMillis)
+    val event4 = event1.copy(
+      beginTime = beginTime3.hourOfDay.setCopy(1).getMillis,
+      endTime = beginTime3.hourOfDay.setCopy(1).getMillis)
+    val event5 = event1.copy(
+      beginTime = beginTime3.hourOfDay.setCopy(23).getMillis,
+      endTime = beginTime3.hourOfDay.setCopy(23).getMillis)
+    val event6 = event1.copy(
+      user = User("", "", 1L),
+      beginTime = beginTime4.hourOfDay.setCopy(1).getMillis,
+      endTime = beginTime4.hourOfDay.setCopy(3).getMillis)
+
+    val events = sc.parallelize(List(event1, event2, event3, event4, event5, event6))
+    val cellCatalogue = sc.parallelize(List(cell)).toBroadcastMap
+    val vectorResult = Vectors.sparse(Event.HoursInWeek, Seq((25, 1.0), (26, 1.0), (27, 1.0)))
+  }
+
+  trait WithWeekEventsittleActivity extends WithWeekEvents{
+    val event7 = event1.copy(
+      beginTime = beginTime2.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
+      endTime = beginTime2.hourOfDay.setCopy(7).minuteOfHour.setCopy(2).getMillis)
+    val event8 = event1.copy(
+      beginTime = beginTime1.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
+      endTime = beginTime1.hourOfDay.setCopy(7).minuteOfHour.setCopy(2).getMillis)
+    val eventsLowActivity = sc.parallelize(List(event7, event8, event4, event5, event6))
+  }
+
   "EventDsl" should "get correctly parsed PS events" in new WithPsEventsText {
     psEvents.psToEvent.count should be (2)
   }
@@ -281,4 +348,21 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     events.sparkContext.textFile(path).count should be (5)
     File(path).deleteRecursively
   }
+  it should "calculate the vector to home clustering correctly" in new WithWeekEvents {
+    val homes = events.toUserActivity(cellCatalogue).collect
+    homes.length should be (2)
+    homes.tail.head.activityVector should be (vectorResult)
+  }
+
+  it should "calculate the vector to home clustering filtering little activity users" in
+    new WithWeekEventsittleActivity {
+      val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity()(cellCatalogue).collect
+      homes.length should be (1)
+    }
+
+  it should "calculate the vector to home clustering filtering little activity users and overriding default ratio" in
+    new WithWeekEventsittleActivity {
+      val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity(0.2)(cellCatalogue).collect
+      homes.length should be (0)
+    }
 }

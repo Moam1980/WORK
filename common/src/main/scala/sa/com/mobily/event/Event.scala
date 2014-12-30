@@ -37,10 +37,15 @@ case class Event(
   override def timeValue: Long = beginTime
 
   def minSpeedPopulated: Boolean = inSpeed.isDefined && outSpeed.isDefined && minSpeedPointWkt.isDefined
+
+  lazy val regionId: Short = lacTac.toString.head.toShort
 }
 
 object Event {
 
+  val HoursInWeek = 168
+  val HoursInDay = 24
+  val DefaultMinActivityRatio = 0.1
   val LineCsvParserObject = new OpenCsvParser(separator = ',', quote = '"')
 
   val DateFormatter: DateTimeFormatter =
