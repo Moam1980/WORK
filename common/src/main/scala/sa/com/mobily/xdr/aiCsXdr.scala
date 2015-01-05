@@ -47,7 +47,39 @@ final case class  AiCell(
     servingLac: Option[String],
     servingCellId: Option[String],
     oldMcc: Option[String],
-    oldMnc: Option[String])
+    oldMnc: Option[String]) {
+
+  lazy val id: (Option[Int], Option[Int]) =
+    if (csCell.firstLac.isDefined && !csCell.firstLac.get.isEmpty)
+      if (servingCellId.isDefined && !servingCellId.get.isEmpty)
+        (hexToDecimal(csCell.firstLac.get), hexToDecimal(servingCellId.get))
+      else (hexToDecimal(csCell.firstLac.get), None)
+    else
+    if (servingCellId.isDefined && !servingCellId.get.isEmpty) (None, Some(hexToInt(servingCellId.get)))
+    else (None, None)
+
+  def fields: Array[String] =
+    csCell.fields ++ Array(oldMcc.getOrElse(""), oldMnc.getOrElse(""), firstCellId.getOrElse(""),
+      secondCellId.getOrElse(""), thirdCellId.getOrElse(""))
+
+  def idFields: Array[String] = Array(id._1.getOrElse("").toString, id._2.getOrElse("").toString)
+
+  override def equals(other: Any): Boolean = other match {
+    case that: AiCell => (that canEqual this) && (this.id == that.id)
+    case _ => false
+  }
+
+  override def hashCode: Int = id.hashCode
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[AiCell]
+}
+
+object AiCell {
+
+  def header: Array[String] = CsCell.header ++ Array("oldMcc", "oldMnc", "firstCellId", "secondCellId", "thirdCellId")
+
+  def idHeader: Array[String] = Array("Lac", "firstCellId")
+}
 
 final case class  AiTime(
     csTime: CsTime,
