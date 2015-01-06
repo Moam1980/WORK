@@ -45,10 +45,10 @@ case class Cell(
     azimuth: Double,
     beamwidth: Double,
     range: Double,
+    bts: String,
     coverageWkt: String,
     mcc: String = Cell.SaudiArabiaMcc,
-    mnc: String = Cell.MobilyMnc,
-    bts: Option[String] = None) {
+    mnc: String = Cell.MobilyMnc) {
 
   lazy val coverageGeom: Geometry = GeomUtils.parseWkt(coverageWkt, planarCoords.srid)
 
@@ -59,6 +59,33 @@ case class Cell(
   def areaRatio(location: Geometry): Double = coverageGeom.getArea / location.getArea
 
   def intersects(another: Cell): Boolean = coverageGeom.intersects(another.coverageGeom)
+
+  def fields: Array[String] = {
+    val coverageWktWgs84 =
+      GeomUtils.wkt(
+        GeomUtils.transformGeom(
+          coverageGeom,
+          Coordinates.Wgs84GeodeticSrid,
+          Coordinates.LatLongPrecisionModel,
+          true)) // Use longitude first (format recognized by QGIS and PostGIS, but it's not standard!)
+    Array[String](
+      mcc,
+      mnc,
+      cellId.toString,
+      lacTac.toString,
+      planarCoords.x.toString,
+      planarCoords.y.toString,
+      planarCoords.epsg,
+      technology.identifier,
+      cellType.value,
+      height.toString,
+      azimuth.toString,
+      beamwidth.toString,
+      range.toString,
+      bts,
+      coverageWkt,
+      coverageWktWgs84)
+  }
 }
 
 object Cell {
@@ -79,7 +106,7 @@ object Cell {
 
     override def fromFields(fields: Array[String]): Cell = {
       val Array(mccText, mncText, cellIdText, lacTacText, planarXText, planarYText, utmEpsg, techText, cellTypeText,
-        heightText, azimuthText, beamwidthText, rangeText, geomText, _) = fields
+        heightText, azimuthText, beamwidthText, rangeText, btsText, geomText, _) = fields
 
       Cell(
         cellId = cellIdText.toInt,
@@ -91,6 +118,7 @@ object Cell {
         azimuth = azimuthText.toDouble,
         beamwidth = beamwidthText.toDouble,
         range = rangeText.toDouble,
+        bts = btsText,
         coverageWkt = geomText,
         mcc = mccText,
         mnc = mncText)
@@ -120,30 +148,4 @@ object Cell {
       case Parking.value => Parking
       case Pico.value => Pico
     }
-
-  def toFields(cell: Cell): Array[String] = {
-    val coverageWktWgs84 =
-      GeomUtils.wkt(
-        GeomUtils.transformGeom(
-          cell.coverageGeom,
-          Coordinates.Wgs84GeodeticSrid,
-          Coordinates.LatLongPrecisionModel,
-          true)) // Use longitude first (format recognized by QGIS and PostGIS, but it's not standard!)
-    Array[String](
-      cell.mcc,
-      cell.mnc,
-      cell.cellId.toString,
-      cell.lacTac.toString,
-      cell.planarCoords.x.toString,
-      cell.planarCoords.y.toString,
-      cell.planarCoords.epsg,
-      cell.technology.identifier,
-      cell.cellType.value,
-      cell.height.toString,
-      cell.azimuth.toString,
-      cell.beamwidth.toString,
-      cell.range.toString,
-      cell.coverageWkt,
-      coverageWktWgs84)
-  }
 }

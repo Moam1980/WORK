@@ -32,6 +32,7 @@ class FlickeringCellsTest extends FlatSpec with ShouldMatchers {
       azimuth = 0,
       beamwidth = 90,
       range = 10.3,
+      bts = "1",
       coverageWkt = shapeWkt1)
 
     val cell2 = cell1.copy(cellId = 4465391, coverageWkt = shapeWkt2)

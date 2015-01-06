@@ -31,6 +31,7 @@ class FlickeringTest extends FlatSpec with ShouldMatchers {
       azimuth = 0,
       beamwidth = 90,
       range = 2530.3,
+      bts = "1",
       coverageWkt = shapeWkt1)
     val cell2 = cell1.copy(lacTac = 52, coverageWkt = shapeWkt2, planarCoords = UtmCoordinates(13, 14, "EPSG:32638"))
     val cell3 = cell1.copy(lacTac = 53, coverageWkt = shapeWkt3, planarCoords = UtmCoordinates(3, 4, "EPSG:32638"))
@@ -172,6 +173,7 @@ class FlickeringTest extends FlatSpec with ShouldMatchers {
       azimuth = 0.0,
       beamwidth =  168.0,
       range = 629.99757222,
+      bts = "1",
       coverageWkt = shapeWkt1,
       mcc = "420",
       mnc = "03")
@@ -185,6 +187,7 @@ class FlickeringTest extends FlatSpec with ShouldMatchers {
       azimuth = 320.0,
       beamwidth =  168.0,
       range = 544.08881238,
+      bts = "1",
       coverageWkt = shapeWkt1,
       mcc = "420",
       mnc = "03")
@@ -198,6 +201,7 @@ class FlickeringTest extends FlatSpec with ShouldMatchers {
       azimuth = 140.0,
       beamwidth =  168.0,
       range = 744.54258536,
+      bts = "1",
       coverageWkt = shapeWkt3,
       mcc = "420",
       mnc = "03")
@@ -211,6 +215,7 @@ class FlickeringTest extends FlatSpec with ShouldMatchers {
       azimuth = 0.0,
       beamwidth =  174.0,
       range = 1042.3596195,
+      bts = "1",
       coverageWkt = shapeWkt4,
       mcc = "420",
       mnc = "03")

@@ -38,7 +38,7 @@ class JourneyDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
 
   trait WithCellCatalogue {
 
-    val cell101 = Cell(101, 1, UtmCoordinates(1, 5), FourGFdd, Micro, 20, 180, 45, 4,
+    val cell101 = Cell(101, 1, UtmCoordinates(1, 5), FourGFdd, Micro, 20, 180, 45, 4, "1",
       "POLYGON (( 1 0, 1 2, 3 2, 3 0, 1 0 ))")
     val cell120 = cell101.copy(cellId = 120, planarCoords = UtmCoordinates(1, 5),
       coverageWkt = "POLYGON (( 2 3, 2 5, 4 5, 4 3, 2 3 ))")

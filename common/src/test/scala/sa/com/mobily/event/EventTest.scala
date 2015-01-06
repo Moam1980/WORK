@@ -37,7 +37,7 @@ class EventTest extends FlatSpec with ShouldMatchers with LocalSparkContext with
 
   trait WithCellCatalogue {
 
-    val cell1 = Cell(13067, 1324, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4,
+    val cell1 = Cell(13067, 1324, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4, "1",
       "POLYGON (( 0 0, 0 4, 2 4, 2 0, 0 0 ))")
     val cells = sc.parallelize(List(cell1)).toBroadcastMap.value
   }

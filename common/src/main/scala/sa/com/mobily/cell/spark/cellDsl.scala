@@ -112,6 +112,7 @@ object CellMerger {
       val beamwidth = sqmCellWithBeamwidthAndSite._1._2.getOrElse(DegreesInCircumference)
       val btsSite = sqmCellWithBeamwidthAndSite._2
       val range = btsSite.outdoorCov
+      val bts = btsSite.bts
       val coverageGeom = CellCoverage.cellShape(
         cellLocation = sqmCell.basePlanarCoords.geometry,
         azimuth = sqmCell.azimuth,
@@ -128,6 +129,7 @@ object CellMerger {
         azimuth = sqmCell.azimuth,
         beamwidth = beamwidth,
         range = range,
+        bts = bts,
         coverageWkt = GeomUtils.wkt(coverageGeom),
         mcc = btsSite.cgi.substring(Cell.MccStartIndex, Cell.MncStartIndex),
         mnc = btsSite.cgi.substring(Cell.MncStartIndex, Cell.LacStartIndexMnc2Digits))

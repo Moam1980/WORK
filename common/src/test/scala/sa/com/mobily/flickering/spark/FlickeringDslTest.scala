@@ -32,6 +32,7 @@ class FlickeringDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
       azimuth = 0.0,
       beamwidth =  168.0,
       range = 10.0,
+      bts = "1",
       coverageWkt = shapeWkt1,
       mcc = "420",
       mnc = "03")

@@ -95,22 +95,22 @@ class LocationTest extends FlatSpec with ShouldMatchers {
     Client.header should be (clientHeader)
   }
 
-  "Client" should "return correct fields" in new WithClient {
+  it should "return correct fields" in new WithClient {
     client.fields should be (clientFields)
     clientEqual.fields should be (clientEqualFields)
     clientDifferent.fields should be (clientDifferentFields)
   }
 
-  "Client" should "return correct hashCode" in new WithClient {
+  it should "return correct hashCode" in new WithClient {
     client.hashCode should be (clientHashCode)
   }
 
-  "Client" should "return true when comparing with same id" in new WithClient {
+  it should "return true when comparing with same id" in new WithClient {
     client.equals(clientEqual) should be (true)
     client == clientEqual should be (true)
   }
 
-  "Client" should "return false when comparing with different id" in new WithClient {
+  it should "return false when comparing with different id" in new WithClient {
     client.equals(clientDifferent) should be (false)
     client == clientDifferent should be (false)
 
@@ -118,7 +118,7 @@ class LocationTest extends FlatSpec with ShouldMatchers {
     clientEqual == clientDifferent should be (false)
   }
 
-  "Client" should "return false when comparing different objects" in new WithClient {
+  it should "return false when comparing different objects" in new WithClient {
     client.equals(0) should be (false)
     client == 0 should be (false)
   }
@@ -127,22 +127,22 @@ class LocationTest extends FlatSpec with ShouldMatchers {
     Location.header should be (locationHeader)
   }
 
-  "Location" should "return correct fields" in new WithLocation {
+  it should "return correct fields" in new WithLocation {
     location.fields should be (locationFields)
     locationEqual.fields should be (locationEqualFields)
     locationDifferent.fields should be (locationDifferentFields)
   }
 
-  "Location" should "return correct hashCode" in new WithLocation {
+  it should "return correct hashCode" in new WithLocation {
     location.hashCode should be (locationHashCode)
   }
 
-  "Location" should "return true when comparing with same id" in new WithLocation {
+  it should "return true when comparing with same id" in new WithLocation {
     location.equals(locationEqual) should be (true)
     location == locationEqual should be (true)
   }
 
-  "Location" should "return false when comparing with different id" in new WithLocation {
+  it should "return false when comparing with different id" in new WithLocation {
     location.equals(locationDifferent) should be (false)
     location == locationDifferent should be (false)
 
@@ -150,22 +150,22 @@ class LocationTest extends FlatSpec with ShouldMatchers {
     locationEqual == locationDifferent should be (false)
   }
 
-  "Location" should "return false when comparing different objects" in new WithLocation {
+  it should "return false when comparing different objects" in new WithLocation {
     location.equals(client) should be (false)
     location == client should be (false)
   }
 
-  "Location" should "return correct srid" in new WithLocation {
+  it should "return correct srid" in new WithLocation {
     location.srid should be (4326)
     locationEqual.srid should be (32638)
   }
 
-  "Location" should "return correct geometry" in new WithLocation {
+  it should "return correct geometry" in new WithLocation {
     location.geom should be (geomWsg84)
     locationEqual.geom should be (geom)
   }
 
-  "Location" should "be built from CSV" in new WithLocation {
+  it should "be built from CSV" in new WithLocation {
     // as we have override equals we should check all fields
     CsvParser.fromLine(locationLine).value.get.fields should be (location.fields)
     CsvParser.fromLine(locationEqualLine).value.get.fields should be (locationEqual.fields)
@@ -182,7 +182,7 @@ class LocationTest extends FlatSpec with ShouldMatchers {
     locationParsed.geomWkt should be (location.geomWkt)
   }
 
-  "Location" should "be discarded when the CSV format is wrong" in new WithLocation {
+  it should "be discarded when the CSV format is wrong" in new WithLocation {
     an [Exception] should be thrownBy fromCsv.fromFields(location.fields.updated(0, "WrongNumber"))
   }
 }
