@@ -135,6 +135,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       azimuth = 0.0,
       beamwidth = 216,
       range = 681.54282813,
+      bts = "1",
       coverageWkt = "POLYGON ((-228969.5 3490032.3, -228977.7 3490031.6, -229017.2 3490033.9, -229056.8 3490042.1, " +
         "-229095.7 3490056.2, -229132.9 3490076.1, -229167.6 3490101.5, -229199 3490132.2, -229226.2 3490167.5, " +
         "-229248.7 3490206.9, -229265.7 3490249.7, -229277 3490295.1, -229281.9 3490342.2, -229280.5 3490390.1, " +
@@ -184,6 +185,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       azimuth = 0.0,
       beamwidth = 216,
       range = 681.54282813,
+      bts = "1",
       coverageWkt = "POLYGON ((0 0, 1 1, 2 2, 0 2, 0 0))",
       mcc = "420",
       mnc = "03")
@@ -204,7 +206,8 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     val events = sc.parallelize(Array(event1, event2, event3))
   }
 
-  trait WithWeekEvents{
+  trait WithWeekEvents {
+
     val cell = Cell(
       cellId = 4465390,
       lacTac = 51,
@@ -215,10 +218,10 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       azimuth = 0.0,
       beamwidth = 216,
       range = 681.54282813,
+      bts = "1",
       coverageWkt = "POLYGON ((0 0, 1 1, 2 2, 0 2, 0 0))",
       mcc = "420",
-      mnc = "03",
-      bts = Some ("1"))
+      mnc = "03")
     val beginTime1 =
       DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818")
     val beginTime2 =
@@ -256,10 +259,14 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
 
     val events = sc.parallelize(List(event1, event2, event3, event4, event5, event6))
     val cellCatalogue = sc.parallelize(List(cell)).toBroadcastMap
-    val vectorResult = Vectors.sparse(Event.HoursInWeek, Seq((25, 1.0), (26, 1.0), (27, 1.0)))
+    val user560917079VectorResult = Vectors.sparse(
+      Event.HoursInWeek,
+      Seq((0, 1.0), (23, 1.0), (24, 1.0), (25, 1.0), (26, 1.0), (49, 1.0), (71, 1.0)))
+    val user1VectorResult = Vectors.sparse(Event.HoursInWeek, Seq((25, 1.0), (26, 1.0), (27, 1.0)))
   }
 
-  trait WithWeekEventsittleActivity extends WithWeekEvents{
+  trait WithWeekEventsLittleActivity extends WithWeekEvents {
+    
     val event7 = event1.copy(
       beginTime = beginTime2.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
       endTime = beginTime2.hourOfDay.setCopy(7).minuteOfHour.setCopy(2).getMillis)
@@ -351,17 +358,18 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
   it should "calculate the vector to home clustering correctly" in new WithWeekEvents {
     val homes = events.toUserActivity(cellCatalogue).collect
     homes.length should be (2)
-    homes.tail.head.activityVector should be (vectorResult)
+    homes.find(_.user.msisdn == 560917079).get.activityVector should be (user560917079VectorResult)
+    homes.find(_.user.msisdn == 1).get.activityVector should be (user1VectorResult)
   }
 
   it should "calculate the vector to home clustering filtering little activity users" in
-    new WithWeekEventsittleActivity {
+    new WithWeekEventsLittleActivity {
       val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity()(cellCatalogue).collect
       homes.length should be (1)
     }
 
   it should "calculate the vector to home clustering filtering little activity users and overriding default ratio" in
-    new WithWeekEventsittleActivity {
+    new WithWeekEventsLittleActivity {
       val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity(0.2)(cellCatalogue).collect
       homes.length should be (0)
     }

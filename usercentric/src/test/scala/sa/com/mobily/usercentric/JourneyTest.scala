@@ -39,7 +39,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
 
   trait WithCellCatalogue {
 
-    val cell1 = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4,
+    val cell1 = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4, "1",
       "POLYGON (( 0 0, 0 4, 2 4, 2 0, 0 0 ))")
     val cell1Centroid = "POINT (1 2)"
     val cell20 = cell1.copy(cellId = 20, planarCoords = UtmCoordinates(7, 4),

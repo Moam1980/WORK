@@ -52,10 +52,10 @@ class CellTest extends FlatSpec with ShouldMatchers {
       "46.82339432 24.84791155, 46.82334241 24.84801511, 46.82330541 24.8481239, 46.82328429 24.8482352, " +
       "46.82327804 24.84834904, 46.82328762 24.84846267, 46.82329508 24.8484987))"
 
-    val cellLine = "420|03|4465390|57|-194243.4|2671697.6|EPSG:32638|4G_TDD|MACRO|25.0|0.0|90.0|2530.3|" +
+    val cellLine = "420|03|4465390|57|-194243.4|2671697.6|EPSG:32638|4G_TDD|MACRO|25.0|0.0|90.0|2530.3|1|" +
       shapeWkt + "|" + shapeWgs84Wkt
     val fields = Array("420", "03", "4465390", "57", "-194243.4", "2671697.6", "EPSG:32638", "4G_TDD", "MACRO", "25.0",
-      "0.0", "90.0", "2530.3", shapeWkt, shapeWgs84Wkt)
+      "0.0", "90.0", "2530.3", "1", shapeWkt, shapeWgs84Wkt)
     val cell = Cell(
       mcc = "420",
       mnc = "03",
@@ -68,6 +68,7 @@ class CellTest extends FlatSpec with ShouldMatchers {
       azimuth = 0,
       beamwidth = 90,
       range = 2530.3,
+      bts = "1",
       coverageWkt = shapeWkt)
   }
 
@@ -85,6 +86,7 @@ class CellTest extends FlatSpec with ShouldMatchers {
       azimuth = 0,
       beamwidth = 90,
       range = 2530.3,
+      bts = "1",
       coverageWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
     val location = GeomUtils.parseWkt("POLYGON ((4 0, 4 2, 6 2, 6 0, 4 0))", Coordinates.SaudiArabiaUtmSrid)
   }
@@ -103,6 +105,7 @@ class CellTest extends FlatSpec with ShouldMatchers {
       azimuth = 0,
       beamwidth = 90,
       range = 2530.3,
+      bts = "1",
       coverageWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
     val cell2 = cell1.copy(
       planarCoords = UtmCoordinates(1, 1, "EPSG:32638"),
@@ -193,7 +196,7 @@ class CellTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "generate a list of fields" in new WithCell {
-    Cell.toFields(cell) should be (fields)
+    cell.fields should be (fields)
   }
 
   it should "provide the cell identifier" in new WithCell {

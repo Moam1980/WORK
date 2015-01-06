@@ -80,16 +80,20 @@ class EventFunctions(self: RDD[Event]) {
       val hours = new Period(beginDate, endDate).getHours
       (0 to hours).map(hourToSum => {
         val dateToEmit = beginDate.plusHours(hourToSum)
-        val bts = cellCatalogue.value(event.lacTac, event.cellId).bts.get.toShort
-        ((event.user, event.regionId.toString, bts),
+        val bts = cellCatalogue.value(event.lacTac, event.cellId).bts
+        ((event.user, bts, event.regionId),
           (EdmCoreUtils.saudiDayOfWeek(dateToEmit.dayOfWeek.get), dateToEmit.hourOfDay.get))
       })
     }).groupByKey
-    byUserWeekYearRegion.map(keyCallsByWeek => {
-      val callsByWeek = keyCallsByWeek._2
-      val key = keyCallsByWeek._1
-      val activityHoursByWeek = callsByWeek.map(dayHour => (((dayHour._1 - 1) * HoursInDay) + dayHour._2, 1D)).toSeq
-      UserActivity(key._1, key._2, key._3, Vectors.sparse(HoursInWeek, activityHoursByWeek))
+    byUserWeekYearRegion.map(keyAndActivityByWeek => {
+      val activityByWeek = keyAndActivityByWeek._2
+      val key = keyAndActivityByWeek._1
+      val activityHoursByWeek = activityByWeek.map(dayHour => (((dayHour._1 - 1) * HoursInDay) + dayHour._2, 1D)).toSeq
+      UserActivity(
+        user = key._1,
+        siteId = key._2,
+        regionId = key._3,
+        activityVector = Vectors.sparse(HoursInWeek, activityHoursByWeek))
     })
   }
 
