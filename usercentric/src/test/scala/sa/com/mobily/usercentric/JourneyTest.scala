@@ -19,7 +19,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
 
   trait WithEvents {
 
-    val event1 = Event(User("imei", "imsi", 1L), 0, 0, 1, 1, "EventType", None, None, None, None)
+    val event1 = Event(User("imei", "imsi", 1L), 0, 0, 1, 1, Some("EventType"), None, None, None, None)
     val event20 = event1.copy(beginTime = 5000, endTime = 5000, cellId = 20)
     val event21 = event1.copy(beginTime = 5000, endTime = 5000, cellId = 21)
     val event3 = event1.copy(beginTime = 5000, endTime = 5000, cellId = 3)

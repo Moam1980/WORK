@@ -48,8 +48,7 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
     !iuCs.time.csTime.begin.isEmpty &&
     !iuCs.time.csTime.end.isEmpty &&
     iuCs.cell.id._1.isDefined &&
-    iuCs.cell.id._2.isDefined &&
-    !iuCs.connection.dialogueIndicator.isEmpty
+    iuCs.cell.id._2.isDefined
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(iuCs => {

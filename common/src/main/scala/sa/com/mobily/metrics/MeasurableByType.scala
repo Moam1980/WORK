@@ -9,5 +9,7 @@ package sa.com.mobily.metrics
  */
 trait MeasurableByType extends Measurable {
 
+  final val NonDefined: String = "Non Defined"
+
   def typeValue: String
 }

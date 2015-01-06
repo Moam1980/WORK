@@ -26,16 +26,16 @@ class SanityMetricsSparkTest extends FlatSpec with ShouldMatchers with LocalSpar
       endTime = 1404162610000L,
       lacTac = 0x052C,
       cellId = 13067,
-      eventType = "859",
+      eventType = Some("859"),
       subsequentLacTac = None,
       subsequentCellId = None)
-    val event1 = event0.copy(beginTime = toMillis("19/07/2011 16:35:07"), eventType = "1")
-    val event2 = event0.copy(beginTime = toMillis("19/07/2011 00:45:07"), eventType = "1",
+    val event1 = event0.copy(beginTime = toMillis("19/07/2011 16:35:07"), eventType = Some("1"))
+    val event2 = event0.copy(beginTime = toMillis("19/07/2011 00:45:07"), eventType = Some("1"),
       user = User(
         imei = "866173010386736",
         imsi = "420034122616618",
         msisdn = 330946079L))
-    val event3 = event0.copy(beginTime = toMillis("19/07/2011 01:45:07"), eventType = "3")
+    val event3 = event0.copy(beginTime = toMillis("19/07/2011 01:45:07"), eventType = Some("3"))
     val event4 = event0.copy(beginTime = toMillis("19/07/2011 19:45:07"))
     val key0 = MetricResultKey("Total-number-items", MetricKey(1311080400000L))
     val key4 = MetricResultKey("Items-by-type", MetricKey("859"))

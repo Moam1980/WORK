@@ -48,8 +48,7 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
     !aiCs.aiTime.csTime.begin.isEmpty &&
     !aiCs.aiTime.csTime.end.isEmpty &&
     aiCs.aiCell.id._1.isDefined &&
-    aiCs.aiCell.id._2.isDefined &&
-    !aiCs.aiCall.scenario.isEmpty
+    aiCs.aiCell.id._2.isDefined
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {

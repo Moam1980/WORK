@@ -25,9 +25,13 @@ class EventTest extends FlatSpec with ShouldMatchers with LocalSparkContext with
       endTime = 1404162610000L,
       lacTac = 0x052C,
       cellId = 13067,
-      eventType = "859",
+      eventType = Some("859"),
       subsequentLacTac = Some(0),
       subsequentCellId = Some(0))
+
+    val eventWithoutType = event.copy(eventType = None)
+    val typeNonDefined = "Non Defined"
+
     val row = Row(Row("866173010386736", "420034122616618", 560917079L),
       1404162126000L, 1404162610000L, 0x052C, 13067, "859", 0, 0, None, None, None)
     val wrongRow = Row(Row(866173010386L, "420034122616618", 560917079L),
@@ -80,5 +84,9 @@ class EventTest extends FlatSpec with ShouldMatchers with LocalSparkContext with
 
   it should "provide with cell geometry WKT for an event" in new WithEvents with WithCellCatalogue {
     Event.geomWkt(cells)(event) should be (cell1.coverageWkt)
+  }
+
+  it should "return correct event type when is not defined" in new WithEvents {
+    eventWithoutType.typeValue should be (typeNonDefined)
   }
 }

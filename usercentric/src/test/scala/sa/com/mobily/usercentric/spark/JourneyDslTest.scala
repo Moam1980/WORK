@@ -20,7 +20,7 @@ class JourneyDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
 
   trait WithEvents {
 
-    val event101 = Event(User("imei", "imsi", 1L), 0, 0, 1, 101, "EventType", None, None, None, None)
+    val event101 = Event(User("imei", "imsi", 1L), 0, 0, 1, 101, Some("EventType"), None, None, None, None)
     val eventWithNoCell = event101.copy(cellId = 999)
     val event120 = event101.copy(beginTime = 5000, endTime = 5000, cellId = 120)
     val event130 = event101.copy(beginTime = 10000, endTime = 10000, cellId = 130)
