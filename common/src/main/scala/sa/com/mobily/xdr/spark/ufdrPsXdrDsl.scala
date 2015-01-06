@@ -13,7 +13,7 @@ import org.apache.spark.sql.Row
 import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
-import sa.com.mobily.utils.EdmCoreUtils._
+import sa.com.mobily.utils.EdmCoreUtils
 import sa.com.mobily.utils.SanityUtils
 import sa.com.mobily.xdr._
 
@@ -46,7 +46,7 @@ class UfdrPsXdrFunctions(self: RDD[UfdrPsXdr]) {
 
     val transferStatsByHierarchy = self.map(event =>
       (UfdrPsXdrHierarchy(
-        hourTime = parseTimestampToSaudiDate(roundTimestampHourly(event.duration.beginTime)),
+        hourTime = EdmCoreUtils.parseTimestampToSaudiDate(EdmCoreUtils.roundTimestampHourly(event.duration.beginTime)),
         cell = event.cell,
         user = event.user,
         protocol = event.protocol),
@@ -65,8 +65,7 @@ class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
       ufdrPs.user.msisdn > 0L) &&
     ufdrPs.duration.beginTime > 0L &&
     ufdrPs.duration.endTime > 0L &&
-    (ufdrPs.cell.id._1 != UfdrPSXdrCell.NonDefined && ufdrPs.cell.id._2 != UfdrPSXdrCell.NonDefined) &&
-    ufdrPs.protocol.category.identifier > 0
+    (ufdrPs.cell.id._1 != UfdrPSXdrCell.NonDefined && ufdrPs.cell.id._2 != UfdrPSXdrCell.NonDefined)
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(ufdrPs => {

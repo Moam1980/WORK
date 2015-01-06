@@ -34,7 +34,7 @@ class SmsEventTest extends FlatSpec with ShouldMatchers {
       endTime = 1389356783304L,
       lacTac = 1409,
       cellId = 4097,
-      eventType = "2",
+      eventType = Some("2"),
       subsequentLacTac = Some(1409),
       subsequentCellId = None)
   }

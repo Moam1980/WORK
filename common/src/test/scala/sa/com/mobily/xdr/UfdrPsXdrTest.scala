@@ -10,7 +10,7 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.EdmCoreUtils._
+import sa.com.mobily.utils.EdmCoreUtils
 
 class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
@@ -155,7 +155,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       endTime = 1414184401L * 1000,
       lacTac = 4071,
       cellId = 44936,
-      eventType = protocol.category.identifier + "." + protocol.id,
+      eventType = Some(protocol.category.identifier + "." + protocol.id),
       subsequentLacTac = None,
       subsequentCellId = None)
 
@@ -167,7 +167,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       endTime = 1414184401L * 1000,
       lacTac = 3855,
       cellId = 61680,
-      eventType = protocol.category.identifier + "." + protocol.id,
+      eventType = Some(protocol.category.identifier + "." + protocol.id),
       subsequentLacTac = None,
       subsequentCellId = None)
   }

@@ -36,7 +36,7 @@ class VoiceEventTest extends FlatSpec with ShouldMatchers {
       endTime = 1389356365286L,
       lacTac = 1326,
       cellId = 12566,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
   }

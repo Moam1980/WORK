@@ -271,11 +271,11 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       endTime = 1414184401L * 1000,
       lacTac = 4071,
       cellId = 44936,
-      eventType = "1.1906",
+      eventType = Some("1.1906"),
       subsequentLacTac = None,
       subsequentCellId = None)
 
-    val event3 = event1.copy(eventType = "5.1906")
+    val event3 = event1.copy(eventType = Some("5.1906"))
     val event4 = event1.copy(lacTac = 3855, cellId = 61680)
     val event5 = event4.copy(user = User("", "420034103554735", 200912053883L))
     val event6 = event4.copy(user = User("357940040696441", "420034103554735", 0L))

@@ -194,12 +194,15 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       1416156600550L,
       2105,
       20861,
-      "0",
+      Some("0"),
       None,
       None,
       None,
       None,
       None)
+
+    val aiCsXdrModWithoutEventType = aiCsXdrMod.copy(aiCall = aiCsXdrMod.aiCall.copy(scenario = "NaN"))
+    val eventWithoutEventType = event.copy(eventType = None)
   }
 
   trait WithAiCell {
@@ -217,7 +220,7 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       secondCellId = Some("2001"),
       thirdCellId = Some("82eb"),
       servingLac = None,
-      servingCellId = Some("82EB"),
+      servingCellId = Some("AAAA"),
       cic = None)
 
     val cellEqual = cell.copy(oldMcc = Some("222"),
@@ -231,14 +234,14 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     val cellDistinctFirstCellId = cell.copy(firstCellId = Some("FFFF"))
 
     val cellWithoutFirstLac = cell.copy(csCell = cell.csCell.copy(firstLac = None))
-    val cellWithoutFirstCellId = cell.copy(servingCellId = None)
-    val cellWithoutId = cellWithoutFirstLac.copy(servingCellId = None)
+    val cellWithoutFirstCellId = cell.copy(firstCellId = None)
+    val cellWithoutId = cellWithoutFirstLac.copy(firstCellId = None)
 
     val cellHeader = Array("firstLac", "secondLac", "thirdLac", "oldLac", "newLac") ++
-      Array("oldMcc", "oldMnc", "firstCellId", "secondCellId", "thirdCellId")
-    val cellIdHeader = Array("Lac", "firstCellId")
+      Array("cic", "firstCellId", "secondCellId", "thirdCellId", "servingLac", "servingCellId", "oldMcc", "oldMnc")
+    val cellIdHeader = Array("firstLac", "firstCellId")
 
-    val cellFields = Array("d4b", "", "d4b", "ef9", "d4b", "420", "03", "82eb", "2001", "82eb")
+    val cellFields = Array("d4b", "", "d4b", "ef9", "d4b", "", "82eb", "2001", "82eb", "", "AAAA", "420", "03")
     val cellIdFields = Array("3403", "33515")
 
     val cellWithoutFirstLacIdFields = Array("", "33515")
@@ -266,6 +269,10 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     aiCsXdrMod.toEvent should be(event)
   }
 
+  it should "parse AiCsXdr to Event without event type" in new WithAiCsEventsToParse {
+    aiCsXdrModWithoutEventType.toEvent should be(eventWithoutEventType)
+  }
+
   it should "be discarded when AiCsXdr is wrong" in new WithAiCsEvents {
     an[Exception] should be thrownBy aiCsXdrException.toEvent
   }
@@ -290,11 +297,11 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     cellWithoutFirstLac.idFields should be(cellWithoutFirstLacIdFields)
   }
 
-  "AiCell" should "return correct fields for id without first sac" in new WithAiCell {
+  "AiCell" should "return correct fields for id without first cell id" in new WithAiCell {
     cellWithoutFirstCellId.idFields should be(cellWithoutFirstSacIdFields)
   }
 
-  "AiCell" should "return correct fields for id without neither first lac nor first sac" in new WithAiCell {
+  "AiCell" should "return correct fields for id without neither first lac nor first cell id" in new WithAiCell {
     cellWithoutId.idFields should be(cellWithoutIdFields)
   }
 

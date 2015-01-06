@@ -21,7 +21,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       endTime = 2,
       lacTac = 1,
       cellId = 1,
-      eventType = "859",
+      eventType = Some("859"),
       subsequentLacTac = Some(0),
       subsequentCellId = Some(0),
       inSpeed = Some(0),

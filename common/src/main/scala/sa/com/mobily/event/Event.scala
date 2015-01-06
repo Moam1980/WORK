@@ -23,14 +23,14 @@ case class Event(
     endTime: Long,
     lacTac: Int,
     cellId: Int,
-    eventType: String, // TODO concrete types
+    eventType: Option[String], // TODO concrete types
     subsequentLacTac: Option[Int],
     subsequentCellId: Option[Int],
     inSpeed: Option[Double] = None,
     outSpeed: Option[Double] = None,
     minSpeedPointWkt: Option[String] = None) extends MeasurableByTime with MeasurableByType with MeasurableById[Long] {
 
-  override def typeValue: String = eventType
+  override def typeValue: String = eventType.getOrElse(NonDefined)
 
   override def id: Long = user.id
 
@@ -68,7 +68,7 @@ object Event {
         endTime = endTime.asInstanceOf[Long],
         lacTac = lacTac.asInstanceOf[Int],
         cellId = cellId.asInstanceOf[Int],
-        eventType = eventType.asInstanceOf[String],
+        eventType = EdmCoreUtils.stringOption(eventType),
         subsequentLacTac = EdmCoreUtils.intOption(subsequentLacTac),
         subsequentCellId = EdmCoreUtils.intOption(subsequentCellId),
         inSpeed = EdmCoreUtils.doubleOption(inSpeed),

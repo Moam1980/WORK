@@ -215,7 +215,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       1416156748435L,
       3403,
       33515,
-      "2",
+      Some("2"),
       None,
       None,
       None,

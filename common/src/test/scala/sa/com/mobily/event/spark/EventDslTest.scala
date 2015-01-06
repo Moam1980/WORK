@@ -76,7 +76,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = 1326,
       cellId = 12566,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val event2 = Event(
@@ -88,7 +88,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = 1326,
       cellId = 12566,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val event3 = Event(
@@ -100,7 +100,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = 1326,
       cellId = 12566,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val events = sc.parallelize(Array(event1, event2, event3))
@@ -160,7 +160,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = cell1.lacTac,
       cellId = cell1.cellId,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val event2 = event1.copy(beginTime = 1389363563000L)
@@ -197,7 +197,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = cell1.lacTac,
       cellId = cell1.cellId,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val event2 = event1.copy(lacTac = cell2.lacTac, cellId = cell2.cellId)
@@ -237,7 +237,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = beginTime1.hourOfDay.setCopy(2).getMillis,
       lacTac = cell.lacTac,
       cellId = cell.cellId,
-      eventType = "1",
+      eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
     val event2 = event1.copy(

@@ -30,7 +30,7 @@ object SmsEvent {
         endTime = Event.DateFormatter.parseDateTime(endTime).getMillis,
         lacTac = Event.lacOrTac(firstLac, tac).toInt,
         cellId = firstCellId.toInt,
-        eventType = eventType,
+        eventType = EdmCoreUtils.parseString(eventType),
         subsequentLacTac = EdmCoreUtils.parseInt(lastLac),
         subsequentCellId = EdmCoreUtils.parseInt(lastCellId))
     }

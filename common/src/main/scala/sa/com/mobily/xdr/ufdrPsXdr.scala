@@ -11,7 +11,7 @@ import org.apache.spark.sql._
 import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{RowParser, CsvParser, OpenCsvParser}
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.EdmCoreUtils._
+import sa.com.mobily.utils.EdmCoreUtils
 
 case class Duration(
     beginTime: Long,
@@ -46,12 +46,12 @@ case class UfdrPSXdrCell(
 
   lazy val id: (Int, Int) =
     if (!lac.isEmpty)
-      if (!sac.isEmpty) (Integer.parseInt(lac, BaseForHexadecimal), Integer.parseInt(sac, BaseForHexadecimal))
-      else (Integer.parseInt(lac, BaseForHexadecimal), UfdrPSXdrCell.NonDefined)
+      if (!sac.isEmpty) (EdmCoreUtils.hexToInt(lac), EdmCoreUtils.hexToInt(sac))
+      else (EdmCoreUtils.hexToInt(lac), UfdrPSXdrCell.NonDefined)
     else if (!tac.isEmpty)
-      if (!eci.isEmpty) (Integer.parseInt(tac, BaseForHexadecimal), Integer.parseInt(eci, BaseForHexadecimal))
-      else if (!ci.isEmpty) (Integer.parseInt(tac, BaseForHexadecimal), Integer.parseInt(ci, BaseForHexadecimal))
-      else (Integer.parseInt(tac, BaseForHexadecimal), UfdrPSXdrCell.NonDefined)
+      if (!eci.isEmpty) (EdmCoreUtils.hexToInt(tac), EdmCoreUtils.hexToInt(eci))
+      else if (!ci.isEmpty) (EdmCoreUtils.hexToInt(tac), EdmCoreUtils.hexToInt(ci))
+      else (EdmCoreUtils.hexToInt(tac), UfdrPSXdrCell.NonDefined)
     else (UfdrPSXdrCell.NonDefined, UfdrPSXdrCell.NonDefined)
 
 
@@ -105,7 +105,7 @@ case class UfdrPsXdr(
       endTime = duration.endTime,
       lacTac = cell.id._1,
       cellId = cell.id._2,
-      eventType = protocol.category.identifier + "." + protocol.id,
+      eventType = Some(protocol.category.identifier + "." + protocol.id),
       subsequentLacTac = None,
       subsequentCellId = None)
   }
@@ -168,7 +168,7 @@ object UfdrPsXdr {
         interfaceId = parseNetworkInterface(interfaceIdText),
         duration = Duration(beginTime = beginTimeText.toLong * 1000, endTime = endTimeText.toLong * 1000),
         protocol = Protocol(category = parseProtocolCategory(protocolCategoryText), id = protocolIdText.toInt),
-        user = User(imei = imeiText, imsi = imsiText, msisdn = parseLong(msisdnText).getOrElse(0L)),
+        user = User(imei = imeiText, imsi = imsiText, msisdn = EdmCoreUtils.parseLong(msisdnText).getOrElse(0L)),
         msInet = Inet(ip = msIpText, port = msPortText.toInt),
         serverInet = Inet(ip = serverIpText, port = serverPortText.toInt),
         apn = apnText,
@@ -190,23 +190,23 @@ object UfdrPsXdr {
           l4DwThroughput = l4DwThroughputText.toLong,
           l4UlPackets = l4UlPacketsText.toInt,
           l4DwPackets = l4DwPacketsText.toInt,
-          dataTransUlDuration = parseLong(dataTransUlDurationText).getOrElse(0L),
-          dataTransDwDuration = parseLong(dataTransDwDurationText).getOrElse(0L),
-          ulLostRate = parseInt(ulLostRateText).getOrElse(0),
-          dwLostRate = parseInt(dwLostRateText).getOrElse(0)),
+          dataTransUlDuration = EdmCoreUtils.parseLong(dataTransUlDurationText).getOrElse(0L),
+          dataTransDwDuration = EdmCoreUtils.parseLong(dataTransDwDurationText).getOrElse(0L),
+          ulLostRate = EdmCoreUtils.parseInt(ulLostRateText).getOrElse(0),
+          dwLostRate = EdmCoreUtils.parseInt(dwLostRateText).getOrElse(0)),
         host = Some(hostText),
         firstUri = Some(firstUriText),
         userAgent = Some(userAgentText),
         durationMsel = DurationMsel(
-          beginTimeMsel = parseInt(beginTimeMselText).getOrElse(0),
-          endTimeMsel = parseInt(endTimeMselText).getOrElse(0)),
-        clickToContent = parseLong(clickToContentText))
+          beginTimeMsel = EdmCoreUtils.parseInt(beginTimeMselText).getOrElse(0),
+          endTimeMsel = EdmCoreUtils.parseInt(endTimeMselText).getOrElse(0)),
+        clickToContent = EdmCoreUtils.parseLong(clickToContentText))
     }
   }
 
   implicit val fromRow = new RowParser[UfdrPsXdr] {
 
-    override def fromRow(row: Row): UfdrPsXdr = {
+    override def fromRow(row: Row): UfdrPsXdr = { // scalastyle:ignore method.length
       val (firstChunk, restChunk) = row.toSeq.splitAt(11) // scalastyle:ignore magic.number
       val (secondChunk, thirdChunk) = restChunk.splitAt(4) // scalastyle:ignore magic.number
       val Seq(sid, Seq(interfaceId), Seq(beginTime, endTime), Seq(Seq(category), id), Seq(imei, imsi, msisdn),
@@ -246,15 +246,17 @@ object UfdrPsXdr {
           l4DwThroughput = l4DwThroughput.asInstanceOf[Long],
           l4UlPackets = l4UlPackets.asInstanceOf[Int],
           l4DwPackets = l4DwPackets.asInstanceOf[Int],
-          dataTransUlDuration = longOrZero(dataTransUlDuration),
-          dataTransDwDuration = longOrZero(dataTransDwDuration),
-          ulLostRate = intOrZero(ulLostRate),
-          dwLostRate = intOrZero(dwLostRate)),
-        host = stringOption(host),
-        firstUri = stringOption(firstUri),
-        userAgent = stringOption(userAgent),
-        durationMsel = DurationMsel(beginTimeMsel = intOrZero(beginTimeMsel), endTimeMsel = intOrZero(endTimeMsel)),
-        clickToContent = longOption(clickToContent))
+          dataTransUlDuration = EdmCoreUtils.longOrZero(dataTransUlDuration),
+          dataTransDwDuration = EdmCoreUtils.longOrZero(dataTransDwDuration),
+          ulLostRate = EdmCoreUtils.intOrZero(ulLostRate),
+          dwLostRate = EdmCoreUtils.intOrZero(dwLostRate)),
+        host = EdmCoreUtils.stringOption(host),
+        firstUri = EdmCoreUtils.stringOption(firstUri),
+        userAgent = EdmCoreUtils.stringOption(userAgent),
+        durationMsel = DurationMsel(
+            beginTimeMsel = EdmCoreUtils.intOrZero(beginTimeMsel),
+            endTimeMsel = EdmCoreUtils.intOrZero(endTimeMsel)),
+        clickToContent = EdmCoreUtils.longOption(clickToContent))
     }
   }
 
