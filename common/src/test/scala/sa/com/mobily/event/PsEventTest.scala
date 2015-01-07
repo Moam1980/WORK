@@ -31,6 +31,7 @@ class PsEventTest extends FlatSpec with ShouldMatchers {
       endTime = 1404162610000L,
       lacTac = 0x052C,
       cellId = 13067,
+      source = PsEventSource,
       eventType = Some("859"),
       subsequentLacTac = None,
       subsequentCellId = None)

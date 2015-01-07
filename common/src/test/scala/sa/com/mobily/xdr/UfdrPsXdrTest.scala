@@ -7,10 +7,9 @@ package sa.com.mobily.xdr
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsUfdrSource, Event}
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.EdmCoreUtils
 
 class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
@@ -155,6 +154,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       endTime = 1414184401L * 1000,
       lacTac = 4071,
       cellId = 44936,
+      source = PsUfdrSource,
       eventType = Some(protocol.category.identifier + "." + protocol.id),
       subsequentLacTac = None,
       subsequentCellId = None)
@@ -167,6 +167,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       endTime = 1414184401L * 1000,
       lacTac = 3855,
       cellId = 61680,
+      source = PsUfdrSource,
       eventType = Some(protocol.category.identifier + "." + protocol.id),
       subsequentLacTac = None,
       subsequentCellId = None)

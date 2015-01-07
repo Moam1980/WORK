@@ -7,7 +7,7 @@ package sa.com.mobily.usercentric
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{Micro, FourGFdd, Cell}
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.geometry.{UtmCoordinates, Coordinates, GeomUtils}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCustomMatchers
@@ -22,6 +22,7 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
       endTime = 2,
       lacTac = 1,
       cellId = 1,
+      source = PsEventSource,
       eventType = Some("859"),
       subsequentLacTac = Some(0),
       subsequentCellId = Some(0),

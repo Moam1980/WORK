@@ -27,6 +27,7 @@ object PsEvent {
         endTime = endTime.toLong * 1000,
         lacTac = EdmCoreUtils.hexToInt(Event.lacOrTac(lac, tac)),
         cellId = EdmCoreUtils.hexToInt(Event.sacOrCi(sac, ci)),
+        source = PsEventSource,
         eventType = EdmCoreUtils.parseString(eventType),
         subsequentLacTac = None,
         subsequentCellId = None)

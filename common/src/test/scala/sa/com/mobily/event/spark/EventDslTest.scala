@@ -13,7 +13,7 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{Cell, FourGTdd, Macro}
 import sa.com.mobily.cell.spark.CellDsl._
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.flickering.FlickeringCells
 import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.user.User
@@ -76,6 +76,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = 1326,
       cellId = 12566,
+      source = PsEventSource,
       eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
@@ -88,6 +89,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = 1326,
       cellId = 12566,
+      source = PsEventSource,
       eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
@@ -100,6 +102,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = 1326,
       cellId = 12566,
+      source = PsEventSource,
       eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
@@ -110,13 +113,13 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
 
     val row =
       Row(Row("866173010386736", "420034122616618", 560917079L),
-        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None, None)
+        1404162126000L, 1404162610000L, 0x052C, 13067, Row(PsEventSource.id), "859", None, None, None, None, None)
     val row2 =
       Row(Row("866173010386735", "420034122616617", 560917080L),
-        1404162126001L, 1404162610001L, 0x052C, 13067, "859", None, None, None, None, None)
+        1404162126001L, 1404162610001L, 0x052C, 13067, Row(PsEventSource.id), "859", None, None, None, None, None)
     val wrongRow =
       Row(Row(866173010386L, "420034122616618", 560917079L),
-        1404162126000L, 1404162610000L, 0x052C, 13067, "859", None, None, None, None, None)
+        1404162126000L, 1404162610000L, 0x052C, 13067, Row(PsEventSource.id), "859", None, None, None, None, None)
     val rows = sc.parallelize(List(row, row2))
     val wrongRows = sc.parallelize(List(row, row2, wrongRow))
   }
@@ -160,6 +163,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = cell1.lacTac,
       cellId = cell1.cellId,
+      source = PsEventSource,
       eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
@@ -197,6 +201,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = 1389363565000L,
       lacTac = cell1.lacTac,
       cellId = cell1.cellId,
+      source = PsEventSource,
       eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))
@@ -237,6 +242,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       endTime = beginTime1.hourOfDay.setCopy(2).getMillis,
       lacTac = cell.lacTac,
       cellId = cell.cellId,
+      source = PsEventSource,
       eventType = Some("1"),
       subsequentLacTac = Some(1326),
       subsequentCellId = Some(12566))

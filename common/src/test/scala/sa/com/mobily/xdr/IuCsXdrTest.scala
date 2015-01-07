@@ -7,7 +7,7 @@ package sa.com.mobily.xdr
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{CsIuSource, Event}
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
@@ -215,6 +215,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       1416156748435L,
       3403,
       33515,
+      CsIuSource,
       Some("2"),
       None,
       None,

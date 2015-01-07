@@ -9,7 +9,7 @@ import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{ShouldMatchers, FlatSpec}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{CsAInterfaceSource, Event}
 import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
@@ -194,6 +194,7 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       1416156600550L,
       2105,
       20861,
+      CsAInterfaceSource,
       Some("0"),
       None,
       None,

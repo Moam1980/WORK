@@ -10,7 +10,7 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{Micro, FourGFdd, Cell}
 import sa.com.mobily.cell.spark.CellDsl._
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCustomMatchers, LocalSparkContext}
@@ -19,7 +19,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
 
   trait WithEvents {
 
-    val event1 = Event(User("imei", "imsi", 1L), 0, 0, 1, 1, Some("EventType"), None, None, None, None)
+    val event1 = Event(User("imei", "imsi", 1L), 0, 0, 1, 1, PsEventSource, Some("EventType"), None, None, None, None)
     val event20 = event1.copy(beginTime = 5000, endTime = 5000, cellId = 20)
     val event21 = event1.copy(beginTime = 5000, endTime = 5000, cellId = 21)
     val event3 = event1.copy(beginTime = 5000, endTime = 5000, cellId = 3)
