@@ -3,7 +3,7 @@ package sa.com.mobily.metrics
 import com.github.nscala_time.time.Imports._
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.event.spark.EventDsl
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
@@ -26,6 +26,7 @@ class SanityMetricsSparkTest extends FlatSpec with ShouldMatchers with LocalSpar
       endTime = 1404162610000L,
       lacTac = 0x052C,
       cellId = 13067,
+      source = PsEventSource,
       eventType = Some("859"),
       subsequentLacTac = None,
       subsequentCellId = None)
@@ -38,9 +39,9 @@ class SanityMetricsSparkTest extends FlatSpec with ShouldMatchers with LocalSpar
     val event3 = event0.copy(beginTime = toMillis("19/07/2011 01:45:07"), eventType = Some("3"))
     val event4 = event0.copy(beginTime = toMillis("19/07/2011 19:45:07"))
     val key0 = MetricResultKey("Total-number-items", MetricKey(1311080400000L))
-    val key4 = MetricResultKey("Items-by-type", MetricKey("859"))
-    val key5 = MetricResultKey("Items-by-type", MetricKey("1"))
-    val key6 = MetricResultKey("Items-by-type", MetricKey("3"))
+    val key4 = MetricResultKey("Items-by-type", MetricKey("PS.Event.859"))
+    val key5 = MetricResultKey("Items-by-type", MetricKey("PS.Event.1"))
+    val key6 = MetricResultKey("Items-by-type", MetricKey("PS.Event.3"))
     val falseKey = MetricResultKey("Total-number-items", MetricKey(1311028212000L))
     val events = sc.parallelize(List(event0, event1, event2, event3, event4))
     implicit val accumulableParam = new MetricResultParam[Measurable]()

@@ -9,7 +9,7 @@ import scala.util.Try
 
 import org.apache.spark.sql.Row
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{CsIuSource, Event}
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -158,6 +158,7 @@ case class IuCsXdr(
       endTime = EdmCoreUtils.hexToLong(time.csTime.end),
       lacTac = cell.id._1.get,
       cellId = cell.id._2.get,
+      source = CsIuSource,
       eventType = EdmCoreUtils.parseString(connection.dialogueIndicator),
       subsequentLacTac = Try { cell.csCell.secondLac.get.toInt }.toOption,
       subsequentCellId = Try { cell.secondSac.get.toInt }.toOption)

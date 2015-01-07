@@ -17,20 +17,31 @@ import sa.com.mobily.parsing.{OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
+/** Source of the event */
+sealed case class EventSource(id: String)
+
+object CsSmsSource extends EventSource(id = "CS.SMS")
+object CsVoiceSource extends EventSource(id = "CS.Voice")
+object CsAInterfaceSource extends EventSource(id = "Cs.A-Interface")
+object CsIuSource extends EventSource(id = "CS.Iu")
+object PsEventSource extends EventSource(id = "PS.Event")
+object PsUfdrSource extends EventSource(id = "PS.UFDR")
+
 case class Event(
     user: User,
     beginTime: Long,
     endTime: Long,
     lacTac: Int,
     cellId: Int,
-    eventType: Option[String], // TODO concrete types
+    source: EventSource,
+    eventType: Option[String] = None, // TODO concrete types
     subsequentLacTac: Option[Int],
     subsequentCellId: Option[Int],
     inSpeed: Option[Double] = None,
     outSpeed: Option[Double] = None,
     minSpeedPointWkt: Option[String] = None) extends MeasurableByTime with MeasurableByType with MeasurableById[Long] {
 
-  override def typeValue: String = eventType.getOrElse(NonDefined)
+  override def typeValue: String = source.id + "." + eventType.getOrElse(NonDefined)
 
   override def id: Long = user.id
 
@@ -39,6 +50,11 @@ case class Event(
   def minSpeedPopulated: Boolean = inSpeed.isDefined && outSpeed.isDefined && minSpeedPointWkt.isDefined
 
   lazy val regionId: Short = lacTac.toString.head.toShort
+
+  def fields: Array[String] =
+    user.fields ++ Array(beginTime.toString, endTime.toString, lacTac.toString, cellId.toString, source.id,
+      eventType.getOrElse(""), subsequentLacTac.getOrElse("").toString, subsequentCellId.getOrElse("").toString,
+      inSpeed.getOrElse("").toString, outSpeed.getOrElse("").toString, minSpeedPointWkt.getOrElse(""))
 }
 
 object Event {
@@ -58,7 +74,7 @@ object Event {
   implicit val fromRow = new RowParser[Event] {
 
     override def fromRow(row: Row): Event = {
-      val Seq(Seq(imei, imsi, msisdn), beginTime, endTime, lacTac, cellId, eventType, subsequentLacTac,
+      val Seq(Seq(imei, imsi, msisdn), beginTime, endTime, lacTac, cellId, Seq(source), eventType, subsequentLacTac,
         subsequentCellId, inSpeed, outSpeed, minSpeedPointWkt) = row.toSeq
 
       Event(
@@ -68,6 +84,7 @@ object Event {
         endTime = endTime.asInstanceOf[Long],
         lacTac = lacTac.asInstanceOf[Int],
         cellId = cellId.asInstanceOf[Int],
+        source = parseEventSource(source.asInstanceOf[String]),
         eventType = EdmCoreUtils.stringOption(eventType),
         subsequentLacTac = EdmCoreUtils.intOption(subsequentLacTac),
         subsequentCellId = EdmCoreUtils.intOption(subsequentCellId),
@@ -80,4 +97,17 @@ object Event {
   def geom(cells: Map[(Int, Int), Cell])(event: Event): Geometry = cells((event.lacTac, event.cellId)).coverageGeom
 
   def geomWkt(cells: Map[(Int, Int), Cell])(event: Event): String = cells((event.lacTac, event.cellId)).coverageWkt
+
+  def header: Array[String] =
+    User.header ++ Array("beginTime", "endTime", "lacTac", "cellId", "source", "eventType",
+      "subsequentLacTac", "subsequentCellId", "inSpeed", "outSpeed", "minSpeedPointWkt")
+
+  def parseEventSource(sourceText: String): EventSource = sourceText match {
+    case CsSmsSource.id => CsSmsSource
+    case CsVoiceSource.id => CsVoiceSource
+    case CsAInterfaceSource.id => CsAInterfaceSource
+    case CsIuSource.id => CsIuSource
+    case PsEventSource.id => PsEventSource
+    case PsUfdrSource.id => PsUfdrSource
+  }
 }

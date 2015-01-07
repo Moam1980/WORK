@@ -4,7 +4,7 @@ import com.github.nscala_time.time.Imports._
 import org.apache.spark.Accumulable
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
 
@@ -21,6 +21,7 @@ class SanityMetricsTest extends FlatSpec with ShouldMatchers with LocalSparkCont
       endTime = 1404162610000L,
       lacTac = 0x052C,
       cellId = 13067,
+      source = PsEventSource,
       eventType = Some("859"),
       subsequentLacTac = None,
       subsequentCellId = None)
@@ -32,9 +33,9 @@ class SanityMetricsTest extends FlatSpec with ShouldMatchers with LocalSparkCont
     val key1 = MetricResultKey("Total-number-items", MetricKey(1311028212000L))
     val key2 = MetricResultKey("Total-number-items", MetricKey(1311080400000L))
     val key3 = MetricResultKey("Total-number-items", MetricKey(1311024600000L))
-    val key4 = MetricResultKey("Items-by-type", MetricKey("859"))
-    val key5 = MetricResultKey("Items-by-type", MetricKey("1"))
-    val key6 = MetricResultKey("Items-by-type", MetricKey("3"))
+    val key4 = MetricResultKey("Items-by-type", MetricKey("PS.Event.859"))
+    val key5 = MetricResultKey("Items-by-type", MetricKey("PS.Event.1"))
+    val key6 = MetricResultKey("Items-by-type", MetricKey("PS.Event.3"))
     val falseKey = MetricResultKey("Total-number-items", MetricKey(1311028212000L))
 
     def toMillis(dateAsString: String): Long = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")

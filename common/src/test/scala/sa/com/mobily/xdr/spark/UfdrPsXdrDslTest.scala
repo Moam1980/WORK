@@ -9,7 +9,7 @@ import scala.reflect.io.File
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsUfdrSource, Event}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
 import sa.com.mobily.xdr._
@@ -271,6 +271,7 @@ class UfdrPsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       endTime = 1414184401L * 1000,
       lacTac = 4071,
       cellId = 44936,
+      source = PsUfdrSource,
       eventType = Some("1.1906"),
       subsequentLacTac = None,
       subsequentCellId = None)

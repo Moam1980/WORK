@@ -8,7 +8,7 @@ import scala.reflect.io.File
 
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{CsIuSource, Event}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.LocalSparkSqlContext
 
@@ -68,6 +68,7 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       1416156748435L,
       3403,
       33515,
+      CsIuSource,
       Some("2"),
       None,
       None,
@@ -80,6 +81,7 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       1416156748439L,
       3328,
       3359,
+      CsIuSource,
       Some("2"),
       None,
       None,

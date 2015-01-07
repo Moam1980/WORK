@@ -8,7 +8,7 @@ import scala.language.{existentials, implicitConversions}
 
 import org.apache.spark.sql._
 
-import sa.com.mobily.event.Event
+import sa.com.mobily.event.{PsUfdrSource, Event}
 import sa.com.mobily.parsing.{RowParser, CsvParser, OpenCsvParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -105,6 +105,7 @@ case class UfdrPsXdr(
       endTime = duration.endTime,
       lacTac = cell.id._1,
       cellId = cell.id._2,
+      source = PsUfdrSource,
       eventType = Some(protocol.category.identifier + "." + protocol.id),
       subsequentLacTac = None,
       subsequentCellId = None)
