@@ -4,6 +4,7 @@
 
 package sa.com.mobily.utils
 
+import org.joda.time.format.DateTimeFormat
 import org.scalatest._
 
 class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
@@ -26,6 +27,9 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     val outputDateFormat = "yyyy/MM/dd HH:mm:ss"
 
     val dateString = "2014/10/01 16:50:13"
+    val dateTimePatternWithZone = DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+    val firstSaturdayOfTheYear = dateTimePatternWithZone.parseDateTime("20150103")
+    val firstSundayOfTheYear = dateTimePatternWithZone.parseDateTime("20150104")
   }
 
   trait WithPhones {
@@ -379,5 +383,13 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "get the saudi day of week (starting on Sunday) when Joda day is Sunday" in {
     EdmCoreUtils.saudiDayOfWeek(7) should be (1)
+  }
+
+  it should "get the proper saudi week for the first Saturday of the year" in new WithDates {
+    EdmCoreUtils.saudiWeekOfYear(firstSaturdayOfTheYear) should be (1)
+  }
+
+  it should "get the proper saudi week for the first Sunday of the year" in new WithDates {
+    EdmCoreUtils.saudiWeekOfYear(firstSundayOfTheYear) should be (2)
   }
 }

@@ -152,4 +152,9 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
     require (monToSunDayOfWeek >= 1 && monToSunDayOfWeek <= 7)
     if (monToSunDayOfWeek == LastDayOfWeekIndex) FirstDayOfWeekIndex else monToSunDayOfWeek + 1
   }
+
+  def saudiWeekOfYear(date: DateTime): Int = {
+    val weekOfYear = date.weekOfWeekyear.get
+    if (date.dayOfWeek.get == LastDayOfWeekIndex) weekOfYear + 1 else weekOfYear
+  }
 }
