@@ -298,51 +298,51 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     IuCell.header should be (cellHeader)
   }
 
-  "IuCell" should "return correct header for id" in new WithIuCell {
+  it should "return correct header for id" in new WithIuCell {
     IuCell.idHeader should be (cellIdHeader)
   }
 
-  "IuCell" should "return correct fields" in new WithIuCell {
+  it should "return correct fields" in new WithIuCell {
     cell.fields should be (cellFields)
   }
 
-  "IuCell" should "return correct fields for id" in new WithIuCell {
+  it should "return correct fields for id" in new WithIuCell {
     cell.idFields should be (cellIdFields)
   }
 
-  "IuCell" should "return correct fields for id without first lac" in new WithIuCell {
+  it should "return correct fields for id without first lac" in new WithIuCell {
     cellWithoutFirstLac.idFields should be (cellWithoutFirstLacIdFields)
   }
 
-  "IuCell" should "return correct fields for id without first sac" in new WithIuCell {
+  it should "return correct fields for id without first sac" in new WithIuCell {
     cellWithoutFirstSac.idFields should be (cellWithoutFirstSacIdFields)
   }
 
-  "IuCell" should "return correct fields for id without neither first lac nor first sac" in new WithIuCell {
+  it should "return correct fields for id without neither first lac nor first sac" in new WithIuCell {
     cellWithoutId.idFields should be (cellWithoutIdFields)
   }
 
-  "IuCell" should "return true when equals and id is the same" in new WithIuCell {
+  it should "return true when equals and id is the same" in new WithIuCell {
     cell == cellEqual should be (true)
     cell.equals(cellEqual) should be (true)
   }
 
-  "IuCell" should "return false when equals and lac is different" in new WithIuCell {
+  it should "return false when equals and lac is different" in new WithIuCell {
     cell == cellDistinctFirstLac should be (false)
     cell.equals(cellDistinctFirstLac) should be (false)
   }
 
-  "IuCell" should "return false when equals and sac is different" in new WithIuCell {
+  it should "return false when equals and sac is different" in new WithIuCell {
     cell == cellDistinctFirstSac should be (false)
     cell.equals(cellDistinctFirstSac) should be (false)
   }
 
-  "IuCell" should "return false when equals and different objects" in new WithIuCell {
+  it should "return false when equals and different objects" in new WithIuCell {
     cell == cellFields should be (false)
     cell.equals(cellFields) should be (false)
   }
 
-  "IuCell" should "return true when checking hash codes" in new WithIuCell {
+  it should "return true when checking hash codes" in new WithIuCell {
     cell.hashCode  == cell.id.hashCode should be (true)
     cell.hashCode.equals(cell.id.hashCode) should be (true)
   }

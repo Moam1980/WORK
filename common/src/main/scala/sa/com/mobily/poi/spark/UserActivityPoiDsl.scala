@@ -43,7 +43,7 @@ class UserActivityPoiFunctions(self: RDD[UserActivity]) {
   }
 
   def userPoisWithAggregatedGeoms(
-      aggregateGeometries: Iterable[Geometry] => Geometry = itGeoms => itGeoms.reduce(_.intersection(_)))
+      aggregateGeometries: Iterable[Geometry] => Geometry = itGeoms => itGeoms.reduce(_.union(_)))
       (implicit model: KMeansModel,
       centroidMapping: Map[Int, PoiType],
       btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(User, PoiType, Geometry)] = {

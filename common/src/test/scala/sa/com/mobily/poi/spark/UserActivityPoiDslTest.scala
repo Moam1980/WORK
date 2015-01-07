@@ -19,7 +19,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
 
   import UserActivityPoiDsl._
 
-  trait WithWeekPhoneCalls {
+  trait WithUserActivityCdr {
 
     val firstUserMsisdn = 1L
     val secondUserMsisdn = 2L
@@ -27,22 +27,22 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val secondUserSiteId = "2566"
     val firstUserRegionId = 10.toShort
     val secondUserRegionId = 20.toShort
-    val phoneCall1 =
+    val userActivityCdr1 =
       UserActivityCdr(
         User("", "", firstUserMsisdn),
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140824"),
         firstUserSiteId,
         firstUserRegionId,
         Seq(0, 1, 2))
-    val phoneCall2 = phoneCall1.copy(
+    val userActivityCdr2 = userActivityCdr1.copy(
       timestamp =
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140818"),
       activityHours = Seq(0, 23))
-    val phoneCall3 = phoneCall1.copy(
+    val userActivityCdr3 = userActivityCdr1.copy(
       timestamp =
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140819"),
       activityHours = Seq(1, 23))
-    val phoneCall4 =
+    val userActivityCdr4 =
       UserActivityCdr(
         User("", "", secondUserMsisdn),
         DateTimeFormat.forPattern("yyyyMMdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia).parseDateTime("20140825"),
@@ -50,10 +50,10 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
         secondUserRegionId,
         Seq(1, 2, 3))
 
-    val phoneCalls = sc.parallelize(List(phoneCall1, phoneCall2, phoneCall3, phoneCall4))
+    val userActivities = sc.parallelize(List(userActivityCdr1, userActivityCdr2, userActivityCdr3, userActivityCdr4))
   }
 
-  trait WithBtsCatalogue extends WithWeekPhoneCalls {
+  trait WithBtsCatalogue extends WithUserActivityCdr {
 
     val coords1 = UtmCoordinates(821375.9, 3086866.0)
     val coords2 = UtmCoordinates(821485.9, 3086976.0)
@@ -67,11 +67,11 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
         (secondUserSiteId, secondUserRegionId) -> Iterable(egBts2))
   }
 
-  trait WithUserActivity extends WithWeekPhoneCalls with WithBtsCatalogue {
+  trait WithUserActivity extends WithUserActivityCdr with WithBtsCatalogue {
 
     import UserActivityCdrDsl._
 
-    val userActivity = phoneCalls.perUserAndSiteId
+    val userActivity = userActivities.perUserAndSiteId
     val model =
       new KMeansModel(
         Array(
@@ -89,7 +89,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
             0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
             0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
             0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0)))
-    val centroidsMapping = Map(0 -> Home, 1 -> Work, 2 -> HighActivity, 3 -> LowActivity)
+    val centroidsMapping = Map(0 -> Home, 1 -> Work, 2 -> HighActivity, 3 -> Leisure)
     val pois = userActivity.pois(model, centroidsMapping)
     val userPois = userActivity.userPois(model, centroidsMapping)
   }
@@ -97,16 +97,18 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
   "UserActivityPoiDsl" should "assign the centroids to each entry of the vector" in new WithUserActivity {
     val userActivityPoisList = pois.collect.toList
 
-    userActivityPoisList.length should be(2)
-    userActivityPoisList(0) should be((User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId), Work)
-    userActivityPoisList(1) should be((User("", "", secondUserMsisdn), secondUserSiteId, secondUserRegionId), Home)
+    userActivityPoisList.length should be(3)
+    userActivityPoisList(0) should be((User("", "", secondUserMsisdn), secondUserSiteId, secondUserRegionId), Home)
+    userActivityPoisList(1) should be((User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId), Work)
+    userActivityPoisList(2) should be((User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId), Work)
   }
 
   it should "group the pois by user" in new WithUserActivity {
-    val userPoisList = userPois.collect.toList
+    val userPoisList = userPois.collect.toSeq
 
     userPoisList.length should be(2)
-    userPoisList(0) should be((User("", "", firstUserMsisdn), List((Work, List((firstUserSiteId, firstUserRegionId))))))
+    userPoisList(0) should be((User("", "", firstUserMsisdn),
+      List((Work, List((firstUserSiteId, firstUserRegionId), (firstUserSiteId, firstUserRegionId))))))
     userPoisList(1) should be(
       User("", "", secondUserMsisdn),
       List((Home, List((secondUserSiteId, secondUserRegionId)))))
@@ -118,7 +120,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(2)
-    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, Seq(egBts1.geom, egBts2.geom)))
+    userPoisWithGeomsList(0) should be(
+      (User("", "", firstUserMsisdn), Work, Seq(egBts1.geom, egBts2.geom, egBts1.geom, egBts2.geom)))
     userPoisWithGeomsList(1) should be((User("", "", secondUserMsisdn), Home, Seq(egBts2.geom)))
   }
 
@@ -128,7 +131,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       userActivity.userPoisWithAggregatedGeoms()(model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(2)
-    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, egBts1.geom.intersection(egBts2.geom)))
+    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, egBts1.geom.union(egBts2.geom)))
     userPoisWithGeomsList(1) should be((User("", "", secondUserMsisdn), Home, egBts2.geom))
   }
 
@@ -136,10 +139,13 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val broadcastCatalogue = sc.broadcast(btsCatalogue)
     val userPoisWithGeomsList =
       userActivity.userPoisWithAggregatedGeoms(
-        itGeoms => itGeoms.reduce(_.union(_)))(model, centroidsMapping, broadcastCatalogue).collect.toList
+        itGeoms => itGeoms.reduce(_.intersection(_)))(model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(2)
-    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Work, egBts1.geom.union(egBts2.geom)))
+    userPoisWithGeomsList(0) should be(
+      (User("", "", firstUserMsisdn),
+        Work,
+        egBts1.geom.intersection(egBts2.geom).intersection(egBts1.geom).intersection(egBts2.geom)))
     userPoisWithGeomsList(1) should be((User("", "", secondUserMsisdn), Home, egBts2.geom))
   }
 }
