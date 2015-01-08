@@ -216,7 +216,7 @@ object IuCsXdr {
         user = CsUser(
           EdmCoreUtils.parseString(imei),
           imsi = EdmCoreUtils.parseString(imsi),
-          msisdn = EdmCoreUtils.parseLong(callingNumber),
+          msisdn = EdmCoreUtils.validMsisdn(callingNumber),
           imeisv = EdmCoreUtils.parseString(imeisv),
           tmsi = EdmCoreUtils.parseString(tmsi),
           oldTmsi = EdmCoreUtils.parseString(tmsiOld)),

@@ -55,6 +55,8 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   def parseLong(s: String): Option[Long] = Try { s.toLong }.toOption
 
+  def validMsisdn(s: String): Option[Long] = parseLong(s).filter(_ != 0L)
+
   def parseShort(s: String): Option[Short] = Try { s.toShort }.toOption
 
   def parseString(s: String): Option[String] = if (parseNullString(s).isEmpty) None else Some(s)
