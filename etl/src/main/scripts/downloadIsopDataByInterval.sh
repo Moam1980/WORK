@@ -13,7 +13,7 @@ function usageHelp ()
     echo 1>&2 "Parameters:"
     echo 1>&2 "     -s <start_day>: Initial date, is mandatory"
     echo 1>&2 "     -e <end_day>: End date, is mandatory"
-    echo 1>&2 "        -p <properties_file>: Properties file to use, is optional"
+    echo 1>&2 "     -p <properties_file>: Properties file to use, is optional"
     echo 1>&2 "Examples:"
     echo 1>&2 "     $0 -s 20141001 -e 20141020"
     echo 1>&2 "             Is going to download information from Ipsos database, starting at 1st till 20th of October"
@@ -129,10 +129,7 @@ cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_APP_GROUP_
 cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_SUBS_DOMAIN_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_DOMAIN_D -o T_IA_SUBS_DOMAIN_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
 cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_SUBS_WEBPAGE_CAT_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_WEBPAGE_CAT_D -o T_IA_SUBS_WEBPAGE_CAT_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
 
-
-
 # Removing dates file
 echo 1>&2 "Removing dates file: $DATES_FILE"
 rm ${DATES_FILE}
 exit 0
-
