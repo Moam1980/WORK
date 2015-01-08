@@ -9,13 +9,14 @@ import sa.com.mobily.utils.EdmCoreUtils
 
 case class CompatibilityScore(
     intersectionRatio: Double,
-    hoursDiff: Double) extends Ordered[CompatibilityScore] {
+    hoursDiff: Double,
+    minSpeed: Double) extends Ordered[CompatibilityScore] {
 
   // TODO: Will need to learn it from data
   lazy val timeDifferenceRatio = CompatibilityScore.TimeDiffWeight / (hoursDiff + 1)
 
   lazy val ratio =
-    if (intersectionRatio == 0) 0
+    if ((intersectionRatio == 0) || (minSpeed > CompatibilityScore.AvgWalkingSpeed)) 0
     else (intersectionRatio * CompatibilityScore.IntersectionWeight) + timeDifferenceRatio
 
   def compare(another: CompatibilityScore): Int = ratio.compare(another.ratio)
@@ -23,11 +24,12 @@ case class CompatibilityScore(
 
 object CompatibilityScore {
 
+  val AvgWalkingSpeed = 1.38889
   val IntersectionWeight = 0.65
   val TimeDiffWeight = 0.35
 
   def score(first: SpatioTemporalSlot, second: SpatioTemporalSlot): CompatibilityScore = {
     val hoursDiff = (second.startTime - first.endTime) / (EdmCoreUtils.MillisInSecond * EdmCoreUtils.SecondsInHour)
-    CompatibilityScore(GeomUtils.intersectionRatio(first.geom, second.geom), hoursDiff)
+    CompatibilityScore(GeomUtils.intersectionRatio(first.geom, second.geom), hoursDiff, first.outMinSpeed)
   }
 }

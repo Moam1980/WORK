@@ -59,14 +59,20 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       startTime = 1,
       endTime = 2,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      cells = Set((1, 1)))
+      cells = Set((1, 1)),
+      outMinSpeed = 0.5,
+      intraMinSpeedSum = 0,
+      numEvents = 1)
     val slot2 = SpatioTemporalSlot(
       userId = 1,
       startTime = 2,
       endTime = 5,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      cells = Set((1, 2)))
-    val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0)))
+      cells = Set((1, 2)),
+      outMinSpeed = 0,
+      intraMinSpeedSum = 0,
+      numEvents = 1)
+    val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0, 0.5)))
   }
 
   trait WithCompatibilitySlots extends WithEvents {
@@ -87,42 +93,45 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       endTime = 10,
       geomWkt = prefixWkt,
       cells = Set((1, 1), (1, 2)),
-      score = Some(CompatibilityScore(0, 0)))
+      outMinSpeed = 0,
+      intraMinSpeedSum = 0,
+      numEvents = 1,
+      score = Some(CompatibilityScore(0, 0, 0)))
     val slot1 = prefixSlot.copy(
       startTime = 10,
       endTime = 20,
       geomWkt = slot1Wkt,
-      score = Some(CompatibilityScore(0.5, 0)))
+      score = Some(CompatibilityScore(0.5, 0, 0)))
     val slot2 = prefixSlot.copy(
       startTime = 20,
       endTime = 30,
       geomWkt = slot2Wkt,
-      score = Some(CompatibilityScore(0, 0)))
+      score = Some(CompatibilityScore(0, 0, 0)))
     val suffixSlot = prefixSlot.copy(startTime = 30, endTime = 40, geomWkt = suffixWkt, score = None)
 
     val mergedSlot = slot1.copy(
       endTime = 30,
       geomWkt = mergedWkt,
       cells = Set((1, 1), (1, 2)),
-      score = Some(CompatibilityScore(0, 0)))
+      score = Some(CompatibilityScore(0, 0, 0)))
 
     val slot1After = prefixSlot.copy(
       startTime = 40,
       endTime = 50,
       geomWkt = slot1AfterWkt,
-      score = Some(CompatibilityScore(0.5, 0)))
+      score = Some(CompatibilityScore(0.5, 0, 0)))
     val slot2After = prefixSlot.copy(
       startTime = 50,
       endTime = 60,
       geomWkt = slot2AfterWkt,
-      score = Some(CompatibilityScore(0, 0)))
+      score = Some(CompatibilityScore(0, 0, 0)))
     val suffixSlot2 = prefixSlot.copy(startTime = 60, endTime = 70, geomWkt = suffix2Wkt, score = None)
 
     val merged2Slot = slot1After.copy(
       endTime = 60,
       geomWkt = merged2Wkt,
       cells = Set((1, 1), (1, 2)),
-      score = Some(CompatibilityScore(0, 0)))
+      score = Some(CompatibilityScore(0, 0, 0)))
 
     val slots =
       sc.parallelize(Array((1L, List(prefixSlot, slot1, slot2, suffixSlot, slot1After, slot2After, suffixSlot2))))

@@ -26,11 +26,11 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       subsequentLacTac = Some(0),
       subsequentCellId = Some(0),
       inSpeed = Some(0),
-      outSpeed = Some(3),
+      outSpeed = Some(0.5),
       minSpeedPointWkt = Some("POINT (1 1)"))
-    val event2 = event1.copy(beginTime = 3, endTime = 4, cellId = 2)
-    val event3 = event1.copy(beginTime = 5, endTime = 6, cellId = 3)
-    val event4 = event1.copy(beginTime = 1, endTime = 3, cellId = 4)
+    val event2 = event1.copy(beginTime = 3, endTime = 4, cellId = 2, inSpeed = Some(0.5))
+    val event3 = event1.copy(beginTime = 5, endTime = 6, cellId = 3, outSpeed = Some(1))
+    val event4 = event1.copy(beginTime = 1, endTime = 3, cellId = 4, inSpeed = Some(1))
   }
 
   trait WithCellCatalogue {
@@ -51,18 +51,26 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       startTime = 1,
       endTime = 2,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      cells = Set((1, 1)))
+      cells = Set((1, 1)),
+      outMinSpeed = 0.5,
+      intraMinSpeedSum = 1,
+      numEvents = 3)
     val slot2 = SpatioTemporalSlot(
       userId = 1,
       startTime = 2,
       endTime = 5,
       geomWkt = "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))",
-      cells = Set((1, 2)))
-    val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0)))
+      cells = Set((1, 2)),
+      outMinSpeed = 0,
+      intraMinSpeedSum = 0,
+      numEvents = 1)
+    val slot1WithScore = slot1.copy(score = Some(CompatibilityScore(1, 0, 0.5)))
     val slot1And4 = slot1.copy(
       endTime = 3,
       geomWkt = "POLYGON ((1.5 0, 0.5 0, 0.5 1, 1.5 1, 1.5 0))",
-      cells = Set((1, 1), (1, 4)))
+      cells = Set((1, 1), (1, 4)),
+      intraMinSpeedSum = 1.5,
+      numEvents = 4)
   }
 
   trait WithCompatibilitySlots extends WithEvents {
@@ -83,42 +91,51 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       endTime = 10,
       geomWkt = prefixWkt,
       cells = Set((1, 1), (1, 2)),
-      score = Some(CompatibilityScore(0, 0)))
+      outMinSpeed = 0,
+      intraMinSpeedSum = 0,
+      numEvents = 1,
+      score = Some(CompatibilityScore(0, 0, 0)))
     val slot1 = prefixSlot.copy(
       startTime = 10,
       endTime = 20,
       geomWkt = slot1Wkt,
-      score = Some(CompatibilityScore(0.5, 0)))
+      score = Some(CompatibilityScore(0.5, 0, 0)))
     val slot2 = prefixSlot.copy(
       startTime = 20,
       endTime = 30,
       geomWkt = slot2Wkt,
-      score = Some(CompatibilityScore(0, 0)))
+      score = Some(CompatibilityScore(0, 0, 0)))
     val suffixSlot = prefixSlot.copy(startTime = 30, endTime = 40, geomWkt = suffixWkt, score = None)
 
     val mergedSlot = slot1.copy(
       endTime = 30,
       geomWkt = mergedWkt,
       cells = Set((1, 1), (1, 2)),
-      score = Some(CompatibilityScore(0, 0)))
+      outMinSpeed = 0,
+      intraMinSpeedSum = 0,
+      numEvents = 2,
+      score = Some(CompatibilityScore(0, 0, 0)))
 
     val slot1After = prefixSlot.copy(
       startTime = 40,
       endTime = 50,
       geomWkt = slot1AfterWkt,
-      score = Some(CompatibilityScore(0.5, 0)))
+      score = Some(CompatibilityScore(0.5, 0, 0)))
     val slot2After = prefixSlot.copy(
       startTime = 50,
       endTime = 60,
       geomWkt = slot2AfterWkt,
-      score = Some(CompatibilityScore(0, 0)))
+      score = Some(CompatibilityScore(0, 0, 0)))
     val suffixSlot2 = prefixSlot.copy(startTime = 60, endTime = 70, geomWkt = suffix2Wkt, score = None)
 
     val merged2Slot = slot1After.copy(
       endTime = 60,
       geomWkt = merged2Wkt,
       cells = Set((1, 1), (1, 2)),
-      score = Some(CompatibilityScore(0, 0)))
+      outMinSpeed = 0,
+      intraMinSpeedSum = 0,
+      numEvents = 2,
+      score = Some(CompatibilityScore(0, 0, 0)))
   }
 
   "UserModel" should "return an empty list with no events when aggregating same cells" in
@@ -191,7 +208,7 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     new WithCompatibilitySlots {
       UserModel.aggregateCompatible(
         List(prefixSlot, slot1, slot2, suffixSlot, slot1After, slot2After, suffixSlot2)) should
-        be(List(prefixSlot, mergedSlot, suffixSlot.copy(score = Some(CompatibilityScore(0.0, 0.0))), merged2Slot,
+        be(List(prefixSlot, mergedSlot, suffixSlot.copy(score = Some(CompatibilityScore(0, 0, 0))), merged2Slot,
           suffixSlot2))
     }
 }
