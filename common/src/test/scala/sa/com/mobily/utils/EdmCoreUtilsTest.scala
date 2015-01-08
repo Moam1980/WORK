@@ -187,7 +187,15 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.longOrZero(None) should be (0L)
   }
 
-  "EdmCoreUtils" should "return correct string date for timestamp" in new WithDates {
+  it should "validate MSISDN is zero" in {
+    EdmCoreUtils.validMsisdn("00") should be (None)
+  }
+
+  it should "validate MSISDN is not zero" in {
+    EdmCoreUtils.validMsisdn("1234567890000") should be (Some(1234567890000L))
+  }
+
+  it should "return correct string date for timestamp" in new WithDates {
     EdmCoreUtils.parseTimestampToSaudiDate(timestamp) should be (dateString)
   }
 
@@ -203,7 +211,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.roundTimestampDaily(timestamp) should be (timestampRoundFLoorDay)
   }
 
-  "EdmCoreUtils" should "return correct country code for saudi phone number" in new WithPhones {
+  it should "return correct country code for saudi phone number" in new WithPhones {
     EdmCoreUtils.getCountryCode(phoneNumber) should be (saudiCode)
   }
 

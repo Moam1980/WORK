@@ -283,7 +283,7 @@ object AiCsXdr {
         csUser = CsUser(
           imei = EdmCoreUtils.parseString(imei),
           imsi = EdmCoreUtils.parseString(imsi),
-          msisdn = EdmCoreUtils.parseLong(msisdn),
+          msisdn = EdmCoreUtils.validMsisdn(msisdn),
           imeisv = EdmCoreUtils.parseString(imeisv),
           tmsi = EdmCoreUtils.parseString(tmsi),
           oldTmsi = EdmCoreUtils.parseString(oldTmsi)),
