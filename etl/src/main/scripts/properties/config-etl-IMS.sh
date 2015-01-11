@@ -18,9 +18,9 @@ ISOP_DOWNLOAD_LOG_FILE=${ISOP_LOG_PATH}/download
 ISOP_DOWNLOAD_PARALLEL_PROCS=5
 
 # Properties to connect to ISOP database
-DB_CONNECT_STRING="ISOP"
-DB_USER="Isop"
-DB_PASSWORD="isop"
+DB_CONNECT_STRING="IMS"
+DB_USER="ims_cell"
+DB_PASSWORD="imscell"
 
 # Configuration for hadoop file size output
 HADOOP_OUTPUT_FILE_PATH=${OUTPUT_FILE_PATH}/hadoop

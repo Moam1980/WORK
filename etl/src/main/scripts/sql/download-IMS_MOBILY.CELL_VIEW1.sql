@@ -1,0 +1,1 @@
+SELECT '"' || VENDOR || '"|"' || NETWORK || '"|"' || NODEB || '"|"' || PARENT_BSC || '"|"' || LONGITUDE || '"|"' || LATITUDE || '"|"' || IPADDRESS || '"|"' || NETMASK || '"|"' || LAC || '"|"' || MCC || '"|"' || MNC || '"' FROM IMS_MOBILY.CELL_VIEW1
