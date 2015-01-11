@@ -64,7 +64,7 @@ loadPropertiesFile ${PROPERTIES_FILE}
 checkIsDirectoryAndCreate ${OUTPUT_FILE_PATH}
 
 # Check that isop outpath exists
-checkIsDirectoryAndCreate ${ISOP_OUTPUT_FILE_PATH}
+checkIsDirectoryAndCreate ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}
 
 # Check that log path exists
 checkIsDirectoryAndCreate ${LOG_PATH}
@@ -73,7 +73,7 @@ checkIsDirectoryAndCreate ${LOG_PATH}
 checkIsDirectoryAndCreate ${ISOP_LOG_PATH}
 
 # Create file with dates to download
-DATES_FILE=${ISOP_OUTPUT_FILE_PATH}/dates_to_download_${DSTART}_${DEND}.tmp
+DATES_FILE=${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/dates_to_download_${DSTART}_${DEND}.tmp
 checkNotExistsFile ${DATES_FILE}
 
 if [ "$(uname)" == "Darwin" ]; then

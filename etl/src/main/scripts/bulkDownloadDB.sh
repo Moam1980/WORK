@@ -68,7 +68,7 @@ fi
 loadPropertiesFile ${PROPERTIES_FILE}
 
 # Check that output file doesn't exists
-checkNotExistsFile ${ISOP_OUTPUT_FILE_PATH}/${OUTPUT_FILE}
+checkNotExistsFile ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/${OUTPUT_FILE}
 
 # Check that file to execute in database exists
 FILE_TO_EXECUTE=${BASE_DIR}/sql/downloadToCsv.sql
@@ -103,7 +103,7 @@ if [ -z ${DB_PASSWORD} ]; then
     exit 10
 fi
 
-CSV_FILE=${ISOP_OUTPUT_FILE_PATH}/${OUTPUT_FILE}.csv
+CSV_FILE=${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/${OUTPUT_FILE}.csv
 
 # Get SQL query from file
 SQL_QUERY=$(<${SQL_FILE})
