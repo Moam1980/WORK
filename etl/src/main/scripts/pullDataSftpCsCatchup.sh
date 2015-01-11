@@ -99,31 +99,31 @@ while [ $cur -le $end ]; do
 
         # Run command in to pull data via sftp, using unprocessed directory
         remoteDirectory="${csDirectory}/unprocessed"
-        ${BASE_DIR}/pullDataSftp.sh -u \"${CS_USER}\" -s \"${CS_SERVER}\" -r  \"${remoteDirectory}\" -l \"${localDirectory}\" -f \"${formatFile}\"
+        ${BASE_DIR}/pullDataSftp.sh -u "${CS_USER}" -s "${CS_SERVER}" -r "${remoteDirectory}" -l "${localDirectory}" -f "${formatFile}" -p "${propertiesFile}"
 
         # Run command again but using date to get files
         remoteDirectory="${csDirectory}/${yearToDownload}${monthToDownload}${dayToDownload}"
         # Run command in landing server to pull data via sftp
-        ${BASE_DIR}/pullDataSftp.sh -u \"${CS_USER}\" -s \"${CS_SERVER}\" -r  \"${remoteDirectory}\" -l \"${localDirectory}\" -f \"${formatFile}\"
+        ${BASE_DIR}/pullDataSftp.sh -u "${CS_USER}" -s "${CS_SERVER}" -r "${remoteDirectory}" -l "${localDirectory}" -f "${formatFile}" -p "${propertiesFile}"
 
         # We should check previous and following days in case there is a problem with data
         # Get yesterday date
         yesterday=$((cur - 24*60*60))
-        yearToDownload=`date -d@$yesterday +%Y`
-        monthToDownload=`date -d@$yesterday +%m`
-        dayToDownload=`date -d@$yesterday +%d`
-        remoteDirectory="${csDirectory}/${yearToDownload}${monthToDownload}${dayToDownload}"
+        newYearToDownload=`date -d@$yesterday +%Y`
+        newMonthToDownload=`date -d@$yesterday +%m`
+        newDayToDownload=`date -d@$yesterday +%d`
+        remoteDirectory="${csDirectory}/${newYearToDownload}${newMonthToDownload}${newDayToDownload}"
         # Run command in landing server to pull data via sftp
-        ${BASE_DIR}/pullDataSftp.sh -u \"${CS_USER}\" -s \"${CS_SERVER}\" -r  \"${remoteDirectory}\" -l \"${localDirectory}\" -f \"${formatFile}\"
+        ${BASE_DIR}/pullDataSftp.sh -u "${CS_USER}" -s "${CS_SERVER}" -r "${remoteDirectory}" -l "${localDirectory}" -f "${formatFile}" -p "${propertiesFile}"
 
         # Get following day
         followingDay=$((cur + 24*60*60))
-        yearToDownload=`date -d@$followingDay +%Y`
-        monthToDownload=`date -d@$followingDay +%m`
-        dayToDownload=`date -d@$followingDay +%d`
-        remoteDirectory="${csDirectory}/${yearToDownload}${monthToDownload}${dayToDownload}"
+        newYearToDownload=`date -d@$followingDay +%Y`
+        newMonthToDownload=`date -d@$followingDay +%m`
+        newDayToDownload=`date -d@$followingDay +%d`
+        remoteDirectory="${csDirectory}/${newYearToDownload}${newMonthToDownload}${newDayToDownload}"
         # Run command in landing server to pull data via sftp
-        ${BASE_DIR}/pullDataSftp.sh -u \"${CS_USER}\" -s \"${CS_SERVER}\" -r  \"${remoteDirectory}\" -l \"${localDirectory}\" -f \"${formatFile}\"
+        ${BASE_DIR}/pullDataSftp.sh -u "${CS_USER}" -s "${CS_SERVER}" -r "${remoteDirectory}" -l "${localDirectory}" -f "${formatFile}" -p "${propertiesFile}"
 
         # Increment one the counter
         count=$((count + 1))
