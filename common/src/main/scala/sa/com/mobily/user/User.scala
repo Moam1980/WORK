@@ -14,9 +14,9 @@ case class User(
 
   require(!imei.isEmpty || !imsi.isEmpty || msisdn != 0)
 
-  lazy val mcc: String = imsi.substring(User.MccStartIndex, User.MncStartIndex)
+  lazy val mcc: String = if (imsi.isEmpty) User.UnknownMcc else imsi.substring(User.MccStartIndex, User.MncStartIndex)
   lazy val mnc: String = {
-    val mncs = CountryCode.MccCountryOperatorsLookup(mcc).map(_.mnc)
+    val mncs = CountryCode.MccCountryOperatorsLookup.get(mcc).map(operators => operators.map(_.mnc)).getOrElse(List())
     mncs.find(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).getOrElse(User.UnknownMnc)
   }
 
@@ -24,9 +24,10 @@ case class User(
 
   override def id: Long = msisdn
 
-  override def equals(other: Any): Boolean = other match {// scalastyle:ignore cyclomatic.complexity
+  override def equals(other: Any): Boolean = other match { // scalastyle:ignore cyclomatic.complexity
     case that: User =>
-      (that canEqual this) && ((!this.imei.isEmpty && !that.imei.isEmpty && this.imei == that.imei) ||
+      (that canEqual this) && (
+        (!this.imei.isEmpty && !that.imei.isEmpty && this.imei == that.imei) ||
         (!this.imsi.isEmpty && !that.imsi.isEmpty && this.imsi == that.imsi) ||
         (this.msisdn > 0 && that.msisdn > 0 && this.msisdn == that.msisdn))
     case _ => false
@@ -44,6 +45,7 @@ object User {
 
   val MccStartIndex = 0
   val MncStartIndex = 3
+  val UnknownMcc = "Unknown"
   val UnknownMnc = "Unknown"
 
   def header: Array[String] = Array("imei", "imsi", "msisdn", "mcc", "mnc")

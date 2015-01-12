@@ -13,10 +13,11 @@ import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.roaming.CountryCode
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class Journey(
-    user: Long,
+    user: User,
     id: Int,
     startTime: Long,
     endTime: Long,
@@ -24,22 +25,62 @@ case class Journey(
     cells: Set[(Int, Int)],
     firstEventBeginTime: Long,
     lastEventEndTime: Long,
-    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry
+    numEvents: Long,
+    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry {
 
-case class JourneyViaPoint(
-    user: Long,
-    journeyId: Int,
-    startTime: Long,
-    endTime: Long,
-    geomWkt: String,
-    cells: Set[(Int, Int)],
-    firstEventBeginTime: Long,
-    lastEventEndTime: Long,
-    countryIsoCode: String = CountryCode.SaudiArabiaIsoCode) extends CountryGeometry
+  def fields: Array[String] =
+    user.fields ++
+      Array(
+        id.toString,
+        EdmCoreUtils.fmt.print(startTime),
+        EdmCoreUtils.fmt.print(endTime),
+        geomWkt,
+        cells.mkString(EdmCoreUtils.IntraSequenceSeparator),
+        EdmCoreUtils.fmt.print(firstEventBeginTime),
+        EdmCoreUtils.fmt.print(lastEventEndTime),
+        numEvents.toString,
+        countryIsoCode)
+}
 
 object Journey {
 
   val ZeroSpeed = Some(0.0)
+  val AvgWalkingSpeed = 1.38889 // 5km/h
+
+  def apply(
+      orig: SpatioTemporalSlot,
+      dest: SpatioTemporalSlot,
+      id: Integer,
+      viaPoints: List[JourneyViaPoint])
+      (implicit cellCatalogue: Map[(Int, Int), Cell]): Journey = {
+    require(orig.typeEstimate == DwellEstimate && dest.typeEstimate == DwellEstimate)
+    Journey(
+      user = orig.user,
+      id = id,
+      startTime = orig.endTime,
+      endTime = dest.startTime,
+      geomWkt = journeyGeometry(orig, dest, viaPoints),
+      cells = viaPoints.flatMap(_.cells).toSet,
+      firstEventBeginTime = viaPoints.headOption.map(_.firstEventBeginTime).getOrElse(orig.endTime),
+      lastEventEndTime = viaPoints.lastOption.map(_.lastEventEndTime).getOrElse(dest.startTime),
+      numEvents = viaPoints.map(_.numEvents).sum,
+      countryIsoCode = orig.countryIsoCode)
+  }
+
+  def journeyGeometry(
+      orig: SpatioTemporalSlot,
+      dest: SpatioTemporalSlot,
+      viaPoints: List[JourneyViaPoint])
+      (implicit cellCatalogue: Map[(Int, Int), Cell]): String =
+    GeomUtils.wkt(orig.geom.getFactory.createLineString(
+      Array(orig.geom.getCentroid.getCoordinate) ++
+        viaPoints.map(_.geom.getCentroid.getCoordinate) :+
+        dest.geom.getCentroid.getCoordinate))
+
+  def header: Array[String] =
+    User.header ++
+      Array("id", "startTime", "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime",
+        "numEvents", "countryIsoCode")
 
   // scalastyle:off method.length
   def computeMinSpeed(events: List[Event], cells: Map[(Int, Int), Cell]): List[Event] = {
@@ -114,7 +155,8 @@ object Journey {
     val closestInThird = geomFactory.createPoint(DistanceOp.nearestPoints(closestInSecondToInit, third).last)
     val line =
       geomFactory.createLineString(Array(closestInSecondToInit.getCoordinate, closestInThird.getCoordinate))
-    val geomThroughSecond = if (line.isValid) line.intersection(second) else closestInSecondToInit
+    val throughSecondCandidate = if (line.isValid) line.intersection(second) else closestInSecondToInit
+    val geomThroughSecond = if (!throughSecondCandidate.isEmpty) throughSecondCandidate else closestInSecondToInit
     val closestInLineThroughSecondToThird = DistanceOp.nearestPoints(geomThroughSecond, third).head
     val midPointThroughSecond = geomFactory.createPoint(
       LineSegment.midPoint(closestInSecondToInit.getCoordinate, closestInLineThroughSecondToThird))

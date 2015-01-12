@@ -330,14 +330,6 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     GeomUtils.geomAsPoints(poly) should be (polyPoints)
   }
 
-  it should "intersect two geometries when they intersect" in new WithIntersectionShapes {
-    GeomUtils.intersectionOrFirst(poly1, poly2) should be (poly1And2Intersection)
-  }
-
-  it should "default to the first geometry when the pair of geometries don't intersect" in new WithIntersectionShapes {
-    GeomUtils.intersectionOrFirst(poly1, poly3) should be (poly1)
-  }
-
   it should "not transform a Geometry when geometry factory is the same UTM 38N and longitudeFirst false" in
       new WithGeometries {
     GeomUtils.transformGeom(geomUtm38N, geomFactoryUtm38N, false) should be (geomUtm38N)

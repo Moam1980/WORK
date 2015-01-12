@@ -38,8 +38,16 @@ class UserTest extends FlatSpec with ShouldMatchers {
     user.mnc should be ("03")
   }
 
+  it should "identify unknown MCC from empty IMSI" in new WithUser {
+    user.copy(imsi = "").mcc should be (User.UnknownMcc)
+  }
+
   it should "return an unknown MNC when not available in the corresponding table" in new WithUser {
     user.copy(imsi = "358856122616619").mnc should be (User.UnknownMnc)
+  }
+
+  it should "identify unknown MNC when MCC is not found" in new WithUser {
+    user.copy(imsi = "999").mnc should be (User.UnknownMnc)
   }
 
   it should "generate fields" in new WithUser {
