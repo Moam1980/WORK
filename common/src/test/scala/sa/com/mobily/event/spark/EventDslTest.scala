@@ -282,6 +282,33 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     val eventsLowActivity = sc.parallelize(List(event7, event8, event4, event5, event6))
   }
 
+  trait WithEventsByCell extends WithMatchingCells {
+
+    val group1 = (cell3.identifier, Iterable(event3))
+    val group2 = (cell1.identifier, Iterable(event1))
+    val group3 = (cell2.identifier, Iterable(event2))
+    val eventsByCell = List(group1, group2, group3)
+  }
+
+  trait WithUsersByCell extends WithMatchingCells {
+
+    val user4 = User(imei = "0434160098258500", imsi = "42034120446250", msisdn = 3809175479L)
+    val event4 = event1.copy(user = user4)
+    val event5 = event1.copy(user = event2.user)
+    val event6 = event1.copy(user = user4)
+    override val events = sc.parallelize(List(event1, event2, event3, event4, event5, event6))
+    val group1 = (cell3.identifier, Iterable(event3.user))
+    val group2 = (cell1.identifier, Iterable(user1, user4))
+    val group3 = (cell2.identifier, Iterable(event2.user))
+    val usersByCell = List(group1, group2, group3)
+    val countUsersByCell = List((cell3.identifier, 1), (cell1.identifier, 4), (cell2.identifier, 1))
+
+    val userGroup1 = (cell3.identifier, Map(event3.user -> 1))
+    val userGroup2 = (cell1.identifier, Map(user1 -> 2, user4 -> 2))
+    val userGroup3 = (cell2.identifier, Map(event2.user -> 1))
+    val eventsByCellAndUser = List(userGroup1, userGroup2, userGroup3)
+  }
+
   "EventDsl" should "get correctly parsed PS events" in new WithPsEventsText {
     psEvents.psToEvent.count should be (2)
   }
@@ -379,4 +406,16 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity(0.2)(cellCatalogue).collect
       homes.length should be (0)
     }
+
+  it should "group events by cell" in new WithEventsByCell {
+    events.toEventsByCell.collect.toList should be (eventsByCell)
+  }
+
+  it should "count users by cell" in new WithUsersByCell {
+    events.countUsersByCell.collect.toList should be (countUsersByCell)
+  }
+
+  it should "count events grouping it by users and cell" in new WithUsersByCell {
+    events.toEventsByCellAndUser.collect.toList should be (eventsByCellAndUser)
+  }
 }
