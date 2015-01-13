@@ -4,6 +4,7 @@
 
 package sa.com.mobily.location
 
+import com.vividsolutions.jts.geom.PrecisionModel
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.geometry.GeomUtils
@@ -29,6 +30,7 @@ class LocationTest extends FlatSpec with ShouldMatchers {
   trait WithLocation extends WithClient {
 
     val epsgUtm38N = "EPSG:32638"
+    val precisionUtm38N = 10d
     val shapeWkt = "POLYGON ((684233.4 2749404.5, 684232.3 2749404.8, 684182.5 2749426.3, " +
       "684134.8 2749456.6, 684090.7 2749495.4, 684051.6 2749542.1, 684018.9 2749596, 683993.8 2749656, " +
       "683977.3 2749721, 683970.4 2749789.6, 683973.6 2749860.3, 683987.2 2749931.4, 684011.4 2750001.3, " +
@@ -44,9 +46,10 @@ class LocationTest extends FlatSpec with ShouldMatchers {
       "684278.4 2749303.3, 684268.2 2749310.7, 684259 2749319.3, 684251 2749329, 684244.3 2749339.6, " +
       "684238.9 2749351, 684235 2749363, 684232.7 2749375.3, 684231.9 2749387.9, 684232.7 2749400.5, " +
       "684233.4 2749404.5))"
-    val geom = GeomUtils.parseWkt(shapeWkt, 32638)
+    val geom = GeomUtils.parseWkt(shapeWkt, 32638, new PrecisionModel(precisionUtm38N))
 
     val epsgWgs84 = "EPSG:4326"
+    val precisionWgs84 = 1e7d
     val shapeWgs84Wkt = "POLYGON ((46.82329508 24.8484987, 46.82328424 24.84850154, " +
       "46.82279442 24.84870162, 46.82232655 24.84898089, 46.82189541 24.84933645, 46.82151477 24.84976271, " +
       "46.8211984 24.85025319, 46.82095802 24.85079782, 46.82080338 24.85138655, 46.82074419 24.85200661, " +
@@ -65,29 +68,43 @@ class LocationTest extends FlatSpec with ShouldMatchers {
       "46.82372685 24.84757976, 46.82362693 24.84764779, 46.82353705 24.84772653, 46.8234592 24.84781506, " +
       "46.82339432 24.84791155, 46.82334241 24.84801511, 46.82330541 24.8481239, 46.82328429 24.8482352, " +
       "46.82327804 24.84834904, 46.82328762 24.84846267, 46.82329508 24.8484987))"
-    val geomWsg84 = GeomUtils.parseWkt(shapeWgs84Wkt, 4326)
+    val geomWsg84 = GeomUtils.parseWkt(shapeWgs84Wkt, 4326, new PrecisionModel(precisionWgs84))
 
     val locationLine = "\"0\"|\"locationTest\"|\"0\"|\"clientTest\"|\"" + epsgWgs84 + "\"|\"" +
-      shapeWgs84Wkt + "\""
-    val location = Location(id = 0, name = "locationTest", client = client, epsg = epsgWgs84, geomWkt = shapeWgs84Wkt)
+      precisionWgs84.toString + "\"|\"" + shapeWgs84Wkt + "\""
+    val location = Location(
+      id = 0,
+      name = "locationTest",
+      client = client,
+      epsg = epsgWgs84,
+      precision = precisionWgs84,
+      geomWkt = shapeWgs84Wkt)
 
     val locationEqualLine = "\"0\"|\"locationEqualTest\"|\"0\"|\"clientTestChanged\"|\"" + epsgUtm38N + "\"|\"" +
-      shapeWkt + "\""
+      precisionUtm38N.toString + "\"|\"" + shapeWkt + "\""
     val locationEqual = Location(
-      id = 0, name = "locationEqualTest", client = clientEqual, epsg = epsgUtm38N, geomWkt = shapeWkt)
+      id = 0,
+      name = "locationEqualTest",
+      client = clientEqual,
+      epsg = epsgUtm38N,
+      precision = precisionUtm38N,
+      geomWkt = shapeWkt)
 
     val locationDifferentLine = "\"1\"|\"locationTest\"|\"0\"|\"clientTest\"|\"" + epsgWgs84 + "\"|\"" +
-      shapeWgs84Wkt + "\""
+      precisionWgs84.toString + "\"|\"" + shapeWgs84Wkt + "\""
     val locationDifferent = location.copy(id = 1)
 
     val locationDifferentClientLine = "\"0\"|\"locationTest\"|\"1\"|\"clientTest\"|\"" + epsgWgs84 + "\"|\"" +
-      shapeWgs84Wkt + "\""
+      precisionWgs84.toString + "\"|\"" + shapeWgs84Wkt + "\""
     val locationDifferentClient = location.copy(client = location.client.copy(id = 1))
 
-    val locationHeader = Array("id", "name", "id", "name", "epsg", "geomWkt")
-    val locationFields = Array("0", "locationTest", "0", "clientTest", epsgWgs84, shapeWgs84Wkt)
-    val locationEqualFields = Array("0", "locationEqualTest", "0", "clientTestChanged", epsgUtm38N, shapeWkt)
-    val locationDifferentFields = Array("1", "locationTest", "0", "clientTest", epsgWgs84, shapeWgs84Wkt)
+    val locationHeader = Array("id", "name", "id", "name", "epsg", "precision", "geomWkt")
+    val locationFields =
+      Array("0", "locationTest", "0", "clientTest", epsgWgs84, precisionWgs84.toString, shapeWgs84Wkt)
+    val locationEqualFields =
+      Array("0", "locationEqualTest", "0", "clientTestChanged", epsgUtm38N, precisionUtm38N.toString, shapeWkt)
+    val locationDifferentFields =
+      Array("1", "locationTest", "0", "clientTest", epsgWgs84, precisionWgs84.toString, shapeWgs84Wkt)
     val locationHashCode = location.id.hashCode
   }
 

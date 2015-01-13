@@ -51,6 +51,10 @@ object GeomUtils {
     transformedGeom
   }
 
+  def transformGeom(geom: Geometry, geomFactory: GeometryFactory, longitudeFirst: Boolean): Geometry =
+    if (geom.getSRID == geomFactory.getSRID && geom.getPrecisionModel == geomFactory.getPrecisionModel) geom
+    else transformGeom(geom, geomFactory.getSRID, geomFactory.getPrecisionModel, longitudeFirst)
+
   def circle(centre: Point, radius: Double, numPoints: Int = DefaultNumPoints): Geometry =
     geomShapeFactory(centre, radius, numPoints).createCircle
 

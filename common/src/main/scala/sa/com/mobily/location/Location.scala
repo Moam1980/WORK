@@ -4,7 +4,7 @@
 
 package sa.com.mobily.location
 
-import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.geom.{Geometry, PrecisionModel}
 
 import sa.com.mobily.geometry._
 import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
@@ -37,11 +37,12 @@ case class Location(
     name: String,
     client: Client,
     epsg: String,
+    precision: Double,
     geomWkt: String) {
 
-  lazy val geom: Geometry = GeomUtils.parseWkt(geomWkt, srid)
+  lazy val geom: Geometry = GeomUtils.parseWkt(geomWkt, srid, precisionModel)
 
-  def fields: Array[String] = Array(id.toString, name) ++ client.fields ++ Array(epsg, geomWkt)
+  def fields: Array[String] = Array(id.toString, name) ++ client.fields ++ Array(epsg, precision.toString, geomWkt)
 
   override def equals(other: Any): Boolean = other match {
     case that: Location => (that canEqual this) && (this.id == that.id) && (this.client == that.client)
@@ -53,11 +54,13 @@ case class Location(
   def canEqual(other: Any): Boolean = other.isInstanceOf[Location]
 
   def srid: Int = Coordinates.srid(epsg)
+
+  def precisionModel: PrecisionModel = new PrecisionModel(precision)
 }
 
 object Location {
 
-  def header: Array[String] = Array("id", "name") ++ Client.header ++ Array("epsg", "geomWkt")
+  def header: Array[String] = Array("id", "name") ++ Client.header ++ Array("epsg", "precision", "geomWkt")
 
   final val lineCsvParserObject = new OpenCsvParser(quote = '"')
 
@@ -66,13 +69,14 @@ object Location {
     override def lineCsvParser: OpenCsvParser = lineCsvParserObject
 
     override def fromFields(fields: Array[String]): Location = {
-      val Array(idText, nameText, clientIdText, clientNameText, epsgText, geomWktText) = fields
+      val Array(idText, nameText, clientIdText, clientNameText, epsgText, precisionText, geomWktText) = fields
 
       Location(
         id = idText.toInt,
         name = nameText,
         client = Client(id = clientIdText.toInt, name = clientNameText),
         epsg = epsgText,
+        precision = precisionText.toDouble,
         geomWkt = geomWktText)
     }
   }
