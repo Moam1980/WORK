@@ -399,13 +399,13 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     new WithWeekEventsLittleActivity {
       val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity()(cellCatalogue).collect
       homes.length should be (1)
-    }
+  }
 
   it should "calculate the vector to home clustering filtering little activity users and overriding default ratio" in
     new WithWeekEventsLittleActivity {
       val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity(0.2)(cellCatalogue).collect
       homes.length should be (0)
-    }
+  }
 
   it should "group events by cell" in new WithEventsByCell {
     events.toEventsByCell.collect.toList should be (eventsByCell)
@@ -417,5 +417,14 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
 
   it should "count events grouping it by users and cell" in new WithUsersByCell {
     events.toEventsByCellAndUser.collect.toList should be (eventsByCellAndUser)
+  }
+
+  it should "compute the average for activity vectors" in new WithWeekEventsLittleActivity {
+    eventsLowActivity.perUserAndSiteIdWithAverage()(cellCatalogue).collect.length should be (1)
+  }
+
+  it should "compute the average for activity vectors and overriding default ratio" in
+      new WithWeekEventsLittleActivity {
+    eventsLowActivity.perUserAndSiteIdWithAverage(0.2)(cellCatalogue).collect.length should be (0)
   }
 }

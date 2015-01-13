@@ -89,7 +89,8 @@ class EventFunctions(self: RDD[Event]) {
     byUserWeekYearRegion.map(keyAndActivityByWeek => {
       val activityByWeek = keyAndActivityByWeek._2
       val key = keyAndActivityByWeek._1
-      val activityHoursByWeek = activityByWeek.map(dayHour => (((dayHour._1 - 1) * HoursInDay) + dayHour._2, 1D)).toSeq
+      val activityHoursByWeek =
+        activityByWeek.map(dayHour => (((dayHour._1 - 1) * HoursInDay) + dayHour._2, 1D)).toSeq.distinct
       UserActivity(
         user = key._1,
         siteId = key._2,
@@ -98,12 +99,25 @@ class EventFunctions(self: RDD[Event]) {
     })
   }
 
-  def perUserAndSiteIdFilteringLittleActivity(
-    minimumActivityRatio: Double = DefaultMinActivityRatio)
-    (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
+  def perUserAndSiteIdFilteringLittleActivity(minimumActivityRatio: Double = DefaultMinActivityRatio)
+      (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
     val minNumberOfHours = HoursInWeek * minimumActivityRatio
     toUserActivity(cellCatalogue).filter(
       element => element.activityVector.toArray.count(element => element == 1) > minNumberOfHours)
+  }
+
+  def perUserAndSiteIdWithAverage(minimumActivityRatio: Double = DefaultMinActivityRatio)
+      (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
+    val perUserAndSiteIdGrouped =
+      perUserAndSiteIdFilteringLittleActivity(minimumActivityRatio)(cellCatalogue).groupBy(_.key)
+    perUserAndSiteIdGrouped.map(userAndActivity => {
+      val userVectors = userAndActivity._2.map(userActivity => userActivity.activityVector)
+      UserActivity(
+        userAndActivity._1._1,
+        userAndActivity._1._2,
+        userAndActivity._1._3,
+        UserActivity.activityAverageVector(userVectors.toSeq))
+    })
   }
 }
 
