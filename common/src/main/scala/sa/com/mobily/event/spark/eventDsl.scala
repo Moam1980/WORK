@@ -20,6 +20,7 @@ import sa.com.mobily.metrics.{Measurable, MetricResult, MetricResultParam}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.poi.UserActivity
+import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
 class EventCsvReader(self: RDD[String]) {
@@ -122,6 +123,18 @@ class EventStatistics(self: RDD[Event]) {
   }
 
   def saveMetrics(file: String): Unit = self.context.parallelize(metrics.toCsvFields).saveAsTextFile(file)
+
+  def toEventsByCell: RDD[((Int, Int), Iterable[Event])] =
+    self.map(event => ((event.lacTac, event.cellId), event)).groupByKey
+
+  def countUsersByCell: RDD[((Int, Int), Int)] = toUsersByCell.map(tuple => tuple._1 -> tuple._2.size)
+
+  def toUsersByCell: RDD[((Int, Int), Iterable[User])] = self.map(e => ((e.lacTac, e.cellId), e.user)).groupByKey
+
+  def toEventsByCellAndUser: RDD[((Int, Int), Map[User, Int])] =
+    toUsersByCell.map(event => event._1 -> event._2.foldLeft(Map[User, Int]() withDefaultValue 0) {
+      (user, events) => user + (events -> (1 + user(events)))
+    })
 }
 
 trait EventDsl {
