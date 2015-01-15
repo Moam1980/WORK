@@ -20,7 +20,7 @@ function usageHelp ()
     echo 1>&2 "    -p \<properties_file\>: Properties file to use, is optional"
     echo 1>&2 "Examples:"
     echo 1>&2 "    ${0} -u edm -l 10.64.246.168 -s 20141004 -e 20141205
-      -- Download all CS files from 20141004 to 20141205 using 10.64.246.168 as landing server"
+      -- Push all CS files from 20141004 to 20141205 using 10.64.246.168 as landing server"
 }
 
 # Default values for optional parameters
@@ -72,7 +72,7 @@ echo 1>&2 "    propertiesFile: ${propertiesFile}"
 . ${BASE_DIR}/functions.sh
 
 # Run pull data sftp cs catchup from landing server
-ssh ${user}@${server} "cd;./etl-script-0.6.0/pullDataSftpCsCatchup.sh -s \"${startDate}\" -e \"${endDate}\" -p  \"${propertiesFile}\""
+ssh ${user}@${server} "cd;./etl-script-0.6.0/pushDataHadoopCsCatchup.sh -s \"${startDate}\" -e \"${endDate}\" -p  \"${propertiesFile}\""
 
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`

@@ -23,12 +23,12 @@ DB_USER="ims_cell"
 DB_PASSWORD="imscell"
 
 # Configuration for hadoop file size output
-HADOOP_OUTPUT_FILE_PATH=${OUTPUT_FILE_PATH}/hadoop
-HADOOP_PATH=hdfs://10.64.247.224/user/tdatuser/
-HADOOP_FILES_SIZE_FILE=/data/landing/cs-probes/hadoop_files_summary.csv
+HADOOP_PATH=/user/tdatuser
 
 # CS hadoop configuration
-HADOOP_CS_PROBES_OUTPUT_FILE_PATH=${HADOOP_OUTPUT_FILE_PATH}/cs-probes
+HADOOP_CS_PROBES_FILE_PATH=${HADOOP_PATH}/cs-probes
+HADOOP_CS_PROBES_VERSION=0.3
+HADOOP_CS_PROBES_FORMAT=csv
 
 # CS source configuration
 CS_USER="edm"
