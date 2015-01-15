@@ -34,7 +34,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       gender = "M",
       siteId = Some(5049),
       regionId = Some(3),
-      nationalies = Nationalities("Saudi Arabia", "KSA"),
+      nationalies = Nationalities("SAUDI ARABIA", "KSA"),
       types = SubscriberTypes(PrePaid, "SamsungI930000"),
       packages = SubscriberPackages(Voice, RetailCustomer),
       date = SubscriberDates(Some(1367355600000l), Some(1406840400000l), Some(1406840400000l)),
