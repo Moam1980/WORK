@@ -82,7 +82,10 @@ case class Revenues (
     m3: Float,
     m4: Float,
     m5: Float,
-    m6: Float)
+    m6: Float) {
+
+  lazy val totalRevenue = m1 + m2 + m3 + m4 + m5 + m6
+}
 
 case class SubscriberDates(
     activation: Option[Long],
@@ -144,7 +147,7 @@ object Subscriber {
         gender = genderText,
         siteId = EdmCoreUtils.parseInt(siteIdText),
         regionId = EdmCoreUtils.parseShort(regionIdText),
-        nationalies = Nationalities(actualNationalityText, calNationalityText),
+        nationalies = Nationalities(actualNationalityText.toUpperCase, calNationalityText.toUpperCase),
         types = SubscriberTypes(parsePayType(payTypeText), handsetTypeText),
         packages = SubscriberPackages(parseDataPackage(isDataPackageText), parseCorpPackage(isCorpPackageText)),
         date = SubscriberDates(
