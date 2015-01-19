@@ -69,9 +69,6 @@ checkIsDirectoryAndCreate ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}
 # Check that log path exists
 checkIsDirectoryAndCreate ${LOG_PATH}
 
-# Check that isop log path exists
-checkIsDirectoryAndCreate ${ISOP_LOG_PATH}
-
 # Create file with dates to download
 DATES_FILE=${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/dates_to_download_${DSTART}_${DEND}.tmp
 checkNotExistsFile ${DATES_FILE}
@@ -122,12 +119,12 @@ ${BASE_DIR}/bulkDownloadDB.sh -s "download-T_IA_CFG_CAT_TREE" -o "T_IA_CFG_CAT_T
 #   ia.T_IA_APP_GROUP_CNT_VOL_D
 #   ia.T_IA_SUBS_DOMAIN_D
 #   ia.T_IA_SUBS_WEBPAGE_CAT_D
-cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_ALL_CNT_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_ALL_CNT -o T_IA_ALL_CNT_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
-cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_SUBS_SEARCHWORDS_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_SEARCHWORDS_D -o T_IA_SUBS_SEARCHWORDS_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
-cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_APP_TYPE_CNT_VOL_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_TYPE_CNT_VOL_D -o T_IA_APP_TYPE_CNT_VOL_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
-cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_APP_GROUP_CNT_VOL_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_GROUP_CNT_VOL_D -o T_IA_APP_GROUP_CNT_VOL_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
-cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_SUBS_DOMAIN_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_DOMAIN_D -o T_IA_SUBS_DOMAIN_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
-cat ${DATES_FILE}  | parallel --joblog ${ISOP_DOWNLOAD_LOG_FILE}_T_IA_SUBS_WEBPAGE_CAT_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_WEBPAGE_CAT_D -o T_IA_SUBS_WEBPAGE_CAT_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
+cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_T_IA_ALL_CNT_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_ALL_CNT -o T_IA_ALL_CNT_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
+cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_T_IA_SUBS_SEARCHWORDS_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_SEARCHWORDS_D -o T_IA_SUBS_SEARCHWORDS_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
+cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_T_IA_APP_TYPE_CNT_VOL_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_TYPE_CNT_VOL_D -o T_IA_APP_TYPE_CNT_VOL_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
+cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_T_IA_APP_GROUP_CNT_VOL_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_GROUP_CNT_VOL_D -o T_IA_APP_GROUP_CNT_VOL_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
+cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_T_IA_SUBS_DOMAIN_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_DOMAIN_D -o T_IA_SUBS_DOMAIN_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
+cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_T_IA_SUBS_WEBPAGE_CAT_D_${DSTART}_${DEND}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_WEBPAGE_CAT_D -o T_IA_SUBS_WEBPAGE_CAT_D_{} -c \"WHERE DATA_DAY = {}\" -p ${PROPERTIES_FILE}"
 
 # Removing dates file
 echo 1>&2 "Removing dates file: $DATES_FILE"

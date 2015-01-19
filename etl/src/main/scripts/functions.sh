@@ -183,3 +183,103 @@ loadPropertiesFile()
     echo 1>&2 "INFO: $0: Properties file: ${1} has been loaded"
 }
 
+function pushDataHadoop ()
+{
+    # Check that we have all parameter
+    if [ $# -ne 7 ]; then
+        echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 7 and got: $#"
+        return 1
+    fi
+
+    # Get parameters
+    status=$1
+    yearToPush=$2
+    monthToPush=$3
+    dayToPush=$4
+    directory=$5
+    file=$6
+    formatFile=$7
+
+    # Check download status
+    if [[ $status -ne 0 ]] ; then
+        echo 1>&2 "ERROR: ${0}: Error downloading: ${file}"
+        return 2
+    fi
+    # Push data to Hadoop
+    remoteDirectory="${directory}/${yearToPush}"
+    hdfs dfs -mkdir -p ${remoteDirectory}
+    # Check if everything went ok
+    if [[ $? -ne 0 ]] ; then
+        echo 1>&2 "ERROR: ${0}: Can't create remote directory in Hadoop: ${remoteDirectory}"
+        return 3
+    fi
+
+    # Create remote directory in Hadoop for month
+    remoteDirectory="${remoteDirectory}/${monthToPush}"
+    hdfs dfs -mkdir -p ${remoteDirectory}
+    # Check if everything went ok
+    if [[ $? -ne 0 ]] ; then
+        echo 1>&2 "ERROR: ${0}: Can't create remote directory in Hadoop: ${remoteDirectory}"
+        return 4
+    fi
+
+    # Create remote directory in Hadoop for day
+    remoteDirectory="${remoteDirectory}/${dayToPush}"
+    hdfs dfs -mkdir -p ${remoteDirectory}
+    # Check if everything went ok
+    if [[ $? -ne 0 ]] ; then
+        echo 1>&2 "ERROR: ${0}: Can't create remote directory in Hadoop: ${remoteDirectory}"
+        return 5
+    fi
+
+    # Run command to push data
+    remoteDirectory="${remoteDirectory}/${formatFile}"
+    ${BASE_DIR}/pushDataHadoop.sh -r "${remoteDirectory}" -l "${BULK_DOWNLOAD_OUTPUT_FILE_PATH}" -f "${file}*" -p "${propertiesFile}"
+
+    return 0
+}
+
+function extractYearMonthDayFromEpoc ()
+{
+    # Check that we have all parameter
+    if [ $# -ne 1 ]; then
+        echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 1 and got: $#"
+        return 1
+    fi
+
+    dateEpoc=$1
+
+    if [ "$(uname)" == "Darwin" ]; then
+        # It is a mac
+        # Extract data
+        yearExtracted=`date -jf "%s" $dateEpoc "+%Y"`
+        monthExtracted=`date -jf "%s" $dateEpoc "+%m"`
+        dayExtracted=`date -jf "%s" $dateEpoc "+%d"`
+    else
+        # Extract data
+        yearExtracted=`date -d@$dateEpoc +%Y`
+        monthExtracted=`date -d@$dateEpoc +%m`
+        dayExtracted=`date -d@$dateEpoc +%d`
+    fi
+}
+
+function extractYearMonthDay ()
+{
+    # Check that we have all parameter
+    if [ $# -ne 1 ]; then
+        echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 1 and got: $#"
+        return 1
+    fi
+
+    dateToConvert=$1
+
+    if [ "$(uname)" == "Darwin" ]; then
+        # It is a mac
+        dateEpoc=$(date -jf "%Y%m%d" $dateToConvert "+%s")
+    else
+        # convert in seconds sinch the epoch:
+        dateEpoc=$(date -d$dateToConvert +%s)
+    fi
+
+    extractYearMonthDayFromEpoc $dateEpoc
+}

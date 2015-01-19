@@ -114,9 +114,17 @@ TMP_SQL_FILE=${FILE_TO_EXECUTE}.tmp_${OUTPUT_FILE}_${TIMESTAMP}.sql
 
 # Get file to run and modify with parameters passed
 sed "s|%%OUTPUT_FILE%%|${CSV_FILE}|g" ${FILE_TO_EXECUTE} > ${TMP_SQL_FILE}
-sed -i "" "s|%%LINE_SIZE%%|${LINE_SIZE}|g" ${TMP_SQL_FILE}
-sed -i "" "s/%%SQL_QUERY%%/${SQL_QUERY}/g" ${TMP_SQL_FILE}
-sed -i "" "s/%%SQL_CONDITION%%/${SQL_CONDITION}/g" ${TMP_SQL_FILE}
+if [ "$(uname)" == "Darwin" ]; then
+    # It is a mac
+    sed -i "" "s|%%LINE_SIZE%%|${LINE_SIZE}|g" ${TMP_SQL_FILE}
+    sed -i "" "s/%%SQL_QUERY%%/${SQL_QUERY}/g" ${TMP_SQL_FILE}
+    sed -i "" "s/%%SQL_CONDITION%%/${SQL_CONDITION}/g" ${TMP_SQL_FILE}
+else
+    # It is a Linux
+    sed -i "s|%%LINE_SIZE%%|${LINE_SIZE}|g" ${TMP_SQL_FILE}
+    sed -i "s/%%SQL_QUERY%%/${SQL_QUERY}/g" ${TMP_SQL_FILE}
+    sed -i "s/%%SQL_CONDITION%%/${SQL_CONDITION}/g" ${TMP_SQL_FILE}
+fi
 
 # Download data from database
 echo 1>&2 "INFO: $0: Downloading to file: ${CSV_FILE}"
@@ -130,4 +138,3 @@ else
 fi
 
 exit 0
-

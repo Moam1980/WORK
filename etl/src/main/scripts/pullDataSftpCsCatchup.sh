@@ -80,9 +80,10 @@ cur=$start
 # Run for all days in period
 while [ $cur -le $end ]; do
     # Get date
-    yearToDownload=`date -d@$cur +%Y`
-    monthToDownload=`date -d@$cur +%m`
-    dayToDownload=`date -d@$cur +%d`
+    extractYearMonthDayFromEpoc ${cur}
+    yearToDownload=$yearExtracted
+    monthToDownload=$monthExtracted
+    dayToDownload=$dayExtracted
 
     count=0
     while [ ${count} -lt ${#CS_DIRECTORIES[@]} ]
