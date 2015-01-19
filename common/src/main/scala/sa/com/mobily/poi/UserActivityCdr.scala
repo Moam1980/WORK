@@ -12,6 +12,7 @@ import com.github.nscala_time.time.Imports._
 import org.apache.spark.mllib.clustering.{KMeansModel, KMeans}
 import org.apache.spark.mllib.linalg.{Vectors, Vector}
 import org.apache.spark.rdd.RDD
+import org.jfree.chart.axis.{SymbolAxis, NumberAxis, NumberTickUnit}
 import scalax.chart.api._
 
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
@@ -33,6 +34,11 @@ object UserActivityCdr {
   val DaysInWeek = 7
   val GraphPrefix = "kmeans-graph-"
   val GraphSuffix = ".png"
+  val WeekDaysLabel = "Week days"
+  val WeekDays = Array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+
+  private val GraphHorizontalSize = 2000
+  private val GraphVerticalSize = 1000
 
   final val UserPhoneCallSeparator = ","
   final val lineCsvParserObject = new OpenCsvParser
@@ -71,11 +77,11 @@ object UserActivityCdr {
 
   def kMeansModelGraphs(kMeansModel: KMeansModel, outputPath: String): Unit = {
     val modelGraphs = for (centroid <- kMeansModel.clusterCenters;
-      graphValues <- Seq(graphValues(centroid))) yield (centroid, graphValues)
+      graphValues <- Seq(graphValues(centroid))) yield graphValues
     for (graphNumber <- 1 until modelGraphs.length + 1)
-      pngGraph(
+      pngKMeansGraph(
         outputPath + File.separator + UserActivityCdr.GraphPrefix + graphNumber + UserActivityCdr.GraphSuffix,
-        modelGraphs(graphNumber - 1)._2)
+        modelGraphs(graphNumber - 1))
   }
 
   def graphValues(centroid: Vector): IndexedSeq[(Int, Double)] = {
@@ -85,6 +91,16 @@ object UserActivityCdr {
   def pngGraph(filePath: String, data: Seq[(Int, Double)]): Unit = {
     val chart = XYLineChart(data)
     chart.saveAsPNG(filePath)
+  }
+
+  def pngKMeansGraph(filePath: String, data: Seq[(Int, Double)]): Unit = {
+    val xAxis = new NumberAxis
+    xAxis.setTickUnit(new NumberTickUnit(2))
+    xAxis.setRange(0, HoursInWeek - 1)
+    val symbolAxis = new SymbolAxis(WeekDaysLabel, WeekDays)
+    val chart = XYLineChart(data)
+    chart.plot.setDomainAxes(Array(xAxis, symbolAxis))
+    chart.saveAsPNG(filePath, (GraphHorizontalSize, GraphVerticalSize))
   }
 
   def weekHour(day: Int, hour: Int): Int = ((day - 1) * HoursInDay) + hour
