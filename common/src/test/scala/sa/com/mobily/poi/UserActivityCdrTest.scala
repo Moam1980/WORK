@@ -76,7 +76,15 @@ class UserActivityCdrTest extends FlatSpec with ShouldMatchers with LocalSparkCo
     clusterNumberAndCost should be(expectedClusterNumberAndCost)
   }
 
-  it should "generate the kmeans model graphs" in new WithWeekUserActivities {
+  it should "generate generic graphs" in new WithWeekUserActivities {
+    val fileName = "tmp.png"
+    withTemporaryDirectory { directory =>
+      pngGraph(directory.path.concat(s"/$fileName"), Seq((1,2.0), (2,3.0)))
+      directory.list.length should be(1)
+    }
+  }
+
+  it should "generate the kMeans model graphs" in new WithWeekUserActivities {
     withTemporaryDirectory { directory =>
       val numberOfClusters = 3
       val model = kMeansModel(numberOfClusters, userActivitiesCdrVector)
