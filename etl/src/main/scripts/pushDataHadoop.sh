@@ -167,7 +167,7 @@ do
     # Check if the file was pushed correctly we should delete file
     if [ ${found} -eq 1 ]; then
         echo 1>&2 "INFO: ${0}: File ${localDirectory}/${fileBaseName} pushed correctly, deleting."
-        echo rm ${localDirectory}/${fileBaseName}
+        rm ${localDirectory}/${fileBaseName}
         count_found=`expr ${count} + 1`
     else
         echo 1>&2 "ERR: ${0}: File ${localDirectory}/${fileBaseName} not pushed correctly."
