@@ -30,9 +30,9 @@ addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverage-all ;assembly"
 
 libraryDependencies in ThisBuild ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.4.0",
-  "org.apache.spark" %% "spark-core" % "1.1.0" % "compile,test,it,provided",
-  "org.apache.spark" %% "spark-sql" % "1.1.0" % "compile,test,it,provided",
-  "org.apache.spark" %% "spark-mllib" % "1.1.0" % "compile,test,it,provided",
+  "org.apache.spark" %% "spark-core" % "1.1.1" % "compile,test,it,provided",
+  "org.apache.spark" %% "spark-sql" % "1.1.1" % "compile,test,it,provided",
+  "org.apache.spark" %% "spark-mllib" % "1.1.1" % "compile,test,it,provided",
   "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "compile,test,it" exclude("javax.servlet", "servlet-api"),
   "org.scalatest" %% "scalatest" % "2.0" % "test,it"
 )
