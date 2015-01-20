@@ -8,11 +8,10 @@ OUTPUT_FILE_PATH=/data/landing
 BULK_DOWNLOAD_OUTPUT_FILE_PATH=${OUTPUT_FILE_PATH}/bulk-download
 
 # Log directory
-LOG_PATH=${OUTPUT_FILE_PATH}/isop/logs
-ISOP_LOG_PATH=${LOG_PATH}/download
+LOG_PATH=${OUTPUT_FILE_PATH}/bulk-download/logs
 
 # Log files
-ISOP_DOWNLOAD_LOG_FILE=${ISOP_LOG_PATH}/download
+DOWNLOAD_LOG_FILE=${LOG_PATH}/download
 
 # Number of download process to run in parallel
 ISOP_DOWNLOAD_PARALLEL_PROCS=5
@@ -29,6 +28,11 @@ HADOOP_PATH=/user/tdatuser
 HADOOP_CS_PROBES_FILE_PATH=${HADOOP_PATH}/cs-probes
 HADOOP_CS_PROBES_VERSION=0.3
 HADOOP_CS_PROBES_FORMAT=csv
+
+# ISOP hadoop configuration -- Internet Analytics
+HADOOP_ISOP_FILE_PATH=${HADOOP_PATH}/ia
+HADOOP_ISOP_VERSION=0.3
+HADOOP_ISOP_FORMAT=csv
 
 # CS source configuration
 CS_USER="edm"

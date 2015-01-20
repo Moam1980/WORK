@@ -250,4 +250,3 @@ line="${line}|${propertiesFile}|${numberOfFilesLocally}|${numberOfFilesRemotely}
 line="${line}|${numberOfDifferentFiles}|${#filesBaseName[@]}|${filesDownloaded}"
 
 echo "${line}" >> "${summaryFileExecutions}"
-
