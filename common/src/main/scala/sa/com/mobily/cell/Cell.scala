@@ -8,6 +8,7 @@ import com.vividsolutions.jts.geom.Geometry
 
 import sa.com.mobily.geometry._
 import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
+import sa.com.mobily.roaming.CountryCode
 
 /** Technology of the cell */
 sealed trait Technology { val identifier: String }
@@ -47,8 +48,8 @@ case class Cell(
     range: Double,
     bts: String,
     coverageWkt: String,
-    mcc: String = Cell.SaudiArabiaMcc,
-    mnc: String = Cell.MobilyMnc) {
+    mcc: String = CountryCode.SaudiArabiaMcc,
+    mnc: String = CountryCode.MobilyMnc) {
 
   lazy val coverageGeom: Geometry = GeomUtils.parseWkt(coverageWkt, planarCoords.srid)
 
@@ -94,9 +95,6 @@ object Cell {
   val MncStartIndex = 3
   val LacStartIndexMnc2Digits = 5
   val LacStartIndexMnc3Digits = 6
-
-  private val SaudiArabiaMcc = "420"
-  private val MobilyMnc = "03"
 
   final val lineCsvParserObject = new OpenCsvParser
 

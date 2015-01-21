@@ -22,6 +22,8 @@ object CountryCode {
   final val LineCsvParserObject = new OpenCsvParser(separator = ',')
 
   val SaudiArabiaIsoCode = "sa"
+  val SaudiArabiaMcc = "420"
+  val MobilyMnc = "03"
 
   lazy val MccCountryLookup = CountryTable.map { countryOperator =>
     (countryOperator.country.mcc, countryOperator.country)
