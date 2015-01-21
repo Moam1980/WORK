@@ -1,0 +1,1 @@
+SELECT 'SUBSCRIBERS_LAST_DATE=' || last_data_date FROM common.T_COM_META_TABLE WHERE table_name ='OFR_SUBS_HIS_D'

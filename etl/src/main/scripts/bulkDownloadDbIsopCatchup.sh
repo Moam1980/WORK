@@ -89,40 +89,6 @@ checkIsDirectoryAndCreate ${LOG_PATH}
 DATES_FILE=${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/dates_to_download_${startDate}_${endDate}.tmp
 checkNotExistsFile ${DATES_FILE}
 
-if [ "$(uname)" == "Darwin" ]; then
-    # It is a mac
-    # convert in seconds sinch the epoch:
-    start=$(date -jf "%Y%m%d" $startDate "+%s")
-    end=$(date -jf "%Y%m%d" $endDate "+%s")
-    
-    cur=$start
-    echo 
-    # Create file with dates
-    while [ $cur -le $end ]; do
-        # convert seconds to date:
-        DAY=`date -jf "%s" $cur "+%Y%m%d"`
-    
-        echo "$DAY" >> ${DATES_FILE}
-        cur=$((cur + 24*60*60))
-    done
-else
-    # convert in seconds sinch the epoch:
-    start=$(date -d$startDate +%s)
-    end=$(date -d$endDate +%s)
-    cur=$start
-    # Create file with dates
-    while [ $cur -le $end ]; do
-        # convert seconds to date:
-        DAY=`date -d@$cur +%Y-%m-%d | tr -d -`
-    
-        echo "$DAY" >> ${DATES_FILE}
-        cur=$((cur + 24*60*60))
-    done
-fi
-
-# Check file exists with dates
-checkIsReadableFile ${DATES_FILE}
-
 # Get today date
 today=$(date +%Y%m%d)
 extractYearMonthDay ${today}
@@ -130,17 +96,78 @@ yearToPush=$yearExtracted
 monthToPush=$monthExtracted
 dayToPush=$dayExtracted
 
-# Download information from all tables including condition in SQL
 # First download information not related with date, we should add this information for the day the process is executed
 ${BASE_DIR}/bulkDownloadDB.sh -s "download-T_IA_CFG_CAT_TREE" -o "T_IA_CFG_CAT_TREE_${today}"
 pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/categories/${HADOOP_ISOP_VERSION}" "T_IA_CFG_CAT_TREE_${today}" "${HADOOP_ISOP_FORMAT}"
 
-# Download daily information using parallels
-cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_bulkDownloadDbIsopCatchup_${startDate}_${endDate}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d \"{}\" -p \"${propertiesFile}\""
+# Download latest version of subscriber, we need first last date of the table been updated
+${BASE_DIR}/bulkDownloadDB.sh -s "download-LAST_DATE_OFR_SUBS_HIS_D" -o "SUBSCRIBERS_LAST_DATE_${startDate}_${endDate}.tmp"
 
-# Removing dates file
-echo 1>&2 "Removing dates file: $DATES_FILE"
-rm ${DATES_FILE}
+# Check if file exists
+checkIsReadableFile ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/SUBSCRIBERS_LAST_DATE_${startDate}_${endDate}.tmp.csv
+
+# Load subscriber last date
+. ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/SUBSCRIBERS_LAST_DATE_${startDate}_${endDate}.tmp.csv
+extractYearMonthDay ${SUBSCRIBERS_LAST_DATE}
+yearToPush=$yearExtracted
+monthToPush=$monthExtracted
+dayToPush=$dayExtracted
+
+# Download subscribers and push data
+${BASE_DIR}/bulkDownloadDB.sh -s "download-OFR_SUBS_HIS_D" -o "subscribers_${SUBSCRIBERS_LAST_DATE}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers/${HADOOP_ISOP_VERSION}" "subscribers_${SUBSCRIBERS_LAST_DATE}" "${HADOOP_ISOP_FORMAT}"
+
+# Remove last day for subscribers file
+rm ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/SUBSCRIBERS_LAST_DATE_${startDate}_${endDate}.tmp.csv
+
+# Download information from all tables including condition in SQL
+# Check if it is only one day or more
+if [ "${startDate}" == "${endDate}" ]; then
+    # It is same day we don't need parallel to run download
+    ${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d "${startDate}" -p "${propertiesFile}"
+else
+    # Check operating system to generate dates for parallel
+    if [ "$(uname)" == "Darwin" ]; then
+        # It is a mac
+        # convert in seconds sinch the epoch:
+        start=$(date -jf "%Y%m%d" $startDate "+%s")
+        end=$(date -jf "%Y%m%d" $endDate "+%s")
+
+        cur=$start
+
+        # Create file with dates
+        while [ $cur -le $end ]; do
+            # convert seconds to date:
+            DAY=`date -jf "%s" $cur "+%Y%m%d"`
+
+            echo "$DAY" >> ${DATES_FILE}
+            cur=$((cur + 24*60*60))
+        done
+    else
+        # convert in seconds sinch the epoch:
+        start=$(date -d$startDate +%s)
+        end=$(date -d$endDate +%s)
+        cur=$start
+        # Create file with dates
+        while [ $cur -le $end ]; do
+            # convert seconds to date:
+            DAY=`date -d@$cur +%Y-%m-%d | tr -d -`
+
+            echo "$DAY" >> ${DATES_FILE}
+            cur=$((cur + 24*60*60))
+        done
+    fi
+
+    # Check file exists with dates
+    checkIsReadableFile ${DATES_FILE}
+
+    # Download daily information using parallels
+    cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_bulkDownloadDbIsopCatchup_${startDate}_${endDate}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d \"{}\" -p \"${propertiesFile}\""
+
+    # Removing dates file
+    echo 1>&2 "Removing dates file: $DATES_FILE"
+    rm ${DATES_FILE}
+fi
 
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
