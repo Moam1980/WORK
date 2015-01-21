@@ -186,7 +186,7 @@ loadPropertiesFile()
 function pushDataHadoop ()
 {
     # Check that we have all parameter
-    if [ $# -ne 7 ]; then
+    if [ $# -ne 8 ]; then
         echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 7 and got: $#"
         return 1
     fi
@@ -199,12 +199,19 @@ function pushDataHadoop ()
     directory=$5
     file=$6
     formatFile=$7
+    pushHadoopFlag=$8
 
     # Check download status
     if [[ $status -ne 0 ]] ; then
         echo 1>&2 "ERROR: ${0}: Error downloading: ${file}"
         return 2
     fi
+
+    if [ ${pushHadoopFlag} != 1 ]; then
+        echo 1>&2 "INFO: ${0}: Not pushing to Hadoop: ${file}"
+        return 3
+    fi
+
     # Push data to Hadoop
     remoteDirectory="${directory}/${yearToPush}"
     hdfs dfs -mkdir -p ${remoteDirectory}

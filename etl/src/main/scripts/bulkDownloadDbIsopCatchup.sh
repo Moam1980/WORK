@@ -11,10 +11,11 @@ BASE_DIR=`dirname "${0}"`
 
 function usageHelp ()
 {
-    echo 1>&2 "Usage: ${0} -s \<startDate\> -e \<endDate\> [-p \<properties_file\>]"
+    echo 1>&2 "Usage: ${0} -s \<startDate\> -e \<endDate\> [-h -p \<properties_file\>]"
     echo 1>&2 "Parameters:"
     echo 1>&2 "    -s \<startDate\>: Start date to get data from ISOP, is mandatory"
     echo 1>&2 "    -e \<endDate\>: End date to get data, is mandatory"
+    echo 1>&2 "    -h: If information download should de pushed to Hadoop, is optional"
     echo 1>&2 "    -p \<properties_file\>: Properties file to use, is optional"
     echo 1>&2 "Examples:"
     echo 1>&2 "     $0 -s 20141001 -e 20141020"
@@ -23,14 +24,16 @@ function usageHelp ()
 
 # Default values for optional parameters
 propertiesFile="${BASE_DIR}/properties/config-etl.sh"
+pushHadoopFlag=0
 
 # Check if number of parameters is the expected
-if [ $# -ge 4 -a $# -le 6 ]; then
+if [ $# -ge 4 -a $# -le 7 ]; then
     # Check parameters
-    while getopts s:e:p: o
+    while getopts s:e:p:h o
     do  case "${o}" in
         s)  startDate="${OPTARG}";;
         e)  endDate="${OPTARG}";;
+        h)  pushHadoopFlag=1;;
         p)  propertiesFile="${OPTARG}";;
         [?])  echo 1>&2 "ERROR: ${0}:";usageHelp $*;exit 1;;
         esac
@@ -75,6 +78,13 @@ echo 1<&2 "INFO: ${0}: Running with following parameters: "
 echo 1>&2 "    start date: ${startDate}"
 echo 1>&2 "    end date: ${endDate}"
 echo 1>&2 "    propertiesFile: ${propertiesFile}"
+if [ ${pushHadoopFlag} == 1 ]; then
+    echo 1>&2 "    push to Hadoop: true"
+    pushHadoopOption="-h"
+else
+    echo 1>&2 "    push to Hadoop: false"
+    pushHadoopOption=""
+fi
 
 # Check that output path exists
 checkIsDirectoryAndCreate ${OUTPUT_FILE_PATH}
@@ -98,7 +108,7 @@ dayToPush=$dayExtracted
 
 # First download information not related with date, we should add this information for the day the process is executed
 ${BASE_DIR}/bulkDownloadDB.sh -s "download-T_IA_CFG_CAT_TREE" -o "T_IA_CFG_CAT_TREE_${today}"
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/categories/${HADOOP_ISOP_VERSION}" "T_IA_CFG_CAT_TREE_${today}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/categories/${HADOOP_ISOP_VERSION}" "T_IA_CFG_CAT_TREE_${today}" "${HADOOP_ISOP_FORMAT}" ${pushHadoopFlag}
 
 # Download latest version of subscriber, we need first last date of the table been updated
 ${BASE_DIR}/bulkDownloadDB.sh -s "download-LAST_DATE_OFR_SUBS_HIS_D" -o "SUBSCRIBERS_LAST_DATE_${startDate}_${endDate}.tmp"
@@ -115,7 +125,7 @@ dayToPush=$dayExtracted
 
 # Download subscribers and push data
 ${BASE_DIR}/bulkDownloadDB.sh -s "download-OFR_SUBS_HIS_D" -o "subscribers_${SUBSCRIBERS_LAST_DATE}"
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers/${HADOOP_ISOP_VERSION}" "subscribers_${SUBSCRIBERS_LAST_DATE}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers/${HADOOP_ISOP_VERSION}" "subscribers_${SUBSCRIBERS_LAST_DATE}" "${HADOOP_ISOP_FORMAT}" ${pushHadoopFlag}
 
 # Remove last day for subscribers file
 rm ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/SUBSCRIBERS_LAST_DATE_${startDate}_${endDate}.tmp.csv
@@ -124,7 +134,7 @@ rm ${BULK_DOWNLOAD_OUTPUT_FILE_PATH}/SUBSCRIBERS_LAST_DATE_${startDate}_${endDat
 # Check if it is only one day or more
 if [ "${startDate}" == "${endDate}" ]; then
     # It is same day we don't need parallel to run download
-    ${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d "${startDate}" -p "${propertiesFile}"
+    ${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d "${startDate}" -p "${propertiesFile}" ${pushHadoopOption}
 else
     # Check operating system to generate dates for parallel
     if [ "$(uname)" == "Darwin" ]; then
@@ -162,7 +172,7 @@ else
     checkIsReadableFile ${DATES_FILE}
 
     # Download daily information using parallels
-    cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_bulkDownloadDbIsopCatchup_${startDate}_${endDate}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d \"{}\" -p \"${propertiesFile}\""
+    cat ${DATES_FILE}  | parallel --joblog ${DOWNLOAD_LOG_FILE}_bulkDownloadDbIsopCatchup_${startDate}_${endDate}.log --no-notice --progress -k -v -P ${ISOP_DOWNLOAD_PARALLEL_PROCS} -n 1 -I{} "${BASE_DIR}/bulkDownloadDbIsopDaily.sh -d \"{}\" -p \"${propertiesFile}\"  ${pushHadoopOption} "
 
     # Removing dates file
     echo 1>&2 "Removing dates file: $DATES_FILE"
