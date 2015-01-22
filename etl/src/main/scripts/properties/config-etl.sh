@@ -34,6 +34,11 @@ HADOOP_ISOP_FILE_PATH=${HADOOP_PATH}/ia
 HADOOP_ISOP_VERSION=0.3
 HADOOP_ISOP_FORMAT=csv
 
+# IMS hadoop configuration -- Database including cells
+HADOOP_IMS_FILE_PATH=${HADOOP_PATH}/ims
+HADOOP_IMS_VERSION=0.3
+HADOOP_IMS_FORMAT=csv
+
 # CS source configuration
 CS_USER="edm"
 CS_SERVER="10.64.9.35"

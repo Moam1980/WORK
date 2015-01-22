@@ -11,9 +11,10 @@ BASE_DIR=`dirname "${0}"`
 
 function usageHelp ()
 {
-    echo 1>&2 "Usage: ${0} -d \<dateToDownload\> [-p \<properties_file\>]"
+    echo 1>&2 "Usage: ${0} -d \<dateToDownload\> [-h -p \<properties_file\>]"
     echo 1>&2 "Parameters:"
     echo 1>&2 "    -d \<dateToDownload\>: date to get data from ISOP, is mandatory"
+    echo 1>&2 "    -h: If information download should de pushed to Hadoop, is optional"
     echo 1>&2 "    -p \<properties_file\>: Properties file to use, is optional"
     echo 1>&2 "Examples:"
     echo 1>&2 "     $0 -d 20141001"
@@ -22,13 +23,15 @@ function usageHelp ()
 
 # Default values for optional parameters
 propertiesFile="${BASE_DIR}/properties/config-etl.sh"
+pushHadoopFlag=0
 
 # Check if number of parameters is the expected
-if [ $# -ge 2 -a $# -le 4 ]; then
+if [ $# -ge 2 -a $# -le 5 ]; then
     # Check parameters
-    while getopts d:p: o
+    while getopts d:p:h o
     do  case "${o}" in
         d)  dateToDownload="${OPTARG}";;
+        h)  pushHadoopFlag=1;;
         p)  propertiesFile="${OPTARG}";;
         [?])  echo 1>&2 "ERROR: ${0}:";usageHelp $*;exit 1;;
         esac
@@ -64,6 +67,11 @@ loadPropertiesFile "${propertiesFile}"
 echo 1<&2 "INFO: ${0}: Running with following parameters: "
 echo 1>&2 "    date to download: ${dateToDownload}"
 echo 1>&2 "    propertiesFile: ${propertiesFile}"
+if [ ${pushHadoopFlag} == 1 ]; then
+    echo 1>&2 "    push to Hadoop: true"
+else
+    echo 1>&2 "    push to Hadoop: false"
+fi
 
 # Check that output path exists
 checkIsDirectoryAndCreate ${OUTPUT_FILE_PATH}
@@ -88,22 +96,22 @@ dayToPush=$dayExtracted
 #   ia.T_IA_SUBS_DOMAIN_D
 #   ia.T_IA_SUBS_WEBPAGE_CAT_D
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_ALL_CNT -o T_IA_ALL_CNT_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/aggregated-data/${HADOOP_ISOP_VERSION}" "T_IA_ALL_CNT_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/aggregated-data/${HADOOP_ISOP_VERSION}" "T_IA_ALL_CNT_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_SEARCHWORDS_D -o T_IA_SUBS_SEARCHWORDS_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-searches/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_SEARCHWORDS_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-searches/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_SEARCHWORDS_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_TYPE_CNT_VOL_D -o T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps/${HADOOP_ISOP_VERSION}" "T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps/${HADOOP_ISOP_VERSION}" "T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_GROUP_CNT_VOL_D -o T_IA_APP_GROUP_CNT_VOL_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps-categories/${HADOOP_ISOP_VERSION}" "T_IA_APP_GROUP_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps-categories/${HADOOP_ISOP_VERSION}" "T_IA_APP_GROUP_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_DOMAIN_D -o T_IA_SUBS_DOMAIN_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-domains/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_DOMAIN_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-domains/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_DOMAIN_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_WEBPAGE_CAT_D -o T_IA_SUBS_WEBPAGE_CAT_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-domains-categories/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_WEBPAGE_CAT_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-domains-categories/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_WEBPAGE_CAT_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
