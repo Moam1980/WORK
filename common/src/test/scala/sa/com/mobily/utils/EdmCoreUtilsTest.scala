@@ -367,7 +367,11 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.parseNullString("$null$") should be ("")
   }
 
-  it should "return empty string when string is $_$" in new WithPhones {
+  it should "return empty string when string is null" in new WithPhones {
+    EdmCoreUtils.parseNullString("null") should be ("")
+  }
+
+  it should "return empty string when string is _" in new WithPhones {
     EdmCoreUtils.parseNullString("_") should be ("")
   }
 

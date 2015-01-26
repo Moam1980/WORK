@@ -146,6 +146,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   def parseNullString(s: String): String = s.toLowerCase match {
     case "$null$" => ""
+    case "null" => ""
     case "_" => ""
     case _ => s
   }
