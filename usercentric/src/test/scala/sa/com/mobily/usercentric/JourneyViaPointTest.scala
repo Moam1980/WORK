@@ -8,10 +8,13 @@ import org.scalatest._
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
+import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCustomMatchers
 
 class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
+
+  import JourneyViaPoint._
 
   trait WithCellCatalogue {
 
@@ -37,6 +40,22 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
 
   trait WithJourneyViaPoint {
 
+    val journeyVpLine = "|420032181160624|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(1202,12751)|1970/01/01 03:00:00|1970/01/01 03:00:01|1|sa"
+    val journeyVpFields = Array("", "420032181160624", "0", "0", "1970/01/01 03:00:00", "1970/01/01 03:00:01",
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(1202,12751)", "1970/01/01 03:00:00", "1970/01/01 03:00:01", "1",
+      "sa")
+    val journeyVpRead = JourneyViaPoint(
+      user = User("", "420032181160624", 0),
+      journeyId = 0,
+      startTime = 0,
+      endTime = 1000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Set((1202, 12751)),
+      firstEventBeginTime = 0,
+      lastEventEndTime = 1000,
+      numEvents = 1)
+
     val journeyVp = JourneyViaPoint(
       user = User("", "", 1),
       journeyId = 3,
@@ -59,17 +78,24 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
   }
 
   it should "return its fields for printing" in new WithJourneyViaPoint {
-    journeyVp.fields should be (Array("", "", "1", "Unknown", "Unknown", "3", "1970/01/01 03:00:03",
-      "1970/01/01 03:00:08", "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(1,1)", "1970/01/01 03:00:03",
-      "1970/01/01 03:00:08", "1", "sa"))
+    journeyVp.fields should be (Array("", "", "1", "3", "1970/01/01 03:00:03", "1970/01/01 03:00:08",
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(1,1)", "1970/01/01 03:00:03", "1970/01/01 03:00:08", "1", "sa"))
   }
 
   it should "return the proper header" in new WithJourneyViaPoint {
-    JourneyViaPoint.header should be (Array("imei", "imsi", "msisdn", "mcc", "mnc", "journeyId", "startTime",
-      "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
+    JourneyViaPoint.header should be (Array("imei", "imsi", "msisdn", "journeyId", "startTime", "endTime", "geomWkt",
+      "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
   }
 
   it should "have the same number of elements in fields and header" in new WithJourneyViaPoint {
     journeyVp.fields.size should be (JourneyViaPoint.header.size)
+  }
+
+  it should "be built from CSV" in new WithJourneyViaPoint {
+    CsvParser.fromLine(journeyVpLine).value.get should be (journeyVpRead)
+  }
+
+  it should "be discarded when the CSV format is wrong" in new WithJourneyViaPoint {
+    an [Exception] should be thrownBy fromCsv.fromFields(journeyVpFields.updated(4, "NotValidTime"))
   }
 }

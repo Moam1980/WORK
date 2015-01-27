@@ -108,16 +108,14 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
 
   it should "have the proper header" in {
     SpatioTemporalSlot.header should be (
-      Array("imei", "imsi", "msisdn", "mcc", "mnc", "startTime", "endTime", "numEvents", "outMinSpeed",
-        "avgIntraMinSpeed", "cells", "firstEventBeginTime", "lastEventEndTime", "geomWkt", "countryIsoCode",
-        "typeEstimate"))
+      Array("imei", "imsi", "msisdn", "startTime", "endTime", "numEvents", "outMinSpeed", "avgIntraMinSpeed", "cells",
+        "firstEventBeginTime", "lastEventEndTime", "geomWkt", "countryIsoCode", "typeEstimate"))
   }
 
   it should "return its fields for printing" in new WithSpatioTemporalSlots with WithCellCatalogue {
     slotWithTwoEvents.fields should be (
-      Array("", "", "1", "Unknown", "Unknown", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2", "0.0", "0.5",
-        "(1,1);(1,2)", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "sa",
-        "Dwell"))
+      Array("", "", "1", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2", "0.0", "0.5", "(1,1);(1,2)",
+        "1970/01/01 03:00:00", "1970/01/01 03:00:00", "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "sa", "Dwell"))
   }
 
   it should "compute the average intra minimum speed when there are several events" in new WithSpatioTemporalSlots {

@@ -8,10 +8,13 @@ import org.scalatest.{ShouldMatchers, FlatSpec}
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
+import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCustomMatchers
 
 class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
+
+  import Dwell._
 
   trait WithCellCatalogue {
 
@@ -38,6 +41,20 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
 
   trait WithDwell {
 
+    val dwellLine = "|420032153783846|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(2,4);(2,6)|1970/01/01 03:00:00|1970/01/01 03:00:01|4|sa"
+    val dwellFields = Array("", "420032153783846", "0", "1970/01/01 03:00:00", "1970/01/01 03:00:01",
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(2,4);(2,6)", "1970/01/01 03:00:00", "1970/01/01 03:00:01", "4", "sa")
+    val dwellRead = Dwell(
+      user = User("", "420032153783846", 0),
+      startTime = 0,
+      endTime = 1000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Set((2, 4), (2, 6)),
+      firstEventBeginTime = 0,
+      lastEventEndTime = 1000,
+      numEvents = 4)
+
     val dwell = Dwell(
       user = User("", "", 1),
       startTime = 1,
@@ -59,17 +76,25 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   }
 
   it should "return its fields for printing" in new WithDwell {
-    dwell.fields should be (Array("", "", "1", "Unknown", "Unknown", "1970/01/01 03:00:00", "1970/01/01 03:00:00",
+    dwell.fields should be (Array("", "", "1", "1970/01/01 03:00:00", "1970/01/01 03:00:00",
       "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(2,4);(2,6)", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2",
       "sa"))
   }
 
   it should "return the proper header" in new WithDwell {
-    Dwell.header should be (Array("imei", "imsi", "msisdn", "mcc", "mnc", "startTime", "endTime", "geomWkt", "cells",
+    Dwell.header should be (Array("imei", "imsi", "msisdn", "startTime", "endTime", "geomWkt", "cells",
       "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
   }
 
   it should "have the same number of elements in fields and header" in new WithDwell {
     dwell.fields.size should be (Dwell.header.size)
+  }
+
+  it should "be built from CSV" in new WithDwell {
+    CsvParser.fromLine(dwellLine).value.get should be (dwellRead)
+  }
+
+  it should "be discarded when the CSV format is wrong" in new WithDwell {
+    an [Exception] should be thrownBy fromCsv.fromFields(dwellFields.updated(4, "NotValidTime"))
   }
 }

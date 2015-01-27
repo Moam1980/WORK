@@ -13,6 +13,7 @@ class ImsCellTest extends FlatSpec with ShouldMatchers {
   import ImsCell._
 
   trait WithImsCell {
+
     val imsCellLine = "\"ALU\"|\"2G\"|\"HUFEA2173_2\"|\"21732\"|\"33\"|\"NULL\"|\"NULL\"|\"NULL\"|\"24\"|\"NULL\""
     val fields = Array("ALU", "2G", "HUFEA2173_2", "21732", "33", "NULL", "NULL", "NULL", "24", "NULL")
 

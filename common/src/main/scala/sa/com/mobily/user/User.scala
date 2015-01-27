@@ -20,7 +20,7 @@ case class User(
     mncs.find(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).getOrElse(User.UnknownMnc)
   }
 
-  def fields: Array[String] = Array(imei, imsi, msisdn.toString, mcc, mnc)
+  def fields: Array[String] = Array(imei, imsi, msisdn.toString)
 
   override def id: Long = msisdn
 
@@ -48,5 +48,5 @@ object User {
   val UnknownMcc = "Unknown"
   val UnknownMnc = "Unknown"
 
-  def header: Array[String] = Array("imei", "imsi", "msisdn", "mcc", "mnc")
+  def header: Array[String] = Array("imei", "imsi", "msisdn")
 }

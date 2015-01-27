@@ -12,6 +12,7 @@ import com.vividsolutions.jts.operation.distance.DistanceOp
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -163,5 +164,29 @@ object Journey {
     GeomUtils.ensureNearestPointInGeom(
       geomFactory.createPoint(DistanceOp.nearestPoints(second, midPointThroughSecond).head),
       second)
+  }
+
+  final val lineCsvParserObject = new OpenCsvParser
+
+  implicit val fromCsv = new CsvParser[Journey] {
+
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
+
+    override def fromFields(fields: Array[String]): Journey = {
+      val Array(imei, imsi, msisdn, id, startTime, endTime, geomWkt, cells, firstEventBeginTime, lastEventEndTime,
+        numEvents, countryIsoCode) = fields
+
+      Journey(
+        user = User(imei = imei, imsi = imsi, msisdn = msisdn.toLong),
+        id = id.toInt,
+        startTime = EdmCoreUtils.fmt.parseDateTime(startTime).getMillis,
+        endTime = EdmCoreUtils.fmt.parseDateTime(endTime).getMillis,
+        geomWkt = geomWkt,
+        cells = Cell.parseCellTuples(cells),
+        firstEventBeginTime = EdmCoreUtils.fmt.parseDateTime(firstEventBeginTime).getMillis,
+        lastEventEndTime = EdmCoreUtils.fmt.parseDateTime(lastEventEndTime).getMillis,
+        numEvents = numEvents.toLong,
+        countryIsoCode = countryIsoCode)
+    }
   }
 }

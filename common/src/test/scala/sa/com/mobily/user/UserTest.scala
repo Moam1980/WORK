@@ -15,8 +15,8 @@ class UserTest extends FlatSpec with ShouldMatchers {
       imsi = "420034122616618",
       msisdn = 560917079L)
 
-    val userFields = Array[String]("866173010386736", "420034122616618", "560917079", "420", "03")
-    val header = Array[String]("imei", "imsi", "msisdn", "mcc", "mnc")
+    val userFields = Array[String]("866173010386736", "420034122616618", "560917079")
+    val header = Array[String]("imei", "imsi", "msisdn")
   }
 
   trait WithEqualityUsers {
