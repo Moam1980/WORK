@@ -15,10 +15,10 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
 
   trait WithCustomerSubscriber {
 
-    val line = "966544312356|Visa|1016603803|3581870526733101|M|5049|3|Saudi Arabia|KSA" +
+    val line = "966544312356|Visa|1016603803|3581870526733101|420030100040377|M|5049|3|Saudi Arabia|KSA" +
       "|Pre-Paid|Voice|39.75|Retail Customer|5/1/2013|Active|Siebel|Saudi Arabia|SamsungI930000|100.050000|8/1/2014" +
       "|8/1/2014|S50|99.04|68.57|133.77|109.99|106.36|125.23"
-    val fields: Array[String] = Array("966544312356","Visa","1016603803","3581870526733101","M",
+    val fields: Array[String] = Array("966544312356","Visa","1016603803","3581870526733101","420030100040377","M",
       "5049","3","Saudi Arabia","KSA","Pre-Paid","Voice","39.75","Retail Customer","5/1/2013","Active","Siebel",
       "Saudi Arabia","SamsungI930000","100.050000","8/1/2014","8/1/2014","S50","99.04","68.57","133.77","109.99",
       "106.36","125.23")
@@ -26,7 +26,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
     val customerSubscriber = Subscriber(
       user = User(
         imei = "3581870526733101",
-        imsi = "",
+        imsi = "420030100040377",
         msisdn = 966544312356L),
       idType =  Visa,
       idNumber = Some(1016603803l),
@@ -58,7 +58,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be discarded when CSV format is wrong" in new WithCustomerSubscriber {
-    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(0, "0").updated(3, ""))
+    an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(0, "0").updated(3, "").updated(4,""))
   }
 
   it should "be built from CSV with an Unkwonw identification type" in new WithCustomerSubscriber {
@@ -140,77 +140,77 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Ots active status" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(14, Ots.id)) should be (customerSubscriber.copy(activeStatus = Ots))
+    fromCsv.fromFields(fields.updated(15, Ots.id)) should be (customerSubscriber.copy(activeStatus = Ots))
   }
 
   it should "be built from CSV with HotSIM active status" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(14, HotSIM.id)) should be (customerSubscriber.copy(activeStatus = HotSIM))
+    fromCsv.fromFields(fields.updated(15, HotSIM.id)) should be (customerSubscriber.copy(activeStatus = HotSIM))
   }
 
   it should "be built from CSV with Unknown active status" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(14, "A")) should be (customerSubscriber.copy(activeStatus = UnknownActiveStatus))
+    fromCsv.fromFields(fields.updated(15, "A")) should be (customerSubscriber.copy(activeStatus = UnknownActiveStatus))
   }
 
   it should "be built from CSV with Data datapackage" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(10, Data.id)) should be
+    fromCsv.fromFields(fields.updated(11, Data.id)) should be
       (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(data = Data))))
   }
 
   it should "be built from CSV with Unknown datapackage" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(10, "A")) should be
+    fromCsv.fromFields(fields.updated(11, "A")) should be
       (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(data = UnknownDataPackage))))
   }
 
   it should "be built from CSV with Iuc corp package" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(12, Iuc.id)) should be
+    fromCsv.fromFields(fields.updated(13, Iuc.id)) should be
       (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(corp = Iuc))))
   }
 
   it should "be built from CSV with Large Corporate corp package" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(12, LargeCorporate.id)) should be
+    fromCsv.fromFields(fields.updated(13, LargeCorporate.id)) should be
       (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(corp = LargeCorporate))))
   }
 
   it should "be built from CSV with Unknown corp package" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(12, "A")) should be
+    fromCsv.fromFields(fields.updated(13, "A")) should be
     (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(corp = UnknownCorpPackage))))
   }
 
   it should "be built from CSV with Mcr source activation" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(15, Mcr.id)) should be (customerSubscriber.copy(sourceActivation = Mcr))
+    fromCsv.fromFields(fields.updated(16, Mcr.id)) should be (customerSubscriber.copy(sourceActivation = Mcr))
   }
 
   it should "be built from CSV with Mdm source activation" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(15, Mdm.id)) should be (customerSubscriber.copy(sourceActivation = Mdm))
+    fromCsv.fromFields(fields.updated(16, Mdm.id)) should be (customerSubscriber.copy(sourceActivation = Mdm))
   }
 
   it should "be built from CSV with Unknown source activation" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(15, "A")) should be
+    fromCsv.fromFields(fields.updated(17, "A")) should be
       (customerSubscriber.copy(sourceActivation = UnknownSourceActivation))
   }
 
   it should "be built from CSV with W segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(21, Wcs.id)) should be (customerSubscriber.copy(m1CalculatedSegment = Wcs))
+    fromCsv.fromFields(fields.updated(22, Wcs.id)) should be (customerSubscriber.copy(m1CalculatedSegment = Wcs))
   }
 
   it should "be built from CSV with S40 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(21, S40.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S40))
+    fromCsv.fromFields(fields.updated(22, S40.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S40))
   }
 
   it should "be built from CSV with S60 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(21, S60.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S60))
+    fromCsv.fromFields(fields.updated(22, S60.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S60))
   }
 
   it should "be built from CSV with S80 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(21, S80.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S80))
+    fromCsv.fromFields(fields.updated(22, S80.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S80))
   }
 
   it should "be built from CSV with S90 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(21, S90.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S90))
+    fromCsv.fromFields(fields.updated(22, S90.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S90))
   }
 
   it should "be built from CSV with Unknown segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(21, "A")) should be
+    fromCsv.fromFields(fields.updated(22, "A")) should be
       (customerSubscriber.copy(m1CalculatedSegment = UnknownSourceCalculatedSegmetn))
   }
 }

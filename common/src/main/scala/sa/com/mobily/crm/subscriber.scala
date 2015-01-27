@@ -131,16 +131,16 @@ object Subscriber {
     override def lineCsvParser: OpenCsvParser = new OpenCsvParser
 
     override def fromFields(fields: Array[String]): Subscriber = {
-      val (firstChunck, revenueChunck) = fields.splitAt(22)  // scalastyle:ignore magic.number
-      val Array(msisdnText, idTypeText, idNumberText, imeiText, genderText, siteIdText, regionIdText,
-      actualNationalityText, calNationalityText, payTypeText, isDataPackageText, ageText, isCorpPackageText,
-      activationDateText, activeStatusText, sourceActivationText, roamingStatusText, handsetTypeText,
-      currentBalanceText, lastActivityDateText, lastRechargeDateText, m1ClaculatedSegmentText) = firstChunck
-      val Array(m1RevenueText, m2RevenueText, m3RevenueText, m4RevenueText, m5RevenueText, m6RevenueText) =
-        revenueChunck
+      val (firstChunk, revenueChunk) = fields.splitAt(22)  // scalastyle:ignore magic.number
+      val Array(msisdnText, idTypeText, idNumberText, imeiText, imsiText, genderText, siteIdText, regionIdText,
+        actualNationalityText, calNationalityText, payTypeText, isDataPackageText, ageText, isCorpPackageText,
+        activationDateText, activeStatusText, sourceActivationText, roamingStatusText, handsetTypeText,
+        currentBalanceText, lastActivityDateText, lastRechargeDateText) = firstChunk
+      val Array(m1CalculatedSegmentText, m1RevenueText, m2RevenueText, m3RevenueText, m4RevenueText, m5RevenueText,
+        m6RevenueText) = revenueChunk
 
       Subscriber(
-        user = User(imeiText, "", EdmCoreUtils.parseLong(msisdnText).getOrElse(0L)),
+        user = User(imeiText, imsiText, EdmCoreUtils.parseLong(msisdnText).getOrElse(0L)),
         idType = parseCustomerIdType(idTypeText),
         idNumber = EdmCoreUtils.parseLong(idNumberText),
         age = EdmCoreUtils.parseFloat(ageText),
@@ -158,7 +158,7 @@ object Subscriber {
         sourceActivation = parseSourceActivation(sourceActivationText),
         roamingStatus = roamingStatusText,
         currentBalance = EdmCoreUtils.parseFloat(currentBalanceText),
-        m1CalculatedSegment = parseCalculatedSegment(m1ClaculatedSegmentText),
+        m1CalculatedSegment = parseCalculatedSegment(m1CalculatedSegmentText),
         revenues = Revenues(
           m1= m1RevenueText.toFloat,
           m2 = m2RevenueText.toFloat,
