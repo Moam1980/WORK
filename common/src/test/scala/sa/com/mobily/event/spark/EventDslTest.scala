@@ -95,8 +95,8 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       subsequentCellId = Some(12566))
     val event3 = Event(
       user = User(
-        imei = "0134160098258502",
-        imsi = "420034120446252",
+        imei = "0134160098258500",
+        imsi = "420034120446250",
         msisdn = 560917079L),
       beginTime = 1389363560000L,
       endTime = 1389363565000L,
@@ -348,8 +348,8 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
   it should "group by user chronologically" in new WithEvents {
     val orderedEvents = events.byUserChronologically.collect.toMap
     orderedEvents.size should be (2)
-    orderedEvents(560917079L) should be (List(event3, event1))
-    orderedEvents(560917080L) should be (List(event2))
+    orderedEvents(User("0134160098258500", "420034120446250", 560917079L)) should be (List(event3, event1))
+    orderedEvents(User("0134160098258501", "420034120446251", 560917080L)) should be (List(event2))
   }
 
   it should "get correctly parsed rows" in new WithEventsRows {

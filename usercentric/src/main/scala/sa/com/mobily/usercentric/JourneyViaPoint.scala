@@ -10,8 +10,9 @@ import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
-case class Dwell(
+case class JourneyViaPoint(
     user: User,
+    journeyId: Int,
     startTime: Long,
     endTime: Long,
     geomWkt: String,
@@ -24,6 +25,7 @@ case class Dwell(
   def fields: Array[String] =
     user.fields ++
       Array(
+        journeyId.toString,
         EdmCoreUtils.fmt.print(startTime),
         EdmCoreUtils.fmt.print(endTime),
         geomWkt,
@@ -34,12 +36,14 @@ case class Dwell(
         countryIsoCode)
 }
 
-object Dwell {
+object JourneyViaPoint {
 
-  def apply(slot: SpatioTemporalSlot)(implicit cellCatalogue: Map[(Int, Int), Cell]): Dwell = {
-    require(slot.typeEstimate == DwellEstimate)
-    Dwell(
+  def apply(slot: SpatioTemporalSlot, journeyId: Int)
+      (implicit cellCatalogue: Map[(Int, Int), Cell]): JourneyViaPoint = {
+    require(slot.typeEstimate == JourneyViaPointEstimate)
+    JourneyViaPoint(
       user = slot.user,
+      journeyId = journeyId,
       startTime = slot.startTime,
       endTime = slot.endTime,
       geomWkt = GeomUtils.wkt(slot.geom),
@@ -52,6 +56,6 @@ object Dwell {
 
   def header: Array[String] =
     User.header ++
-      Array("startTime", "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents",
-        "countryIsoCode")
+      Array("journeyId", "startTime", "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime",
+        "numEvents", "countryIsoCode")
 }

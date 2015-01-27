@@ -37,47 +37,54 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
   trait WithCellCatalogue {
 
     val cell1 = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4, "1",
-      "POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))")
-    val cell2 = cell1.copy(cellId = 2, coverageWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))")
-    val cell3 = cell1.copy(cellId = 3, coverageWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))")
+      "POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))")
+    val cell2 = cell1.copy(cellId = 2, coverageWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))")
+    val cell3 = cell1.copy(cellId = 3, coverageWkt = "POLYGON ((5 0, 5 10, 15 10, 15 0, 5 0))")
+    val cell4 = cell1.copy(cellId = 4, coverageWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))")
+    val cell5 = cell1.copy(cellId = 5, coverageWkt = "POLYGON ((0.5 0, 0.5 20, 10 20, 10 0, 0.5 0))")
 
-    implicit val cellCatalogue = Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3)
+    implicit val cellCatalogue =
+      Map((1, 1) -> cell1, (1, 2) -> cell2, (1, 3) -> cell3, (1, 4) -> cell4, (1, 5) -> cell5)
   }
 
   trait WithSpatioTemporalSlots extends WithEvents {
 
     val slotWithTwoEvents = SpatioTemporalSlot(
-      userId = 1,
+      user = User("", "", 1),
       startTime = 1,
       endTime = 4,
-      geomWkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))",
       cells = Set((1, 1), (1, 2)),
+      firstEventBeginTime = 1,
+      lastEventEndTime = 4,
       outMinSpeed = 0,
       intraMinSpeedSum = 0.5,
       numEvents = 2)
     val event3SpatioTemporalSlot = SpatioTemporalSlot(
-      userId = 1,
+      user = User("", "", 1),
       startTime = 5,
       endTime = 6,
-      geomWkt = "POLYGON ((0.5 0, 0.5 1, 1.5 1, 1.5 0, 0.5 0))",
       cells = Set((1, 3)),
+      firstEventBeginTime = 5,
+      lastEventEndTime = 6,
       outMinSpeed = 1,
       intraMinSpeedSum = 0,
       numEvents = 1)
     val slotWithThreeEvents = SpatioTemporalSlot(
-      userId = 1,
+      user = User("", "", 1),
       startTime = 1,
       endTime = 6,
-      geomWkt = "POLYGON ((0.5 1, 1 1, 1 0, 0.5 0, 0.5 1))",
       cells = Set((1, 1), (1, 2), (1, 3)),
+      firstEventBeginTime = 1,
+      lastEventEndTime = 6,
       outMinSpeed = 1,
       intraMinSpeedSum = 0.5,
       numEvents = 3)
+    val slotWithEmptyIntersection = slotWithTwoEvents.copy(cells = Set((1, 4), (1, 5)))
   }
 
-  "SpatioTemporalSlot" should "build geometry from WKT" in new WithSpatioTemporalSlots {
+  "SpatioTemporalSlot" should "build geometry from WKT" in new WithSpatioTemporalSlots with WithCellCatalogue {
     slotWithTwoEvents.geom should
-      equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
+      equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
   }
 
   it should "append another event" in new WithSpatioTemporalSlots with WithCellCatalogue {
@@ -92,16 +99,25 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
     slotWithTwoEvents.append(event3SpatioTemporalSlot) should be (slotWithThreeEvents)
   }
 
+  it should "append another SpatioTemporalSlot with end times before current slot end times" in
+    new WithSpatioTemporalSlots {
+      slotWithTwoEvents.append(
+        event3SpatioTemporalSlot.copy(startTime = 2, endTime = 3, firstEventBeginTime = 2, lastEventEndTime = 3)) should
+        be (slotWithThreeEvents.copy(endTime = 4, lastEventEndTime = 4))
+    }
+
   it should "have the proper header" in {
     SpatioTemporalSlot.header should be (
-      Array("userId", "startTime", "endTime", "numEvents", "outMinSpeed", "avgIntraMinSpeed", "cells",
-        "geomWkt", "countryIsoCode"))
+      Array("imei", "imsi", "msisdn", "mcc", "mnc", "startTime", "endTime", "numEvents", "outMinSpeed",
+        "avgIntraMinSpeed", "cells", "firstEventBeginTime", "lastEventEndTime", "geomWkt", "countryIsoCode",
+        "typeEstimate"))
   }
 
-  it should "return its fields for printing" in new WithSpatioTemporalSlots {
+  it should "return its fields for printing" in new WithSpatioTemporalSlots with WithCellCatalogue {
     slotWithTwoEvents.fields should be (
-      Array("1", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2", "0.0", "0.5", "(1,1);(1,2)",
-        "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", "sa"))
+      Array("", "", "1", "Unknown", "Unknown", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "2", "0.0", "0.5",
+        "(1,1);(1,2)", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "sa",
+        "Dwell"))
   }
 
   it should "compute the average intra minimum speed when there are several events" in new WithSpatioTemporalSlots {
@@ -110,5 +126,16 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
 
   it should "compute the average intra minimum speed when there's only one event" in new WithSpatioTemporalSlots {
     event3SpatioTemporalSlot.avgIntraMinSpeed should be (0)
+  }
+
+  "CellsGeometry" should "compute geometry from cells" in new WithSpatioTemporalSlots with WithCellCatalogue {
+    slotWithTwoEvents.geom should
+      equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
+  }
+
+  it should "compute the union when the intersection is empty (and simplify afterwards)" in
+    new WithSpatioTemporalSlots with WithCellCatalogue {
+      slotWithEmptyIntersection.geom should
+        equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0.5 20, 10 20, 10 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
   }
 }

@@ -13,16 +13,17 @@ import org.joda.time.format.DateTimeFormat
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
+import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Journey
 import sa.com.mobily.utils.EdmCoreUtils
 
-class JourneyFunctions(byUserChronologically: RDD[(Long, List[Event])]) {
+class JourneyFunctions(byUserChronologically: RDD[(User, List[Event])]) {
 
-  def withMinSpeeds(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[Event])] =
+  def withMinSpeeds(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(User, List[Event])] =
     byUserChronologically.map(userEvents =>
       (userEvents._1, Journey.computeMinSpeed(userEvents._2, cellCatalogue.value)))
 
-  def segmentsAndGeometries(cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Long, List[String])] = {
+  def segmentsAndGeometries(cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(User, List[String])] = {
     val wkt = Event.geomWkt(cellCatalogue.value) _
     val geomFactory = cellCatalogue.value.headOption.map(cellTuple =>
       GeomUtils.geomFactory(cellTuple._2.coverageGeom.getSRID, cellTuple._2.coverageGeom.getPrecisionModel)).getOrElse(
@@ -50,7 +51,7 @@ class JourneyFunctions(byUserChronologically: RDD[(Long, List[Event])]) {
 
 trait JourneyDsl {
 
-  implicit def journeyFunctions(byUserChronologically: RDD[(Long, List[Event])]): JourneyFunctions =
+  implicit def journeyFunctions(byUserChronologically: RDD[(User, List[Event])]): JourneyFunctions =
     new JourneyFunctions(byUserChronologically)
 }
 

@@ -61,7 +61,8 @@ class JourneyDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
     new WithCellCatalogue with WithEvents {
       val withMinSpeeds = eventsAllJoiningCell.byUserChronologically.withMinSpeeds(cells)
       withMinSpeeds.count should be (1)
-      withMinSpeeds.first should be ((1L, List(event101WithMinSpeed, event120WithMinSpeed, event130WithMinSpeed)))
+      withMinSpeeds.first should be (
+        (User("imei", "imsi", 1L), List(event101WithMinSpeed, event120WithMinSpeed, event130WithMinSpeed)))
     }
 
   it should "generate shortest path segments and event geometries for visualisation" in
@@ -69,6 +70,7 @@ class JourneyDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       val withSegmentsAndGeometries =
         eventsAllJoiningCell.byUserChronologically.withMinSpeeds(cells).segmentsAndGeometries(cells)
       withSegmentsAndGeometries.count should be (1)
-      withSegmentsAndGeometries.first should be ((1L, List(event101To120Text, event120To130Text)))
+      withSegmentsAndGeometries.first should be (
+        (User("imei", "imsi", 1L), List(event101To120Text, event120To130Text)))
     }
 }

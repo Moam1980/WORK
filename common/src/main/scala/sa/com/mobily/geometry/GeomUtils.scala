@@ -7,7 +7,6 @@ package sa.com.mobily.geometry
 import scala.math._
 
 import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.util.PolygonExtracter
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.util.GeometricShapeFactory
 import org.geotools.geometry.jts.JTS
@@ -139,10 +138,18 @@ object GeomUtils {
       p.buffer(PointInsideGeometryBufferFactor / p.getPrecisionModel.getScale).intersection(geom).getCentroid
     else p.buffer(p.distance(geom) * PointInsideGeometryBufferFactor).intersection(geom).getCentroid
 
-  def intersectionOrFirst(first: Geometry, second: Geometry): Geometry =
-    if (first.intersects(second))
-      first.getFactory.buildGeometry(PolygonExtracter.getPolygons(first.intersection(second)))
-    else first
+  def intersectionRatio(first: Geometry, second: Geometry): Double = {
+    val firstArea = first.getArea
+    val secondArea = second.getArea
+    val intersectArea = largePrecision(first).intersection(largePrecision(second)).getArea
+    if (firstArea >= secondArea) intersectArea / secondArea else intersectArea / firstArea
+  }
+
+  def geomAsPoints(geom: Geometry): Map[Int, (Double, Double)] =
+    geom.getCoordinates.zipWithIndex.map { e => (e._2 + 1, (e._1.x, e._1.y)) }.toMap
+
+  def largePrecision(geom: Geometry): Geometry =
+    GeomUtils.geomFactory(geom.getSRID, new PrecisionModel).createGeometry(geom)
 
   private def buildShape(
       xCoords: List[Double],
@@ -162,14 +169,4 @@ object GeomUtils {
     factory.setNumPoints(numPoints)
     factory
   }
-
-  def intersectionRatio(first: Geometry, second: Geometry): Double = {
-    val firstArea = first.getArea
-    val secondArea = second.getArea
-    val intersectArea = first.intersection(second).getArea
-    if (firstArea >= secondArea) intersectArea / secondArea else intersectArea / firstArea
-  }
-
-  def geomAsPoints(geom: Geometry): Map[Int, (Double, Double)] =
-    geom.getCoordinates.zipWithIndex.map { e => (e._2 + 1, (e._1.x, e._1.y)) }.toMap
 }

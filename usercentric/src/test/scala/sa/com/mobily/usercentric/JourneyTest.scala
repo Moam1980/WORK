@@ -8,8 +8,7 @@ import com.vividsolutions.jts.geom.Coordinate
 import com.vividsolutions.jts.operation.distance.DistanceOp
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.cell.{Micro, FourGFdd, Cell}
-import sa.com.mobily.cell.spark.CellDsl._
+import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
 import sa.com.mobily.user.User
@@ -70,9 +69,35 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
     val cellContainInitPoint1 = cell1.copy(cellId = 1006, planarCoords = UtmCoordinates(1, 0),
       coverageWkt = "POLYGON (( 1 0, 1 3, 4 3, 4 0, 1 0 ))")
 
-    val cells = sc.parallelize(List(cell1, cell20, cell21, cell22, cell3, cell101, cell120, cell130, cellIntersect1,
-      cellIntersect2, cellIntersect3, cellIntersectWith1And2, cellIntersectWith2And3,
-      cellContainInitPoint1)).toBroadcastMap.value
+    val cell50 = cell1.copy(cellId = 50, planarCoords = UtmCoordinates(0, 0),
+      coverageWkt = "POLYGON (( 0 0, 0 40, 20 40, 20 0, 0 0 ))")
+    val cell51 = cell1.copy(cellId = 51, planarCoords = UtmCoordinates(30, 40),
+      coverageWkt = "POLYGON (( 30 40, 70 40, 70 0, 30 0, 30 40 ))")
+    val cell52 = cell1.copy(cellId = 52, planarCoords = UtmCoordinates(20, 30),
+      coverageWkt = "POLYGON (( 20 30, 20 50, 40 50, 40 30, 20 30 ))")
+    val cell53 = cell1.copy(cellId = 53, planarCoords = UtmCoordinates(50, 50),
+      coverageWkt = "POLYGON (( 0 60, 0 70, 20 70, 20 60, 0 60 ))")
+
+    implicit val cells =
+      Map(
+        (1, 1) -> cell1,
+        (1, 20) -> cell20,
+        (1, 21) -> cell21,
+        (1, 22) -> cell22,
+        (1, 3) -> cell3,
+        (1, 101) -> cell101,
+        (1, 120) -> cell120,
+        (1, 130) -> cell130,
+        (1, 1001) -> cellIntersect1,
+        (1, 1002) -> cellIntersect2,
+        (1, 1003) -> cellIntersect3,
+        (1, 1004) -> cellIntersectWith1And2,
+        (1, 1005) -> cellIntersectWith2And3,
+        (1, 1006) -> cellContainInitPoint1,
+        (1, 50) -> cell50,
+        (1, 51) -> cell51,
+        (1, 52) -> cell52,
+        (1, 53) -> cell53)
   }
 
   trait WithInitPoints {
@@ -81,26 +106,75 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
     val initPoint1 = geomFactory.createPoint(new Coordinate(2, 0))
   }
 
-  trait WithJourney {
+  trait WithSpatioTemporalSlots {
+
+    val origSlot = SpatioTemporalSlot(
+      user = User("", "", 1),
+      startTime = 1,
+      endTime = 10,
+      cells = Set((1, 50)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 9,
+      outMinSpeed = 6,
+      intraMinSpeedSum = 0.5,
+      numEvents = 2)
+    val vp1 = JourneyViaPoint(
+      user = User("", "", 1),
+      journeyId = 1,
+      startTime = 10,
+      endTime = 15,
+      geomWkt = "POLYGON (( 30 40, 70 40, 70 0, 30 0, 30 40 ))",
+      cells = Set((1, 51)),
+      firstEventBeginTime = 13,
+      lastEventEndTime = 14,
+      numEvents = 1)
+    val vp2 = vp1.copy(
+      startTime = 15,
+      endTime = 20,
+      geomWkt = "POLYGON (( 20 30, 20 50, 40 50, 40 30, 20 30 ))",
+      cells = Set((1, 52)),
+      firstEventBeginTime = 17,
+      lastEventEndTime = 19,
+      numEvents = 1)
+    val destSlot = origSlot.copy(
+      startTime = 20,
+      endTime = 30,
+      cells = Set((1, 53)),
+      firstEventBeginTime = 24,
+      lastEventEndTime = 28,
+      outMinSpeed = 1.5,
+      numEvents = 3)
+    val viaPoints = List(vp1, vp2)
+  }
+
+  trait WithJourneys {
 
     val journey = Journey(
-      user = 1,
+      user = User("", "", 1),
       id = 1,
       startTime = 1,
       endTime = 10,
-      geomWkt = "LINESTRING (0.5 0.5, 0.5 0.5)",
+      geomWkt = "LINESTRING (0.5 0.5, 1 1)",
       cells = Set((1, 1)),
       firstEventBeginTime = 3,
-      lastEventEndTime = 8)
-    val journeyVp = JourneyViaPoint(
-      user = 1,
-      journeyId = 1,
-      startTime = 3,
-      endTime = 8,
-      geomWkt = "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
-      cells = Set((1, 1)),
-      firstEventBeginTime = 3,
-      lastEventEndTime = 8)
+      lastEventEndTime = 8,
+      numEvents = 1)
+    val builtJourney = Journey(
+      user = User("", "", 1),
+      id = 0,
+      startTime = 10,
+      endTime = 20,
+      geomWkt = "LINESTRING (10 20, 50 20, 30 40, 10 65)",
+      cells = Set((1, 51), (1, 52)),
+      firstEventBeginTime = 13,
+      lastEventEndTime = 19,
+      numEvents = 2)
+    val builtJourneyNoVp = builtJourney.copy(
+      geomWkt = "LINESTRING (10 20, 10 65)",
+      cells = Set(),
+      firstEventBeginTime = 10,
+      lastEventEndTime = 20,
+      numEvents = 0)
   }
 
   "Journey" should "calculate the seconds in between two events" in new WithEvents {
@@ -221,13 +295,33 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
         be(List(Some("POINT (1.5 1.5)"), Some("POINT (4 1.5)"), Some("POINT (4 1.5)"), Some("POINT (8 1.5)")))
     }
 
-  it should "build geometry from WKT" in new WithJourney {
+  it should "build from SpatioTemporal slots and via points" in
+    new WithSpatioTemporalSlots with WithJourneys with WithCellCatalogue {
+      Journey(orig = origSlot, dest = destSlot, id = 0, viaPoints = viaPoints)(cells) should be (builtJourney)
+    }
+
+  it should "build from SpatioTemporal slots without any via points" in
+    new WithSpatioTemporalSlots with WithJourneys with WithCellCatalogue {
+      Journey(orig = origSlot, dest = destSlot, id = 0, viaPoints = List())(cells) should be (builtJourneyNoVp)
+    }
+
+  it should "build geometry from WKT" in new WithJourneys {
     journey.geom should
-      equalGeometry(GeomUtils.parseWkt("LINESTRING (0.5 0.5, 0.5 0.5)", Coordinates.SaudiArabiaUtmSrid))
+      equalGeometry(GeomUtils.parseWkt("LINESTRING (0.5 0.5, 1 1)", Coordinates.SaudiArabiaUtmSrid))
   }
 
-  "JourneyViaPoint" should "build geometry from WKT" in new WithJourney {
-    journeyVp.geom should
-      equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))", Coordinates.SaudiArabiaUtmSrid))
+  it should "return its fields for printing" in new WithJourneys {
+    journey.fields should be (Array("", "", "1", "Unknown", "Unknown", "1", "1970/01/01 03:00:00",
+      "1970/01/01 03:00:00", "LINESTRING (0.5 0.5, 1 1)", "(1,1)", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "1",
+      "sa"))
+  }
+
+  it should "return the proper header" in new WithJourneys {
+    Journey.header should be (Array("imei", "imsi", "msisdn", "mcc", "mnc", "id", "startTime", "endTime", "geomWkt",
+      "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
+  }
+
+  it should "have the same number of elements in fields and header" in new WithJourneys {
+    journey.fields.size should be (Journey.header.size)
   }
 }

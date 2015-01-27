@@ -22,6 +22,7 @@ import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.poi.UserActivity
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
+import sa.com.mobily.xdr.spark.{AiCsXdrDsl, IuCsXdrDsl, UfdrPsXdrDsl}
 
 class EventCsvReader(self: RDD[String]) {
 
@@ -55,8 +56,8 @@ class EventFunctions(self: RDD[Event]) {
 
   import Event._
 
-  def byUserChronologically: RDD[(Long, List[Event])] = self.keyBy(_.user.msisdn).groupByKey.map(idEvent =>
-    (idEvent._1, idEvent._2.toList.sortBy(_.beginTime)))
+  def byUserChronologically: RDD[(User, List[Event])] = self.keyBy(_.user).groupByKey.map(userEvent =>
+    (userEvent._1, userEvent._2.toList.sortBy(_.beginTime)))
 
   def flickeringDetector(timeWindow: Long)
       (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[FlickeringCells] = {
@@ -164,4 +165,4 @@ trait EventDsl {
   implicit def eventStatistics(events: RDD[Event]): EventStatistics = new EventStatistics(events)
 }
 
-object EventDsl extends EventDsl with ParsedItemsDsl
+object EventDsl extends EventDsl with ParsedItemsDsl with UfdrPsXdrDsl with IuCsXdrDsl with AiCsXdrDsl
