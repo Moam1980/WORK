@@ -19,16 +19,16 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
     val subscriber1Msisdn = 966544312356L
     val subscriber2Msisdn = 966565366654L
     val subscriber3Msisdn = 966565366658L
-    val customerSubscriber1 = s"$subscriber1Msisdn|Saudi National ID|1016603803|3581870526733101|M|5049|3" +
+    val customerSubscriber1 = s"$subscriber1Msisdn|Saudi National ID|1016603803|3581870526733101|1234567|M|5049|3" +
       "|Saudi Arabia|KSA|Pre-Paid|Voice|39.75|Retail Customer|A|Active|Siebel|Saudi Arabia|SamsungI930000|100.050000" +
       "|A|A|S50|99.04|68.57|133.77|109.99|106.36|125.23"
-    val customerSubscriber2 = s"$subscriber2Msisdn|Saudi National ID|1022832941|3577590541074623|F|4784|7" +
+    val customerSubscriber2 = s"$subscriber2Msisdn|Saudi National ID|1022832941|3577590541074623|456789|F|4784|7" +
       "|Saudi Arabia|KSA|Post-Paid|Voice|30.25|Large Corporate|10/24/2012|OTS|MCR|Saudi Arabia|BlackBerryQ1000" +
       "|74.590000|8/1/2014|7/23/2014|S40|55.17|26.81|60.72|64.14|112.18|6.15"
-    val customerSubscriber3 = s"$subscriber3Msisdn|Saudi National ID|1022832941|3577590541074623|F|4784|7|Spain|Spain" +
-      "|Post-Paid|Data|30.25|Large Corporate|10/24/2012|OTS|MCR|Saudi Arabia|BlackBerryQ1000|74.590000|8/1/2014" +
-      "|7/23/2014|S40|55.17|26.81|60.72|64.14|112.18|6.15"
-    val customerSubscriber4 = "Invalid Value|IQAMA|2363880648||M|2302|2|Great Britain and N Ireland|" +
+    val customerSubscriber3 = s"$subscriber3Msisdn|Saudi National ID|1022832941|3577590541074623|9101112|F" +
+      "|4784|7|Spain|Spain|Post-Paid|Data|30.25|Large Corporate|10/24/2012|OTS|MCR|Saudi Arabia|BlackBerryQ1000" +
+      "|74.590000|8/1/2014|7/23/2014|S40|55.17|26.81|60.72|64.14|112.18|6.15"
+    val customerSubscriber4 = "Invalid Value|IQAMA|2363880648|||M|2302|2|Great Britain and N Ireland|" +
       "|Pre-Paid|Data|28.4166666666667|Retail Customer|5/10/2014|Active|MDM|Saudi Arabia|" +
       "|Unknown|Data|28.4166666666667|Retail Customer|5/10/2014|Active|MDM|Saudi Arabia|" +
       "SamsungGalaxyTab37.0SM-T21100|0.000000|8/1/2014||W|0|0|0|0|0|0"
@@ -40,6 +40,7 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
   }
 
   "SubscriberDsl" should "get correctly parsed data" in new WithSubscriberText {
+    val subscribers = subscriber.toSubscriber.collect
     subscriber.toSubscriber.count should be (3)
   }
 
