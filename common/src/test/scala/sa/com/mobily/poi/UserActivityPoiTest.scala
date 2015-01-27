@@ -7,7 +7,7 @@ package sa.com.mobily.poi
 import org.scalatest._
 
 import sa.com.mobily.cell.{EgBts, TwoG}
-import sa.com.mobily.geometry.UtmCoordinates
+import sa.com.mobily.geometry.{GeomUtils, UtmCoordinates}
 import sa.com.mobily.utils.LocalSparkContext
 
 class UserActivityPoiTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
@@ -40,9 +40,29 @@ class UserActivityPoiTest extends FlatSpec with ShouldMatchers with LocalSparkCo
         ("9999", 30.toShort) -> Seq())
   }
 
+  trait WithUnionGeometries extends WithGeometry {
+
+    val shapeWkt1 = "POLYGON (( 130 10, 130 14, 2 14, 2 10, 130 10 ))"
+    val shapeWkt2 = "POLYGON (( 13 14, 17 14, 17 10, 13 14 ))"
+    val shapeWkt3 = "POLYGON (( 230 0, 230 4, 2 4, 2 0, 230 0 ))"
+    val shapeWkt4 = "POLYGON (( 13 114, 17 114, 17 10, 13 114 ))"
+    val shapeWktUnion = "MULTIPOLYGON (((230 0, 2 0, 2 4, 230 4, 230 0)), ((17 14, 130 14, 130 10, 2 10, 2 14, 16.8 14, " +
+      "13 114, 17 114, 17 14)))"
+
+    val geom1 = GeomUtils.parseWkt(shapeWkt1 , coords1.srid)
+    val geom2 = GeomUtils.parseWkt(shapeWkt2 , coords1.srid)
+    val geom3 = GeomUtils.parseWkt(shapeWkt3 , coords1.srid)
+    val geom4 = GeomUtils.parseWkt(shapeWkt4 , coords1.srid)
+    val geomUnion = GeomUtils.parseWkt(shapeWktUnion , coords1.srid)
+    val geoms = Seq(geom1, geom2, geom3, geom4)
+  }
+
   "UserActivityPoi" should "find geometries" in new WithUserActivity {
     val geometries = UserActivityPoi.findGeometries(poisLocation, btsCatalogue)
-
     geometries should be(Seq(geometry1, geometry2))
+  }
+
+  "it" should "union geometries and apply the Douglas Peucker Simplifier" in new WithUnionGeometries {
+    UserActivityPoi.unionGeoms(geoms) should be (geomUnion)
   }
 }

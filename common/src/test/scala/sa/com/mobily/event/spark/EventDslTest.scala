@@ -13,7 +13,7 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{Cell, FourGTdd, Macro}
 import sa.com.mobily.cell.spark.CellDsl._
-import sa.com.mobily.event.{PsEventSource, Event}
+import sa.com.mobily.event.{Event, PsEventSource}
 import sa.com.mobily.flickering.FlickeringCells
 import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.user.User
@@ -34,6 +34,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       "5320,5332,26,26,(null),(null),,,,87,833,"
     val psEvents = sc.parallelize(List(psEventLine1, psEventLine2, psEventLine3))
   }
+
 
   trait WithSmsEventsText {
 
@@ -259,7 +260,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       beginTime = beginTime3.hourOfDay.setCopy(23).getMillis,
       endTime = beginTime3.hourOfDay.setCopy(23).getMillis)
     val event6 = event1.copy(
-      user = User("", "", 1L),
+      user = User("", "1", 0L),
       beginTime = beginTime4.hourOfDay.setCopy(1).getMillis,
       endTime = beginTime4.hourOfDay.setCopy(3).getMillis)
 
@@ -272,14 +273,18 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
   }
 
   trait WithWeekEventsLittleActivity extends WithWeekEvents {
-    
+
     val event7 = event1.copy(
       beginTime = beginTime2.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
       endTime = beginTime2.hourOfDay.setCopy(7).minuteOfHour.setCopy(2).getMillis)
     val event8 = event1.copy(
-      beginTime = beginTime1.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
-      endTime = beginTime1.hourOfDay.setCopy(7).minuteOfHour.setCopy(2).getMillis)
-    val eventsLowActivity = sc.parallelize(List(event7, event8, event4, event5, event6))
+      beginTime = beginTime3.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
+      endTime = beginTime3.hourOfDay.setCopy(17).minuteOfHour.setCopy(2).getMillis)
+    val event9 = event1.copy(
+      beginTime = beginTime4.hourOfDay.setCopy(0).minuteOfHour.setCopy(1).getMillis,
+      endTime = beginTime4.hourOfDay.setCopy(16).minuteOfHour.setCopy(2).getMillis)
+
+    val eventsLowActivity = sc.parallelize(List(event6, event7, event8, event9))
   }
 
   trait WithEventsByCell extends WithMatchingCells {
@@ -390,21 +395,8 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
   }
   it should "calculate the vector to home clustering correctly" in new WithWeekEvents {
     val homes = events.toUserActivity(cellCatalogue).collect
-    homes.length should be (2)
-    homes.find(_.user.msisdn == 560917079).get.activityVector should be (user560917079VectorResult)
-    homes.find(_.user.msisdn == 1).get.activityVector should be (user1VectorResult)
-  }
-
-  it should "calculate the vector to home clustering filtering little activity users" in
-    new WithWeekEventsLittleActivity {
-      val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity()(cellCatalogue).collect
-      homes.length should be (1)
-  }
-
-  it should "calculate the vector to home clustering filtering little activity users and overriding default ratio" in
-    new WithWeekEventsLittleActivity {
-      val homes = eventsLowActivity.perUserAndSiteIdFilteringLittleActivity(0.2)(cellCatalogue).collect
-      homes.length should be (0)
+    homes.length should be (3)
+    homes.find(_.user.imsi == "1").get.activityVector should be (user1VectorResult)
   }
 
   it should "group events by cell" in new WithEventsByCell {
@@ -417,14 +409,5 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
 
   it should "count events grouping it by users and cell" in new WithUsersByCell {
     events.toEventsByCellAndUser.collect.toList should be (eventsByCellAndUser)
-  }
-
-  it should "compute the average for activity vectors" in new WithWeekEventsLittleActivity {
-    eventsLowActivity.perUserAndSiteIdWithAverage()(cellCatalogue).collect.length should be (1)
-  }
-
-  it should "compute the average for activity vectors and overriding default ratio" in
-      new WithWeekEventsLittleActivity {
-    eventsLowActivity.perUserAndSiteIdWithAverage(0.2)(cellCatalogue).collect.length should be (0)
   }
 }

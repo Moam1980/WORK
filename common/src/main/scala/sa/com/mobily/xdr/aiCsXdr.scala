@@ -156,10 +156,7 @@ final case class  AiCsXdr(
 
   def toEvent: Event = {
     Event(
-      User(
-        imei = csUser.imei.getOrElse(""),
-        imsi = csUser.imsi.getOrElse(""),
-        msisdn = csUser.msisdn.getOrElse(0L)),
+      User(imei= "", imsi = csUser.imsi.getOrElse(""), msisdn = 0L),
       beginTime = EdmCoreUtils.hexToLong(aiTime.csTime.begin),
       endTime = EdmCoreUtils.hexToLong(aiTime.csTime.end),
       lacTac = aiCell.id._1.get,

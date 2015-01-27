@@ -16,6 +16,7 @@ object GeomUtils {
 
   val DefaultNumPoints = 50
   val PointInsideGeometryBufferFactor = 10
+  val SimplifyGeomTolerance = 1
 
   def geomFactory(srid: Integer, precisionModel: PrecisionModel = Coordinates.UtmPrecisionModel): GeometryFactory =
     new GeometryFactory(precisionModel, srid)

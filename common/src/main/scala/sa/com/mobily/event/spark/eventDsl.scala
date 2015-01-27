@@ -8,10 +8,9 @@ import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-import org.joda.time.{Period, DateTime}
+import org.joda.time.{DateTime, Period}
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event._
@@ -76,48 +75,25 @@ class EventFunctions(self: RDD[Event]) {
     self.filter(event => !cellCatalogue.value.isDefinedAt((event.lacTac, event.cellId)))
 
   def toUserActivity(implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
-    val byUserWeekYearRegion = withMatchingCell(cellCatalogue).flatMap(event => {
+    withMatchingCell(cellCatalogue).filter(!_.user.imsi.isEmpty).flatMap(event => {
       val beginDate = new DateTime(event.beginTime, EdmCoreUtils.TimeZoneSaudiArabia).minuteOfHour().setCopy(0)
       val endDate = new DateTime(event.endTime, EdmCoreUtils.TimeZoneSaudiArabia).minuteOfHour().setCopy(0)
+      val bts = cellCatalogue.value(event.lacTac, event.cellId).bts
       val hours = new Period(beginDate, endDate).getHours
       (0 to hours).map(hourToSum => {
         val dateToEmit = beginDate.plusHours(hourToSum)
-        val bts = cellCatalogue.value(event.lacTac, event.cellId).bts
-        ((event.user, bts, event.regionId),
-          (EdmCoreUtils.saudiDayOfWeek(dateToEmit.dayOfWeek.get), dateToEmit.hourOfDay.get))
+        ((event.user, bts, EdmCoreUtils.regionId(event.lacTac), dateToEmit.year.get.toShort,
+          EdmCoreUtils.saudiWeekOfYear(dateToEmit).toShort),
+          Set(((EdmCoreUtils.saudiDayOfWeek(dateToEmit.dayOfWeek.get) - 1) * HoursInDay) + dateToEmit.hourOfDay.get))
       })
-    }).groupByKey
-    byUserWeekYearRegion.map(keyAndActivityByWeek => {
-      val activityByWeek = keyAndActivityByWeek._2
-      val key = keyAndActivityByWeek._1
-      val activityHoursByWeek =
-        activityByWeek.map(dayHour => (((dayHour._1 - 1) * HoursInDay) + dayHour._2, 1D)).toSeq.distinct
+    }).reduceByKey(_ ++ _).map(keyActivityHours => {
+      val key = keyActivityHours._1
       UserActivity(
         user = key._1,
         siteId = key._2,
-        regionId = key._3,
-        activityVector = Vectors.sparse(HoursInWeek, activityHoursByWeek))
-    })
-  }
-
-  def perUserAndSiteIdFilteringLittleActivity(minimumActivityRatio: Double = DefaultMinActivityRatio)
-      (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
-    val minNumberOfHours = HoursInWeek * minimumActivityRatio
-    toUserActivity(cellCatalogue).filter(
-      element => element.activityVector.toArray.count(element => element == 1) > minNumberOfHours)
-  }
-
-  def perUserAndSiteIdWithAverage(minimumActivityRatio: Double = DefaultMinActivityRatio)
-      (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[UserActivity] = {
-    val perUserAndSiteIdGrouped =
-      perUserAndSiteIdFilteringLittleActivity(minimumActivityRatio)(cellCatalogue).groupBy(_.key)
-    perUserAndSiteIdGrouped.map(userAndActivity => {
-      val userVectors = userAndActivity._2.map(userActivity => userActivity.activityVector)
-      UserActivity(
-        userAndActivity._1._1,
-        userAndActivity._1._2,
-        userAndActivity._1._3,
-        UserActivity.activityAverageVector(userVectors.toSeq))
+        regionId = key._3.toShort,
+        weekHoursWithActivity = keyActivityHours._2.map((_, 1D)).toMap,
+        weekYear = Set((key._4, key._5)))
     })
   }
 }

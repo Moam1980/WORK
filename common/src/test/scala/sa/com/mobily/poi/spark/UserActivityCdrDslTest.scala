@@ -146,27 +146,8 @@ class UserActivityCdrDslTest extends FlatSpec with ShouldMatchers with LocalSpar
   }
 
   it should "calculate the vector to home clustering correctly" in new WithWeekUserActivityCdrs {
-    val homes = userActivityCdrs.perUserAndSiteId.collect
+    val homes = userActivityCdrs.toUserActivity.collect
     homes.length should be (2)
     homes.tail.head.activityVector should be (vectorResult)
-  }
-
-  it should "calculate the vector to home clustering filtering little activity users" in
-    new WithWeekUserActivityCdrLittleActivity {
-      val homes = userActivitiesCdrs.perUserAndSiteIdFilteringLittleActivity().collect
-      homes.length should be (1)
-  }
-
-  it should "calculate the vector to home clustering filtering little activity users and overriding default ratio" in
-    new WithWeekUserActivityCdrLittleActivity {
-      val homes = userActivitiesCdrs.perUserAndSiteIdFilteringLittleActivity(0.2).collect
-      homes.length should be (0)
-  }
-
-  it should "compute the average for activity vector of several weeks per user" in new WithSeveralWeeksUserActivityCdr {
-    val activities = userActivitiesCdr.perUserAndSiteIdWithAverage(0).collect
-    activities.length should be (2)
-    activities.head.activityVector.toArray should be (expectedUser2AverageVector.toArray)
-    activities.tail.head.activityVector.toArray should be (expectedUser1AverageVector.toArray)
   }
 }
