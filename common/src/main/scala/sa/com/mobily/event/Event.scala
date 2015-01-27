@@ -49,8 +49,6 @@ case class Event(
 
   def minSpeedPopulated: Boolean = inSpeed.isDefined && outSpeed.isDefined && minSpeedPointWkt.isDefined
 
-  lazy val regionId: Short = lacTac.toString.head.toShort
-
   def fields: Array[String] =
     user.fields ++ Array(beginTime.toString, endTime.toString, lacTac.toString, cellId.toString, source.id,
       eventType.getOrElse(""), subsequentLacTac.getOrElse("").toString, subsequentCellId.getOrElse("").toString,
@@ -61,7 +59,6 @@ object Event {
 
   val HoursInWeek = 168
   val HoursInDay = 24
-  val DefaultMinActivityRatio = 0.1
   val LineCsvParserObject = new OpenCsvParser(separator = ',', quote = '"')
 
   val DateFormatter: DateTimeFormatter =

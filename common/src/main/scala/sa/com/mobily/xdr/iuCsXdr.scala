@@ -150,10 +150,7 @@ case class IuCsXdr(
 
   def toEvent: Event = {
     Event(
-      User(
-        imei = user.imei.getOrElse(""),
-        imsi = user.imsi.getOrElse(""),
-        msisdn = user.msisdn.getOrElse(0L)),
+      User(imei = "", imsi = user.imsi.getOrElse(""), msisdn = 0L),
       beginTime = EdmCoreUtils.hexToLong(time.csTime.begin),
       endTime = EdmCoreUtils.hexToLong(time.csTime.end),
       lacTac = cell.id._1.get,

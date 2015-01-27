@@ -160,4 +160,6 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
     val weekOfYear = date.weekOfWeekyear.get
     if (date.dayOfWeek.get == LastDayOfWeekIndex) weekOfYear + 1 else weekOfYear
   }
+
+  def regionId(lac: Int): String = lac.toString.substring(0, 1)
 }

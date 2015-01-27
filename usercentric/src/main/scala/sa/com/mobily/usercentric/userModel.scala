@@ -28,13 +28,13 @@ trait CellsGeometry {
     val candidate = remainingGeoms.foldLeft(firstGeom)((accumGeom, cellGeom) =>
       Try { accumGeom.intersection(cellGeom) }.toOption.getOrElse(accumGeom))
     val simplifiedCandidate = firstGeom.getFactory.buildGeometry(PolygonExtracter.getPolygons(
-      DouglasPeuckerSimplifier.simplify(candidate, UserModel.SimplifyGeomTolerance)))
+      DouglasPeuckerSimplifier.simplify(candidate, GeomUtils.SimplifyGeomTolerance)))
     if (simplifiedCandidate.isValid && !simplifiedCandidate.isEmpty) simplifiedCandidate
     else {
       val unionCandidate = remainingGeoms.foldLeft(firstGeom)((accumGeom, cellGeom) =>
         Try { accumGeom.union(cellGeom) }.toOption.getOrElse(accumGeom))
       firstGeom.getFactory.buildGeometry(PolygonExtracter.getPolygons(
-        DouglasPeuckerSimplifier.simplify(unionCandidate, UserModel.SimplifyGeomTolerance)))
+        DouglasPeuckerSimplifier.simplify(unionCandidate, GeomUtils.SimplifyGeomTolerance)))
     }
   }
 }
@@ -48,8 +48,6 @@ trait CountryGeometry {
 }
 
 object UserModel {
-
-  val SimplifyGeomTolerance = 1
 
   @tailrec
   def aggTemporalOverlapAndSameCell(

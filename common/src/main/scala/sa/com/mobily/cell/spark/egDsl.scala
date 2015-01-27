@@ -13,6 +13,7 @@ import org.apache.spark.rdd.RDD
 import sa.com.mobily.cell.{EgBts, EgCell}
 import sa.com.mobily.parsing.{ParsingError, ParsedItem}
 import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
+import sa.com.mobily.utils.EdmCoreUtils
 
 class EgCellReader(self: RDD[String]) {
 
@@ -43,9 +44,9 @@ class EgBtsReader(self: RDD[String]) {
 
 class EgBtsFunctions(self: RDD[EgBts]) {
 
-  def toBroadcastMapWithRegion: Broadcast[Map[(String, Short), Iterable[EgBts]]] =
+  def toBroadcastMapWithRegion: Broadcast[Map[(String, String), Iterable[EgBts]]] =
     self.sparkContext.broadcast(
-      self.keyBy(b => (b.bts, b.lac.toString.substring(0, 1).toShort)).groupByKey.collect.toMap)
+      self.keyBy(b => (b.bts, EdmCoreUtils.regionId(b.lac))).groupByKey.collect.toMap)
 }
 
 trait EgBtsDsl {

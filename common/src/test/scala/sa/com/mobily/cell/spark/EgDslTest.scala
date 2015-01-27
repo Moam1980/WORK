@@ -113,7 +113,7 @@ class EgDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
   it should "broadcast the BTS with (bts, regionId) as key" in new WithEgBts {
     val egBtsMap = egBts.toBroadcastMapWithRegion.value
     egBtsMap.size should be (2)
-    egBtsMap(("2181", 2)) should be (Iterable(egBts1))
-    egBtsMap(("2183", 3)) should be (Iterable(egBts2, egBts3))
+    egBtsMap(("2181", "2")) should be (Iterable(egBts1))
+    egBtsMap(("2183", "3")) should be (Iterable(egBts2, egBts3))
   }
 }

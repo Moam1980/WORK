@@ -53,7 +53,7 @@ class UserActivityCdrTest extends FlatSpec with ShouldMatchers with LocalSparkCo
         Seq(1, 2, 3))
 
     val userActivitiesCdr = sc.parallelize(List(userActivity1, userActivitity2, userActivity3))
-    val userActivitiesCdrVector = userActivitiesCdr.perUserAndSiteId.map(element => element.activityVector)
+    val userActivitiesCdrVector = userActivitiesCdr.toUserActivity.map(element => element.activityVector)
     val expectedClusterNumberAndCost = Vector((1,1.9999999999999991),(2,0),(3,0))
 
     def withTemporaryDirectory(testFunction: Directory => Any) {
