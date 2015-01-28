@@ -80,8 +80,14 @@ echo 1>&2 "    propertiesFile: ${propertiesFile}"
 # Initialize parameters and functions
 . ${BASE_DIR}/functions.sh
 
+# Check if it is a bulk operation to push to Hadoop
+pushHadoopOption=""
+if [[ ${command} == *bulkDownload* ]]; then
+    pushHadoopOption="-h"
+fi
+
 # Run pull data sftp cs catchup from landing server
-ssh ${user}@${server} "${command} -s \"${startDate}\" -e \"${endDate}\" -p  \"${propertiesFile}\""
+ssh ${user}@${server} "${command} -s \"${startDate}\" -e \"${endDate}\" -p  \"${propertiesFile}\" ${pushHadoopOption}"
 
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
