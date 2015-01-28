@@ -6,6 +6,7 @@ package sa.com.mobily.usercentric
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.geometry.GeomUtils
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -54,4 +55,27 @@ object Dwell {
     User.header ++
       Array("startTime", "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents",
         "countryIsoCode")
+
+  final val lineCsvParserObject = new OpenCsvParser
+
+  implicit val fromCsv = new CsvParser[Dwell] {
+
+    override def lineCsvParser: OpenCsvParser = lineCsvParserObject
+
+    override def fromFields(fields: Array[String]): Dwell = {
+      val Array(imei, imsi, msisdn, startTime, endTime, geomWkt, cells, firstEventBeginTime, lastEventEndTime,
+        numEvents, countryIsoCode) = fields
+
+      Dwell(
+        user = User(imei = imei, imsi = imsi, msisdn = msisdn.toLong),
+        startTime = EdmCoreUtils.fmt.parseDateTime(startTime).getMillis,
+        endTime = EdmCoreUtils.fmt.parseDateTime(endTime).getMillis,
+        geomWkt = geomWkt,
+        cells = Cell.parseCellTuples(cells),
+        firstEventBeginTime = EdmCoreUtils.fmt.parseDateTime(firstEventBeginTime).getMillis,
+        lastEventEndTime = EdmCoreUtils.fmt.parseDateTime(lastEventEndTime).getMillis,
+        numEvents = numEvents.toLong,
+        countryIsoCode = countryIsoCode)
+    }
+  }
 }

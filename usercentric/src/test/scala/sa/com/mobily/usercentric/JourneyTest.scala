@@ -11,10 +11,13 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
+import sa.com.mobily.parsing.CsvParser
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.{EdmCustomMatchers, LocalSparkContext}
+import sa.com.mobily.utils.EdmCustomMatchers
 
-class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers with LocalSparkContext {
+class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
+
+  import Journey._
 
   trait WithEvents {
 
@@ -148,6 +151,22 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
   }
 
   trait WithJourneys {
+
+    val journeyLine = "|420032153783846|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)||1970/01/01 03:00:00|1970/01/01 03:00:01|3|sa"
+    val journeyFields = Array("", "420032153783846", "0", "0", "1970/01/01 03:00:00", "1970/01/01 03:00:01",
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", "", "1970/01/01 03:00:00", "1970/01/01 03:00:01", "3",
+      "sa")
+    val journeyRead = Journey(
+      user = User("", "420032153783846", 0),
+      id = 0,
+      startTime = 0,
+      endTime = 1000,
+      geomWkt = "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)",
+      cells = Set(),
+      firstEventBeginTime = 0,
+      lastEventEndTime = 1000,
+      numEvents = 3)
 
     val journey = Journey(
       user = User("", "", 1),
@@ -311,17 +330,24 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers wi
   }
 
   it should "return its fields for printing" in new WithJourneys {
-    journey.fields should be (Array("", "", "1", "Unknown", "Unknown", "1", "1970/01/01 03:00:00",
-      "1970/01/01 03:00:00", "LINESTRING (0.5 0.5, 1 1)", "(1,1)", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "1",
-      "sa"))
+    journey.fields should be (Array("", "", "1", "1", "1970/01/01 03:00:00", "1970/01/01 03:00:00",
+      "LINESTRING (0.5 0.5, 1 1)", "(1,1)", "1970/01/01 03:00:00", "1970/01/01 03:00:00", "1", "sa"))
   }
 
   it should "return the proper header" in new WithJourneys {
-    Journey.header should be (Array("imei", "imsi", "msisdn", "mcc", "mnc", "id", "startTime", "endTime", "geomWkt",
-      "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
+    Journey.header should be (Array("imei", "imsi", "msisdn", "id", "startTime", "endTime", "geomWkt", "cells",
+      "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
   }
 
   it should "have the same number of elements in fields and header" in new WithJourneys {
     journey.fields.size should be (Journey.header.size)
+  }
+
+  it should "be built from CSV" in new WithJourneys {
+    CsvParser.fromLine(journeyLine).value.get should be (journeyRead)
+  }
+
+  it should "be discarded when the CSV format is wrong" in new WithJourneys {
+    an [Exception] should be thrownBy fromCsv.fromFields(journeyFields.updated(4, "NotValidTime"))
   }
 }

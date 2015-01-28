@@ -14,8 +14,43 @@ import sa.com.mobily.cell.Cell
 import sa.com.mobily.cell.spark.CellDsl
 import sa.com.mobily.event.Event
 import sa.com.mobily.event.spark.EventDsl
+import sa.com.mobily.parsing.{ParsedItem, ParsingError}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric._
+
+class DwellReader(self: RDD[String]) {
+
+  import ParsedItemsDsl._
+
+  def toParsedDwell: RDD[ParsedItem[Dwell]] = SparkParser.fromCsv[Dwell](self)
+
+  def toDwell: RDD[Dwell] = toParsedDwell.values
+
+  def toDwellErrors: RDD[ParsingError] = toParsedDwell.errors
+}
+
+class JourneyReader(self: RDD[String]) {
+
+  import ParsedItemsDsl._
+
+  def toParsedJourney: RDD[ParsedItem[Journey]] = SparkParser.fromCsv[Journey](self)
+
+  def toJourney: RDD[Journey] = toParsedJourney.values
+
+  def toJourneyErrors: RDD[ParsingError] = toParsedJourney.errors
+}
+
+class JourneyViaPointReader(self: RDD[String]) {
+
+  import ParsedItemsDsl._
+
+  def toParsedJourneyViaPoint: RDD[ParsedItem[JourneyViaPoint]] = SparkParser.fromCsv[JourneyViaPoint](self)
+
+  def toJourneyViaPoint: RDD[JourneyViaPoint] = toParsedJourneyViaPoint.values
+
+  def toJourneyViaPointErrors: RDD[ParsingError] = toParsedJourneyViaPoint.errors
+}
 
 class UserModelEventFunctions(userEventsWithMatchingCell: RDD[(User, List[Event])]) {
 
@@ -50,6 +85,12 @@ trait UserModelDsl {
 
   implicit def userModelSlotFunctions(userSlots: RDD[(User, List[SpatioTemporalSlot])]): UserModelSlotFunctions =
     new UserModelSlotFunctions(userSlots)
+
+  implicit def dwellReader(csv: RDD[String]): DwellReader = new DwellReader(csv)
+
+  implicit def journeyReader(csv: RDD[String]): JourneyReader = new JourneyReader(csv)
+
+  implicit def journeyViaPointReader(csv: RDD[String]): JourneyViaPointReader = new JourneyViaPointReader(csv)
 }
 
 object UserModelDsl extends UserModelDsl with JourneyDsl with EventDsl with CellDsl

@@ -59,7 +59,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
       imei = "357940040696441",
       imsi = "420034103554735",
       msisdn = 200912053883L)
-    val userArray = Array("357940040696441", "420034103554735", "200912053883", "420", "03")
+    val userArray = Array("357940040696441", "420034103554735", "200912053883")
 
     val ufdrCell = UfdrPSXdrCell(
       rat = Null,
@@ -118,7 +118,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
 
     val cellHeader = Array("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
     val cellIdentifierHeader = Array("LacTac", "SacEci")
-    val userHeader = Array("imei", "imsi", "msisdn", "mcc", "mnc")
+    val userHeader = Array("imei", "imsi", "msisdn")
     val transferStatsHeader = Array(
       "l4UlThroughput",
       "l4DwThroughput",

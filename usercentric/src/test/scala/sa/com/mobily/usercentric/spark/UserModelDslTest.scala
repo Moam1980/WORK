@@ -211,6 +211,34 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val slots = sc.parallelize(Array((User("", "", 1L), List(slot1, slotJvp1, slotJvp2, slot2, slot3))))
   }
 
+  trait WithUserModelText {
+
+    val dwellLine1 = "|420032153783846|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(2,4);(2,6)|1970/01/01 03:00:00|1970/01/01 03:00:01|4|sa"
+    val dwellLine2 = "|420032153783846|0|Not Valid!|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(2,4);(2,6)|1970/01/01 03:00:00|1970/01/01 03:00:01|4|sa"
+    val dwellLine3 = "|3|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 30, 30 30, 30 0, 0 0))|(2,4);(2,6)|1970/01/01 03:00:00|1970/01/01 03:00:01|4|sa"
+
+    val journeyLine1 = "|420032153783846|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)||1970/01/01 03:00:00|1970/01/01 03:00:01|3|sa"
+    val journeyLine2 = "|420032153783846|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)||Not Valid!|1970/01/01 03:00:01|3|sa"
+    val journeyLine3 = "|3|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)||1970/01/01 03:00:00|1970/01/01 03:00:01|3|sa"
+
+    val jvpLine1 = "|420032181160624|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(1202,12751)|1970/01/01 03:00:00|1970/01/01 03:00:01|1|sa"
+    val jvpLine2 = "|420032181160624|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(1202,12751)|Not Valid !|1970/01/01 03:00:01|1|sa"
+    val jvpLine3 = "|18|0|0|1970/01/01 03:00:00|1970/01/01 03:00:01|" +
+      "POLYGON ((0 0, 0 80, 80 80, 80 0, 0 0))|(1202,12751)|1970/01/01 03:00:00|1970/01/01 03:00:01|1|sa"
+
+    val dwells = sc.parallelize(List(dwellLine1, dwellLine2, dwellLine3))
+    val journeys = sc.parallelize(List(journeyLine1, journeyLine2, journeyLine3))
+    val jvps = sc.parallelize(List(jvpLine1, jvpLine2, jvpLine3))
+  }
+
   "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell " +
     "(or overlapping in time)" in new WithSpatioTemporalSlots with WithCellCatalogue {
       events.byUserChronologically.aggTemporalOverlapAndSameCell.first._2.size should be (4)
@@ -234,5 +262,41 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     model._1.size should be (3)
     model._2.size should be (2)
     model._3.size should be (2)
+  }
+
+  it should "get correctly parsed dwells" in new WithUserModelText {
+    dwells.toDwell.count should be (2)
+  }
+
+  it should "get errors when parsing dwells" in new WithUserModelText {
+    dwells.toDwellErrors.count should be (1)
+  }
+
+  it should "get both correctly and wrongly parsed dwells" in new WithUserModelText {
+    dwells.toParsedDwell.count should be (3)
+  }
+
+  it should "get correctly parsed journeys" in new WithUserModelText {
+    journeys.toJourney.count should be (2)
+  }
+
+  it should "get errors when parsing journeys" in new WithUserModelText {
+    journeys.toJourneyErrors.count should be (1)
+  }
+
+  it should "get both correctly and wrongly parsed journeys" in new WithUserModelText {
+    journeys.toParsedJourney.count should be (3)
+  }
+
+  it should "get correctly parsed journey via points" in new WithUserModelText {
+    jvps.toJourneyViaPoint.count should be (2)
+  }
+
+  it should "get errors when parsing journey via points" in new WithUserModelText {
+    jvps.toJourneyViaPointErrors.count should be (1)
+  }
+
+  it should "get both correctly and wrongly parsed journey via points" in new WithUserModelText {
+    jvps.toParsedJourneyViaPoint.count should be (3)
   }
 }

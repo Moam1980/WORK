@@ -39,10 +39,10 @@ class EventTest extends FlatSpec with ShouldMatchers with LocalSparkContext with
       1404162126000L, 1404162610000L, 0x052C, 13067, Row(PsEventSource.id), "859", 0, 0, None, None, None)
     val eventWithMinSpeed = event.copy(inSpeed = Some(0), outSpeed = Some(0), minSpeedPointWkt = Some("POINT (0 0)"))
 
-    val eventHeader = Array("imei", "imsi", "msisdn", "mcc", "mnc", "beginTime", "endTime", "lacTac", "cellId",
-      "source", "eventType", "subsequentLacTac", "subsequentCellId", "inSpeed", "outSpeed", "minSpeedPointWkt")
-    val eventFields = Array("866173010386736", "420034122616618", "560917079", "420", "03",
-      "1404162126000", "1404162610000", "1324", "13067", "PS.Event", "859", "0", "0", "", "", "")
+    val eventHeader = Array("imei", "imsi", "msisdn", "beginTime", "endTime", "lacTac", "cellId", "source", "eventType",
+      "subsequentLacTac", "subsequentCellId", "inSpeed", "outSpeed", "minSpeedPointWkt")
+    val eventFields = Array("866173010386736", "420034122616618", "560917079", "1404162126000", "1404162610000", "1324",
+      "13067", "PS.Event", "859", "0", "0", "", "", "")
   }
 
   trait WithEventsDifferentSources {
