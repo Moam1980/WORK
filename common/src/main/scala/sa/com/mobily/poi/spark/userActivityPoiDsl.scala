@@ -18,15 +18,15 @@ import sa.com.mobily.user.User
 
 class UserActivityPoiFunctions(self: RDD[UserActivity]) {
 
-  def pois(model: KMeansModel, centroidMapping: Map[Int, PoiType]): RDD[((User, String, Short), PoiType)] =
+  def pois(model: KMeansModel, centroidMapping: Map[Int, PoiType]): RDD[((User, String, String), PoiType)] =
     self.map(userActivity =>
-      ((userActivity.user, userActivity.siteId, userActivity.regionId),
+      ((userActivity.user, userActivity.siteId, userActivity.regionId.toString),
         centroidMapping(model.predict(userActivity.activityVector))))
 
   def userPois(implicit model: KMeansModel, centroidMapping: Map[Int, PoiType]):
-      RDD[(User, Seq[(PoiType, Iterable[(String, Short)])])] = {
+      RDD[(User, Seq[(PoiType, Iterable[(String, String)])])] = {
     val poisPerUser = pois(model, centroidMapping).map(usrBtsPoi =>
-      (usrBtsPoi._1._1, (usrBtsPoi._2, (usrBtsPoi._1._2, usrBtsPoi._1._3.toShort)))).groupByKey
+      (usrBtsPoi._1._1, (usrBtsPoi._2, (usrBtsPoi._1._2, usrBtsPoi._1._3)))).groupByKey
     poisPerUser.map(userPoiBts => {
       val user = userPoiBts._1
       val pois = userPoiBts._2.groupBy(_._1).mapValues(_.map(_._2)).toSeq
@@ -37,7 +37,7 @@ class UserActivityPoiFunctions(self: RDD[UserActivity]) {
   def userPoisWithGeoms(
       implicit model: KMeansModel,
       centroidMapping: Map[Int, PoiType],
-      btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(User, PoiType, Iterable[Geometry])] = {
+      btsCatalogue: Broadcast[Map[(String, String), Iterable[EgBts]]]): RDD[(User, PoiType, Iterable[Geometry])] = {
     for (userPois <- userPois(model, centroidMapping); poi <- userPois._2)
     yield (userPois._1, poi._1, UserActivityPoi.findGeometries(poi._2, btsCatalogue.value))
   }
@@ -45,7 +45,7 @@ class UserActivityPoiFunctions(self: RDD[UserActivity]) {
   def userPoisWithAggregatedGeoms(
       implicit model: KMeansModel,
       centroidMapping: Map[Int, PoiType],
-      btsCatalogue: Broadcast[Map[(String, Short), Iterable[EgBts]]]): RDD[(User, PoiType, Geometry)] = {
+      btsCatalogue: Broadcast[Map[(String, String), Iterable[EgBts]]]): RDD[(User, PoiType, Geometry)] = {
     userPoisWithGeoms(model, centroidMapping, btsCatalogue).map(userPoi =>
       (userPoi._1, userPoi._2, UserActivityPoi.unionGeoms(userPoi._3)))
   }

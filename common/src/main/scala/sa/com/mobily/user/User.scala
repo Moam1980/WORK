@@ -37,6 +37,8 @@ case class User(
     User.PrimeNumber * (User.PrimeNumber * (User.PrimeNumber + imei.hashCode) + imsi.hashCode) + msisdn.hashCode
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[User]
+
+  def userByImsi: User = this.copy(imei = "", msisdn = 0L)
 }
 
 object User {

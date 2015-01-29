@@ -28,8 +28,8 @@ class UserActivityPoiTest extends FlatSpec with ShouldMatchers with LocalSparkCo
 
     val firstUserSiteId = "2541"
     val secondUserSiteId = "2566"
-    val firstUserRegionId = 10.toShort
-    val secondUserRegionId = 20.toShort
+    val firstUserRegionId = "1"
+    val secondUserRegionId = "2"
     val poiLocation1 = (firstUserSiteId, firstUserRegionId)
     val poiLocation2 = (secondUserSiteId, secondUserRegionId)
     val poisLocation = Seq(poiLocation1, poiLocation2)
@@ -37,7 +37,7 @@ class UserActivityPoiTest extends FlatSpec with ShouldMatchers with LocalSparkCo
       Map(
         (firstUserSiteId, firstUserRegionId) -> Seq(egBts1),
         (secondUserSiteId, secondUserRegionId) -> Seq(egBts2),
-        ("9999", 30.toShort) -> Seq())
+        ("9999", "3") -> Seq())
   }
 
   trait WithUnionGeometries extends WithGeometry {
