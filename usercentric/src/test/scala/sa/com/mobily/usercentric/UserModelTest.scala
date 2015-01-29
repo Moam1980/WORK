@@ -217,13 +217,13 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       startTime = 2,
       endTime = 10,
       geomWkt = "LINESTRING (5 25, 25 5)",
-      cells = Set(),
+      cells = Seq(),
       firstEventBeginTime = 2,
       lastEventEndTime = 10,
       numEvents = 0)
     val journey1To2 = journey1To2NoVp.copy(
       geomWkt = "LINESTRING (5 25, 5 5, 10 5, 25 5)",
-      cells = Set((1, 2), (1, 3)),
+      cells = Seq((1, 2), (1, 3)),
       firstEventBeginTime = 2,
       lastEventEndTime = 6,
       numEvents = 6)

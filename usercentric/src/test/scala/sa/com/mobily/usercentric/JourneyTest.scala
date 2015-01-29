@@ -6,6 +6,7 @@ package sa.com.mobily.usercentric
 
 import com.vividsolutions.jts.geom.Coordinate
 import com.vividsolutions.jts.operation.distance.DistanceOp
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
@@ -127,7 +128,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       startTime = 10,
       endTime = 15,
       geomWkt = "POLYGON (( 30 40, 70 40, 70 0, 30 0, 30 40 ))",
-      cells = Set((1, 51)),
+      cells = Seq((1, 51)),
       firstEventBeginTime = 13,
       lastEventEndTime = 14,
       numEvents = 1)
@@ -135,7 +136,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       startTime = 15,
       endTime = 20,
       geomWkt = "POLYGON (( 20 30, 20 50, 40 50, 40 30, 20 30 ))",
-      cells = Set((1, 52)),
+      cells = Seq((1, 52)),
       firstEventBeginTime = 17,
       lastEventEndTime = 19,
       numEvents = 1)
@@ -157,13 +158,20 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
     val journeyFields = Array("", "420032153783846", "0", "0", "1970/01/01 03:00:00", "1970/01/01 03:00:01",
       "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", "", "1970/01/01 03:00:00", "1970/01/01 03:00:01", "3",
       "sa")
+    val journeyRow = Row(Row("", "420032153783846", 0L), 0, 0L, 1000L,
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", Row(Row(2, 4), Row(2, 6)), 0L, 1000L, 3L, "sa")
+    val journeyRowNoCells = Row(Row("", "420032153783846", 0L), 0, 0L, 1000L,
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", Row(), 0L, 1000L, 3L, "sa")
+    val journeyWrongRow = Row(Row("", "420032153783846", 0L), 0, 0L, 1000L,
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", Row("3"), 0L, 1000L, 3L, "sa")
+
     val journeyRead = Journey(
       user = User("", "420032153783846", 0),
       id = 0,
       startTime = 0,
       endTime = 1000,
       geomWkt = "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)",
-      cells = Set(),
+      cells = Seq(),
       firstEventBeginTime = 0,
       lastEventEndTime = 1000,
       numEvents = 3)
@@ -174,7 +182,7 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       startTime = 1,
       endTime = 10,
       geomWkt = "LINESTRING (0.5 0.5, 1 1)",
-      cells = Set((1, 1)),
+      cells = Seq((1, 1)),
       firstEventBeginTime = 3,
       lastEventEndTime = 8,
       numEvents = 1)
@@ -184,13 +192,13 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       startTime = 10,
       endTime = 20,
       geomWkt = "LINESTRING (10 20, 50 20, 30 40, 10 65)",
-      cells = Set((1, 51), (1, 52)),
+      cells = Seq((1, 51), (1, 52)),
       firstEventBeginTime = 13,
       lastEventEndTime = 19,
       numEvents = 2)
     val builtJourneyNoVp = builtJourney.copy(
       geomWkt = "LINESTRING (10 20, 10 65)",
-      cells = Set(),
+      cells = Seq(),
       firstEventBeginTime = 10,
       lastEventEndTime = 20,
       numEvents = 0)
@@ -349,5 +357,17 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
 
   it should "be discarded when the CSV format is wrong" in new WithJourneys {
     an [Exception] should be thrownBy fromCsv.fromFields(journeyFields.updated(4, "NotValidTime"))
+  }
+
+  it should "be built from Row (with several cells)" in new WithJourneys {
+    fromRow.fromRow(journeyRow) should be (journeyRead.copy(cells = Seq((2, 4), (2, 6))))
+  }
+
+  it should "be built from Row (with no cells)" in new WithJourneys {
+    fromRow.fromRow(journeyRowNoCells) should be (journeyRead)
+  }
+
+  it should "be discarded when row is wrong" in new WithJourneys {
+    an[Exception] should be thrownBy fromRow.fromRow(journeyWrongRow)
   }
 }

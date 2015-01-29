@@ -4,6 +4,7 @@
 
 package sa.com.mobily.usercentric
 
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{ShouldMatchers, FlatSpec}
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
@@ -45,12 +46,18 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))|(2,4);(2,6)|1970/01/01 03:00:00|1970/01/01 03:00:01|4|sa"
     val dwellFields = Array("", "420032153783846", "0", "1970/01/01 03:00:00", "1970/01/01 03:00:01",
       "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(2,4);(2,6)", "1970/01/01 03:00:00", "1970/01/01 03:00:01", "4", "sa")
+    val dwellRow = Row(Row("", "420032153783846", 0L), 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row(Row(2, 4), Row(2, 6)), 0L, 1000L, 4L, "sa")
+    val dwellRowNoCells = Row(Row("", "420032153783846", 0L), 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row(), 0L, 1000L, 4L, "sa")
+    val dwellWrongRow = Row(Row("", "420032153783846", 0L), 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row("3"), 0L, 1000L, 4L, "sa")
     val dwellRead = Dwell(
       user = User("", "420032153783846", 0),
       startTime = 0,
       endTime = 1000,
       geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
-      cells = Set((2, 4), (2, 6)),
+      cells = Seq((2, 4), (2, 6)),
       firstEventBeginTime = 0,
       lastEventEndTime = 1000,
       numEvents = 4)
@@ -60,7 +67,7 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       startTime = 1,
       endTime = 10,
       geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
-      cells = Set((2, 4), (2, 6)),
+      cells = Seq((2, 4), (2, 6)),
       firstEventBeginTime = 3,
       lastEventEndTime = 9,
       numEvents = 2)
@@ -96,5 +103,17 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
 
   it should "be discarded when the CSV format is wrong" in new WithDwell {
     an [Exception] should be thrownBy fromCsv.fromFields(dwellFields.updated(4, "NotValidTime"))
+  }
+
+  it should "be built from Row (with several cells)" in new WithDwell {
+    fromRow.fromRow(dwellRow) should be (dwellRead)
+  }
+
+  it should "be built from Row (with no cells)" in new WithDwell {
+    fromRow.fromRow(dwellRowNoCells) should be (dwellRead.copy(cells = Seq()))
+  }
+
+  it should "be discarded when row is wrong" in new WithDwell {
+    an[Exception] should be thrownBy fromRow.fromRow(dwellWrongRow)
   }
 }

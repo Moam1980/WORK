@@ -5,14 +5,16 @@
 package sa.com.mobily.usercentric
 
 import scala.annotation.tailrec
+import scala.language.existentials
 
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.operation.distance.DistanceOp
+import org.apache.spark.sql._
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
-import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -23,7 +25,7 @@ case class Journey(
     startTime: Long,
     endTime: Long,
     geomWkt: String,
-    cells: Set[(Int, Int)],
+    cells: Seq[(Int, Int)],
     firstEventBeginTime: Long,
     lastEventEndTime: Long,
     numEvents: Long,
@@ -61,7 +63,7 @@ object Journey {
       startTime = orig.endTime,
       endTime = dest.startTime,
       geomWkt = journeyGeometry(orig, dest, viaPoints),
-      cells = viaPoints.flatMap(_.cells).toSet,
+      cells = viaPoints.flatMap(_.cells).toSet.toSeq,
       firstEventBeginTime = viaPoints.headOption.map(_.firstEventBeginTime).getOrElse(orig.endTime),
       lastEventEndTime = viaPoints.lastOption.map(_.lastEventEndTime).getOrElse(dest.startTime),
       numEvents = viaPoints.map(_.numEvents).sum,
@@ -187,6 +189,27 @@ object Journey {
         lastEventEndTime = EdmCoreUtils.fmt.parseDateTime(lastEventEndTime).getMillis,
         numEvents = numEvents.toLong,
         countryIsoCode = countryIsoCode)
+    }
+  }
+
+  implicit val fromRow = new RowParser[Journey] {
+
+    override def fromRow(row: Row): Journey = {
+      val Seq(Seq(imei, imsi, msisdn), id, startTime, endTime, geomWkt, cells, firstEventBeginTime, lastEventEndTime,
+      numEvents, countryIsoCode) = row.toSeq
+
+      Journey(
+        user =
+          User(imei = imei.asInstanceOf[String], imsi = imsi.asInstanceOf[String], msisdn = msisdn.asInstanceOf[Long]),
+        id = id.asInstanceOf[Int],
+        startTime = startTime.asInstanceOf[Long],
+        endTime = endTime.asInstanceOf[Long],
+        geomWkt = geomWkt.asInstanceOf[String],
+        cells = cells.asInstanceOf[Seq[Seq[Int]]].map { case Seq(first: Int, second: Int) => (first, second) },
+        firstEventBeginTime = firstEventBeginTime.asInstanceOf[Long],
+        lastEventEndTime = lastEventEndTime.asInstanceOf[Long],
+        numEvents = numEvents.asInstanceOf[Long],
+        countryIsoCode = countryIsoCode.asInstanceOf[String])
     }
   }
 }
