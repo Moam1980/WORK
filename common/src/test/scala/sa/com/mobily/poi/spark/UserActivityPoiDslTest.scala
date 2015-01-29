@@ -25,8 +25,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val secondUserMsisdn = 2L
     val firstUserSiteId = "2541"
     val secondUserSiteId = "2566"
-    val firstUserRegionId = 10.toShort
-    val secondUserRegionId = 20.toShort
+    val firstUserRegionId = 1.toShort
+    val secondUserRegionId = 2.toShort
     val userActivityCdr1 =
       UserActivityCdr(
         User("", "", firstUserMsisdn),
@@ -77,8 +77,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       "42003000576539", TwoG, "17", "Macro", 535.49793639, 681.54282813)
     val btsCatalogue =
       Map(
-        (firstUserSiteId, firstUserRegionId) -> Iterable(egBts1, egBts2),
-        (secondUserSiteId, secondUserRegionId) -> Iterable(egBts2))
+        (firstUserSiteId, firstUserRegionId.toString) -> Iterable(egBts1, egBts2),
+        (secondUserSiteId, secondUserRegionId.toString) -> Iterable(egBts2))
   }
 
   trait WithUserActivity extends WithUserActivityCdr with WithBtsCatalogue {
@@ -137,21 +137,24 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val userActivityPoisList = pois.collect.toList
 
     userActivityPoisList.length should be(4)
-    userActivityPoisList should contain((User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId), Work)
-    userActivityPoisList should contain((User("", "", secondUserMsisdn), secondUserSiteId, secondUserRegionId), Home)
-    userActivityPoisList should contain((User("", "", firstUserMsisdn), secondUserSiteId, secondUserRegionId), Home)
+    userActivityPoisList should contain(
+      (User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId.toString), Work)
+    userActivityPoisList should contain(
+      (User("", "", secondUserMsisdn), secondUserSiteId, secondUserRegionId.toString), Home)
+    userActivityPoisList should contain(
+      (User("", "", firstUserMsisdn), secondUserSiteId, secondUserRegionId.toString), Home)
   }
 
   it should "group the pois by user" in new WithUserActivity {
     val userPoisList = userPois.collect.toSeq
 
     userPoisList.length should be(2)
-    userPoisList(0) should be((User("", "", firstUserMsisdn),
-      List((Home, List((secondUserSiteId, secondUserRegionId))),
-        (Work, List((firstUserSiteId, firstUserRegionId), (firstUserSiteId, firstUserRegionId))))))
-    userPoisList(1) should be(
+    userPoisList should contain ((User("", "", firstUserMsisdn),
+      List((Home, List((secondUserSiteId, secondUserRegionId.toString))),
+        (Work, List((firstUserSiteId, firstUserRegionId.toString), (firstUserSiteId, firstUserRegionId.toString))))))
+    userPoisList should contain(
       User("", "", secondUserMsisdn),
-      List((Home, List((secondUserSiteId, secondUserRegionId)))))
+      List((Home, List((secondUserSiteId, secondUserRegionId.toString)))))
   }
 
   it should "return an RDD with user msisdn, poi type and its geometries" in new WithUserActivity {

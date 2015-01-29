@@ -80,9 +80,10 @@ class EventFunctions(self: RDD[Event]) {
       val endDate = new DateTime(event.endTime, EdmCoreUtils.TimeZoneSaudiArabia).minuteOfHour().setCopy(0)
       val bts = cellCatalogue.value(event.lacTac, event.cellId).bts
       val hours = new Period(beginDate, endDate).getHours
+      val userImsi = event.user.userByImsi
       (0 to hours).map(hourToSum => {
         val dateToEmit = beginDate.plusHours(hourToSum)
-        ((event.user, bts, EdmCoreUtils.regionId(event.lacTac), dateToEmit.year.get.toShort,
+        ((userImsi, bts, EdmCoreUtils.regionId(event.lacTac), dateToEmit.year.get.toShort,
           EdmCoreUtils.saudiWeekOfYear(dateToEmit).toShort),
           Set(((EdmCoreUtils.saudiDayOfWeek(dateToEmit.dayOfWeek.get) - 1) * HoursInDay) + dateToEmit.hourOfDay.get))
       })

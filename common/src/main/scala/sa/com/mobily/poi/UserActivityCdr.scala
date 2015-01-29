@@ -5,14 +5,12 @@
 package sa.com.mobily.poi
 
 import java.io.File
-import scala.collection.immutable.IndexedSeq
-import scala.collection.Seq
 
 import com.github.nscala_time.time.Imports._
-import org.apache.spark.mllib.clustering.{KMeansModel, KMeans}
-import org.apache.spark.mllib.linalg.{Vectors, Vector}
+import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
+import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.jfree.chart.axis.{SymbolAxis, NumberAxis, NumberTickUnit}
+import org.jfree.chart.axis.{NumberAxis, NumberTickUnit, SymbolAxis}
 import scalax.chart.api._
 
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}

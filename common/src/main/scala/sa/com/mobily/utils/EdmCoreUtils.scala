@@ -12,6 +12,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone}
 
 import sa.com.mobily.roaming.CountryCallingCode
+import sa.com.mobily.user.User
 
 /**
  * Generic utility class for External Data Monetization
