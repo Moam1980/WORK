@@ -217,15 +217,11 @@ class CellTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "read cell identifiers in tuples when field is empty" in {
-    Cell.parseCellTuples("") should be (Set())
+    Cell.parseCellTuples("") should be (Seq())
   }
 
   it should "read cell identifiers in tuples for several cells" in {
-    Cell.parseCellTuples("(1,3);(4,5)") should be (Set((1, 3), (4, 5)))
-  }
-
-  it should "read cell identifiers in tuples for several cells (with repeated ones)" in {
-    Cell.parseCellTuples("(1,3);(4,5);(1,3)") should be (Set((1, 3), (4, 5)))
+    Cell.parseCellTuples("(1,3);(4,5)") should be (Seq((1, 3), (4, 5)))
   }
 
   it should "fail with exception when format is wrong" in {

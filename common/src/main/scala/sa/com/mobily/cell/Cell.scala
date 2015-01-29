@@ -148,12 +148,12 @@ object Cell {
       case Pico.value => Pico
     }
 
-  def parseCellTuples(cells: String, delimiter: String = EdmCoreUtils.IntraSequenceSeparator): Set[(Int, Int)] =
-    if (cells.isEmpty) Set()
+  def parseCellTuples(cells: String, delimiter: String = EdmCoreUtils.IntraSequenceSeparator): Seq[(Int, Int)] =
+    if (cells.isEmpty) Seq()
     else
       cells.split(delimiter).map(cell => {
         val lacCellId = cell.trim.stripPrefix("(").stripSuffix(")").split(",").map(_.toInt)
         require(lacCellId.size == 2)
         (lacCellId.head, lacCellId.last)
-      }).toSet
+      })
 }

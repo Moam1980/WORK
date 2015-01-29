@@ -4,9 +4,13 @@
 
 package sa.com.mobily.usercentric
 
+import scala.language.existentials
+
+import org.apache.spark.sql.Row
+
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.geometry.GeomUtils
-import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
@@ -16,7 +20,7 @@ case class Dwell(
     startTime: Long,
     endTime: Long,
     geomWkt: String,
-    cells: Set[(Int, Int)],
+    cells: Seq[(Int, Int)],
     firstEventBeginTime: Long,
     lastEventEndTime: Long,
     numEvents: Long,
@@ -44,7 +48,7 @@ object Dwell {
       startTime = slot.startTime,
       endTime = slot.endTime,
       geomWkt = GeomUtils.wkt(slot.geom),
-      cells = slot.cells,
+      cells = slot.cells.toSeq,
       firstEventBeginTime = slot.firstEventBeginTime,
       lastEventEndTime = slot.lastEventEndTime,
       numEvents = slot.numEvents,
@@ -76,6 +80,26 @@ object Dwell {
         lastEventEndTime = EdmCoreUtils.fmt.parseDateTime(lastEventEndTime).getMillis,
         numEvents = numEvents.toLong,
         countryIsoCode = countryIsoCode)
+    }
+  }
+
+  implicit val fromRow = new RowParser[Dwell] {
+
+    override def fromRow(row: Row): Dwell = {
+      val Seq(Seq(imei, imsi, msisdn), startTime, endTime, geomWkt, cells, firstEventBeginTime, lastEventEndTime,
+        numEvents, countryIsoCode) = row.toSeq
+
+      Dwell(
+        user =
+          User(imei = imei.asInstanceOf[String], imsi = imsi.asInstanceOf[String], msisdn = msisdn.asInstanceOf[Long]),
+        startTime = startTime.asInstanceOf[Long],
+        endTime = endTime.asInstanceOf[Long],
+        geomWkt = geomWkt.asInstanceOf[String],
+        cells = cells.asInstanceOf[Seq[Seq[Int]]].map { case Seq(first: Int, second: Int) => (first, second) },
+        firstEventBeginTime = firstEventBeginTime.asInstanceOf[Long],
+        lastEventEndTime = lastEventEndTime.asInstanceOf[Long],
+        numEvents = numEvents.asInstanceOf[Long],
+        countryIsoCode = countryIsoCode.asInstanceOf[String])
     }
   }
 }

@@ -122,7 +122,6 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
       Row(Row(866173010386L, "420034122616618", 560917079L),
         1404162126000L, 1404162610000L, 0x052C, 13067, Row(PsEventSource.id), "859", None, None, None, None, None)
     val rows = sc.parallelize(List(row, row2))
-    val wrongRows = sc.parallelize(List(row, row2, wrongRow))
   }
 
   trait WithFlickeringEvents {

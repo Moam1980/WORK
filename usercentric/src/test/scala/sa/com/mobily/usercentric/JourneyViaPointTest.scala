@@ -4,6 +4,7 @@
 
 package sa.com.mobily.usercentric
 
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest._
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
@@ -45,13 +46,20 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
     val journeyVpFields = Array("", "420032181160624", "0", "0", "1970/01/01 03:00:00", "1970/01/01 03:00:01",
       "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", "(1202,12751)", "1970/01/01 03:00:00", "1970/01/01 03:00:01", "1",
       "sa")
+    val jvpRow = Row(Row("", "420032181160624", 0L), 0, 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row(Row(1202, 12751)), 0L, 1000L, 1L, "sa")
+    val jvpRowNoCells = Row(Row("", "420032181160624", 0L), 0, 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row(), 0L, 1000L, 1L, "sa")
+    val jvpWrongRow = Row(Row("", "420032181160624", 0L), 0, 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row("3"), 0L, 1000L, 1L, "sa")
+
     val journeyVpRead = JourneyViaPoint(
       user = User("", "420032181160624", 0),
       journeyId = 0,
       startTime = 0,
       endTime = 1000,
       geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
-      cells = Set((1202, 12751)),
+      cells = Seq((1202, 12751)),
       firstEventBeginTime = 0,
       lastEventEndTime = 1000,
       numEvents = 1)
@@ -62,7 +70,7 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
       startTime = 3000,
       endTime = 8000,
       geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
-      cells = Set((1, 1)),
+      cells = Seq((1, 1)),
       firstEventBeginTime = 3000,
       lastEventEndTime = 8000,
       numEvents = 1)
@@ -97,5 +105,17 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
 
   it should "be discarded when the CSV format is wrong" in new WithJourneyViaPoint {
     an [Exception] should be thrownBy fromCsv.fromFields(journeyVpFields.updated(4, "NotValidTime"))
+  }
+
+  it should "be built from Row (with cells)" in new WithJourneyViaPoint {
+    fromRow.fromRow(jvpRow) should be (journeyVpRead)
+  }
+
+  it should "be built from Row (with no cells)" in new WithJourneyViaPoint {
+    fromRow.fromRow(jvpRowNoCells) should be (journeyVpRead.copy(cells = Seq()))
+  }
+
+  it should "be discarded when row is wrong" in new WithJourneyViaPoint {
+    an[Exception] should be thrownBy fromRow.fromRow(jvpWrongRow)
   }
 }

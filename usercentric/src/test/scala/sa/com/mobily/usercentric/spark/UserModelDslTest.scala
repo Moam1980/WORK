@@ -4,16 +4,19 @@
 
 package sa.com.mobily.usercentric.spark
 
+import scala.reflect.io.File
+
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{Micro, FourGFdd, Cell}
 import sa.com.mobily.event.{PsEventSource, Event}
 import sa.com.mobily.geometry.UtmCoordinates
 import sa.com.mobily.user.User
-import sa.com.mobily.usercentric.{CompatibilityScore, SpatioTemporalSlot}
-import sa.com.mobily.utils.LocalSparkContext
+import sa.com.mobily.usercentric._
+import sa.com.mobily.utils.LocalSparkSqlContext
 
-class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
   import UserModelDsl._
 
@@ -239,6 +242,64 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val jvps = sc.parallelize(List(jvpLine1, jvpLine2, jvpLine3))
   }
 
+  trait WithUserModelRows {
+
+    val dwellRow1 =
+      Row(Row("", "420032153783846", 0L), 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+        Row(Row(2, 4), Row(2, 6)), 0L, 1000L, 4L, "sa")
+    val dwellRow2 =
+      Row(Row("", "420032153783846", 0L), 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+        Row(), 0L, 1000L, 4L, "sa")
+    val dwellRows = sc.parallelize(List(dwellRow1, dwellRow2))
+    val dwell1 = Dwell(
+      user = User("", "420032153783846", 0),
+      startTime = 0,
+      endTime = 1000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 0,
+      lastEventEndTime = 1000,
+      numEvents = 4)
+    val dwell2 = dwell1.copy(cells = Seq())
+    val dwells = sc.parallelize(List(dwell1, dwell2))
+
+    val journeyRow1 = Row(Row("", "420032153783846", 0L), 0, 0L, 1000L,
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", Row(Row(2, 4), Row(2, 6)), 0L, 1000L, 3L, "sa")
+    val journeyRow2 = Row(Row("", "420032153783846", 0L), 0, 0L, 1000L,
+      "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)", Row(), 0L, 1000L, 3L, "sa")
+    val journeyRows = sc.parallelize(List(journeyRow1, journeyRow2))
+    val journey1 = Journey(
+      user = User("", "420032153783846", 0),
+      id = 0,
+      startTime = 0,
+      endTime = 1000,
+      geomWkt = "LINESTRING (258620.1 2031643.7, 256667.6 2035865.5)",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 0,
+      lastEventEndTime = 1000,
+      numEvents = 3)
+    val journey2 = journey1.copy(cells = Seq())
+    val journeys = sc.parallelize(List(journey1, journey2))
+
+    val journeyVpRow1 = Row(Row("", "420032181160624", 0L), 0, 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row(Row(1202, 12751)), 0L, 1000L, 1L, "sa")
+    val journeyVpRow2 = Row(Row("", "420032181160624", 0L), 0, 0L, 1000L, "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      Row(), 0L, 1000L, 1L, "sa")
+    val journeyViaPointRows = sc.parallelize(List(journeyVpRow1, journeyVpRow2))
+    val journeyVp1 = JourneyViaPoint(
+      user = User("", "420032181160624", 0),
+      journeyId = 0,
+      startTime = 0,
+      endTime = 1000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Seq((1202, 12751)),
+      firstEventBeginTime = 0,
+      lastEventEndTime = 1000,
+      numEvents = 1)
+    val journeyVp2 = journeyVp1.copy(cells = Seq())
+    val journeyViaPoints = sc.parallelize(List(journeyVp1, journeyVp2))
+  }
+
   "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell " +
     "(or overlapping in time)" in new WithSpatioTemporalSlots with WithCellCatalogue {
       events.byUserChronologically.aggTemporalOverlapAndSameCell.first._2.size should be (4)
@@ -298,5 +359,38 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkConte
 
   it should "get both correctly and wrongly parsed journey via points" in new WithUserModelText {
     jvps.toParsedJourneyViaPoint.count should be (3)
+  }
+
+  it should "get correctly parsed dwell rows" in new WithUserModelRows {
+    dwellRows.toDwell.count should be (2)
+  }
+
+  it should "save dwells in parquet" in new WithUserModelRows {
+    val path = File.makeTemp().name
+    dwells.saveAsParquetFile(path)
+    sqc.parquetFile(path).toDwell.collect.sameElements(dwells.collect) should be (true)
+    File(path).deleteRecursively
+  }
+
+  it should "get correctly parsed journey rows" in new WithUserModelRows {
+    journeyRows.toJourney.count should be (2)
+  }
+
+  it should "save journeys in parquet" in new WithUserModelRows {
+    val path = File.makeTemp().name
+    journeys.saveAsParquetFile(path)
+    sqc.parquetFile(path).toJourney.collect.sameElements(journeys.collect) should be (true)
+    File(path).deleteRecursively
+  }
+
+  it should "get correctly parsed journey via point rows" in new WithUserModelRows {
+    journeyViaPointRows.toJourneyViaPoint.count should be (2)
+  }
+
+  it should "save journey via points in parquet" in new WithUserModelRows {
+    val path = File.makeTemp().name
+    journeyViaPoints.saveAsParquetFile(path)
+    sqc.parquetFile(path).toJourneyViaPoint.collect.sameElements(journeyViaPoints.collect) should be (true)
+    File(path).deleteRecursively
   }
 }
