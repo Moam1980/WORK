@@ -83,18 +83,14 @@ dayToPush=$dayExtracted
 # Download daily information for:
 #   IMS_MOBILY.cell_view1
 #   IMS_MOBILY.cell_view2
-#   IMS_MOBILY.cell_view3
 ${BASE_DIR}/bulkDownloadDB.sh -s download-IMS_MOBILY.CELL_VIEW1 -o cell_view1_${today} -p ${propertiesFile}
 pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_IMS_FILE_PATH}/cell-view1/${HADOOP_IMS_VERSION}" "cell_view1_${today}" "${HADOOP_IMS_FORMAT}" ${pushHadoopFlag}
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-IMS_MOBILY.CELL_VIEW2 -o cell_view2_${today} -p ${propertiesFile}
 pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_IMS_FILE_PATH}/cell-view2/${HADOOP_IMS_VERSION}" "cell_view2_${today}" "${HADOOP_IMS_FORMAT}" ${pushHadoopFlag}
 
-${BASE_DIR}/bulkDownloadDB.sh -s download-IMS_MOBILY.CELL_VIEW3 -o cell_view3_${today} -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_IMS_FILE_PATH}/cell-view3/${HADOOP_IMS_VERSION}" "cell_view3_${today}" "${HADOOP_IMS_FORMAT}" ${pushHadoopFlag}
-
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
 
 # Write summary of execution
-echo 1<&2 "INFO: ${0}: Finished process ISOP download for ${dateToDownload}, started at: ${startTimestampUtc}, finished at: ${endTimestampUtc}"
+echo 1<&2 "INFO: ${0}: Finished process IMS download for ${today}, started at: ${startTimestampUtc}, finished at: ${endTimestampUtc}"

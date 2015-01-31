@@ -1,1 +1,1 @@
-SELECT '"' || VENDOR || '"|"' || NETWORK || '"|"' || CELL_NAME || '"|"' || CELL_ID || '"|"' || BCCH_FREQUENCY || '"|"' || LAC || '"|"' || RAC || '"|"' || SAC || '"|"' || MAX_TX_POWER || '"|"' || EXTRA || '"' FROM IMS_MOBILY.cell_view2
+SELECT '"' || VENDOR || '"|"' || NETWORK || '"|"' || CELL_ID || '"|"' || NEIGHBORING_CELL || '"|"' || QRXLEVMIN || '"' FROM IMS_MOBILY.cell_view2

@@ -44,10 +44,15 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       "_,_,d00,_,d00,_,_,_,_,83,_,_,_,_,_,_,_,_,420,03,0,_,_,_,_,_,_,_,1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_," +
       "420032186210267,_,_,b05c6c85,b75c75e7,_,_,_,_,_,_,_,_,_,e11,d00,d1f,_,c00c0086,_,_,_,_,_,0,_,14d,_,_,_," +
       "51a00200,0,d1f,_,1,_,_,_,_,_"
+    val iuCsXdrLine4 = "2,04,0149b9851369,0149b9851a97,0,0,0,0,240,22c,8765446,5002776,72e,131,142,_,_,_,_,_,_,_,_," +
+      "_,_,d00,_,d00,_,_,_,_,83,_,_,_,_,_,_,_,_,420,03,0,_,_,_,_,_,_,_,1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_," +
+      "_,_,_,b05c6c85,b75c75e7,_,_,_,_,_,_,_,_,_,e11,d00,d1f,_," +
+      "c00c0086,_,_,_,_,_,0,_,14d,_,_,_,51a00200,0,d1f,_,1,_,_,_,_,_"
     val iuCsXdrEvents = sc.parallelize(Array(
       iuCsXdrLine1,
       iuCsXdrLine2,
-      iuCsXdrLine3))
+      iuCsXdrLine3,
+      iuCsXdrLine4))
     val event1 = Event(
       User("8636190157279614", "420032275422214", 666666666),
       1416156747015L,
@@ -80,7 +85,7 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
 
   trait WithSanity extends WithIuCsXdrAndEventText {
 
-    val metrics = List(("msisdn", 1), ("imei", 1), ("total", 3))
+    val metrics = List(("msisdn", 2), ("imei", 2), ("imsi", 1), ("total", 4))
   }
 
   "IuCsXdrDsl" should "get correctly parsed IuCS events" in new WithIuCsXdrText {
@@ -120,6 +125,6 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
 
   it should "take sanity metrics" in new WithSanity {
     private val collect: Array[(String, Int)] = iuCsXdrEvents.toIuCsXdr.sanity.collect
-    collect.sameElements(metrics) should be (true)
+    collect should contain theSameElementsAs (metrics)
   }
 }
