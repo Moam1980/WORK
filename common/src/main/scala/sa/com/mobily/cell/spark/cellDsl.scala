@@ -19,7 +19,10 @@ import sa.com.mobily.parsing.spark.{SparkParser, ParsedItemsDsl}
 
 class SqmFunctions(self: RDD[SqmCell]) {
 
-  def toCell(bts: RDD[EgBts]): RDD[Cell] = CellMerger.merge(self, bts)
+  def toCell(
+      bts: RDD[EgBts],
+      coverageRangeIncrementFactor: Double = CellMerger.DefaultCoverageRangeIncrementFactor): RDD[Cell] =
+    CellMerger.merge(sqmCells = self, btsSites = bts, coverageRangeIncrementFactor = coverageRangeIncrementFactor)
 }
 
 class CellReader(self: RDD[String]) {
@@ -90,12 +93,14 @@ class CellFunctions(self: RDD[Cell]) {
 
 object CellMerger {
 
+  val DefaultCoverageRangeIncrementFactor = 1.5
   private val DefaultCellBeamwidthOverlapFactor = 1.2 // 10% at each side
   private val DegreesInCircumference = 360d
 
   def merge(
       sqmCells: RDD[SqmCell],
       btsSites: RDD[EgBts],
+      coverageRangeIncrementFactor: Double,
       cellBeamwidthOverlapFactor: Double = DefaultCellBeamwidthOverlapFactor): RDD[Cell] = {
     val sqmCellsPerSite = sqmCells.keyBy(s => (s.nodeId, s.lacTac)).groupByKey
 
@@ -111,7 +116,7 @@ object CellMerger {
       val sqmCell = sqmCellWithBeamwidthAndSite._1._1
       val beamwidth = sqmCellWithBeamwidthAndSite._1._2.getOrElse(DegreesInCircumference)
       val btsSite = sqmCellWithBeamwidthAndSite._2
-      val range = btsSite.outdoorCov
+      val range = btsSite.outdoorCov * coverageRangeIncrementFactor
       val bts = btsSite.bts
       val coverageGeom = CellCoverage.cellShape(
         cellLocation = sqmCell.basePlanarCoords.geometry,
