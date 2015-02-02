@@ -101,9 +101,6 @@ pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_SEARCHWORDS_D -o T_IA_SUBS_SEARCHWORDS_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
 pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-searches/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_SEARCHWORDS_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
-${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_TYPE_CNT_VOL_D -o T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
-pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps/${HADOOP_ISOP_VERSION}" "T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
-
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_GROUP_CNT_VOL_D -o T_IA_APP_GROUP_CNT_VOL_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
 pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps-categories/${HADOOP_ISOP_VERSION}" "T_IA_APP_GROUP_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
@@ -112,6 +109,9 @@ pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/
 
 ${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_SUBS_WEBPAGE_CAT_D -o T_IA_SUBS_WEBPAGE_CAT_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
 pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-domains-categories/${HADOOP_ISOP_VERSION}" "T_IA_SUBS_WEBPAGE_CAT_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
+
+${BASE_DIR}/bulkDownloadDB.sh -s download-T_IA_APP_TYPE_CNT_VOL_D -o T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload} -c "WHERE DATA_DAY = ${dateToDownload}" -p ${propertiesFile}
+pushDataHadoop $? $yearToPush $monthToPush $dayToPush "${HADOOP_ISOP_FILE_PATH}/subscribers-apps/${HADOOP_ISOP_VERSION}" "T_IA_APP_TYPE_CNT_VOL_D_${dateToDownload}" "${HADOOP_ISOP_FORMAT}"  ${pushHadoopFlag}
 
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
