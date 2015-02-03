@@ -30,9 +30,13 @@ class UserActivityPoiTest extends FlatSpec with ShouldMatchers with LocalSparkCo
     val secondUserSiteId = "2566"
     val firstUserRegionId = "1"
     val secondUserRegionId = "2"
+    val nonExistingSiteId = "0"
+    val nonExistingRegionId = "0"
     val poiLocation1 = (firstUserSiteId, firstUserRegionId)
     val poiLocation2 = (secondUserSiteId, secondUserRegionId)
+    val nonExistingPoiLocation = (nonExistingSiteId, nonExistingRegionId)
     val poisLocation = Seq(poiLocation1, poiLocation2)
+    val poisLocationWithoutGeom = Seq(nonExistingPoiLocation)
     val btsCatalogue =
       Map(
         (firstUserSiteId, firstUserRegionId) -> Seq(egBts1),
@@ -62,7 +66,12 @@ class UserActivityPoiTest extends FlatSpec with ShouldMatchers with LocalSparkCo
     geometries should be(Seq(geometry1, geometry2))
   }
 
-  "it" should "union geometries and apply the Douglas Peucker Simplifier" in new WithUnionGeometries {
+  it should "return an empty sequence when it does not find a geometry" in new WithUserActivity {
+    val geometries = UserActivityPoi.findGeometries(poisLocationWithoutGeom, btsCatalogue)
+    geometries should be(Seq.empty)
+  }
+
+  it should "union geometries and apply the Douglas Peucker Simplifier" in new WithUnionGeometries {
     UserActivityPoi.unionGeoms(geoms) should be (geomUnion)
   }
 }
