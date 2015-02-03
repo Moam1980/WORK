@@ -74,7 +74,7 @@ object S40 extends CalculatedSegment(id = "S40")
 object S60 extends CalculatedSegment(id = "S60")
 object S80 extends CalculatedSegment(id = "S80")
 object S90 extends CalculatedSegment(id = "S90")
-object UnknownSourceCalculatedSegmetn extends CalculatedSegment (id = "Unknown")
+object UnknownSourceCalculatedSegment extends CalculatedSegment (id = "Unknown")
 
 case class Revenues (
     m1: Float,
@@ -230,7 +230,7 @@ object Subscriber {
     case S40.id => S40
     case S90.id => S90
     case S80.id => S80
-    case _ => UnknownSourceCalculatedSegmetn
+    case _ => UnknownSourceCalculatedSegment
   }
 
   def parseDate(s: String): Option[Long] = Try { fmt.parseDateTime(s).getMillis }.toOption

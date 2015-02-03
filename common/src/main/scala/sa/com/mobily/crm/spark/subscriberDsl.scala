@@ -8,12 +8,14 @@ import scala.collection.Map
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.crm._
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
+import sa.com.mobily.user.User
 
 class SubscriberReader(self: RDD[String]) {
 
@@ -32,6 +34,22 @@ trait SubscriberDsl {
 
   implicit def customerSubscriberStatistics(subscribers: RDD[Subscriber]): SubscriberStatistics =
     new SubscriberStatistics(subscribers)
+
+  implicit def customerSubscriberFunctions(subscribers: RDD[Subscriber]): SubscriberFunctions =
+    new SubscriberFunctions(subscribers)
+}
+
+class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
+
+  def toBroadcastSubscriberByMsisdn(
+      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[Long, User]] =
+    self.sparkContext.broadcast(
+      self.keyBy(s => (s.user.msisdn)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user)).collectAsMap)
+
+  def toBroadcastSubscriberByImsi(
+      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[String, User]] =
+    self.sparkContext.broadcast(
+      self.keyBy(s => (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user)).collectAsMap)
 }
 
 class SubscriberStatistics(self: RDD[Subscriber]) {
