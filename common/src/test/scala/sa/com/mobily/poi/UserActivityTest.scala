@@ -54,8 +54,8 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val user1ActivityVectorWeek1 = Map((0, 1.0), (2, 1.0), (4, 1.0))
     val user1ActivityVectorWeek2 = Map((4, 1.0), (25, 1.0), (27, 1.0))
     val user1ActivityVectorWeek3 = Map((5, 1.0), (25, 1.0), (27, 1.0))
-    val usersAggregatedNonOverlappedActivityVector = Map((0, 0.5), (2, 0.5), (4, 0.5), (5, 0.5), (25, 0.5), (27, 0.5))
-    val usersAggregatedOverlappedActivityVector = Map((0, 0.5), (2, 0.5), (4, 2.0), (25, 0.5), (27, 0.5))
+    val usersAggregatedNonOverlappedActivityVector = Map((0, 1.0), (2, 1.0), (4, 1.0), (5, 1.0), (25, 1.0), (27, 1.0))
+    val usersAggregatedOverlappedActivityVector = Map((0, 1.0), (2, 1.0), (4, 2.0), (25, 1.0), (27, 1.0))
     val weekYear1 = Set((2014.toShort, 1.toShort))
     val weekYear2 = Set((2014.toShort, 2.toShort))
     val combineWeekYear = Set((2014.toShort, 2.toShort), (2014.toShort, 1.toShort))
@@ -96,26 +96,26 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
 
   it should "combine two user activities with overlapping hours in the same week" in new WithSameWeek {
     val combinedActivities = userActivityWeek1.combineByWeekYear(userActivityWeek2)
-    (combinedActivities.weekHoursWithActivity, combinedActivities.weekYear) should be
-      (combinerUserActivity1.weekHoursWithActivity, combinerUserActivity1.weekYear)
+    (combinedActivities.weekHoursWithActivity, combinedActivities.weekYear) should
+      be (combinerUserActivity1.weekHoursWithActivity, combinerUserActivity1.weekYear)
   }
 
   it should "combine two user activities with non overlapping hours in the same week" in new WithSameWeek {
     val combinedActivities = userActivityWeek1.combineByWeekYear(userActivityWeek3)
-    (combinedActivities.weekHoursWithActivity, combinedActivities.weekYear) should be
-      (combinerUserActivity2.weekHoursWithActivity, combinerUserActivity2.weekYear)
+    (combinedActivities.weekHoursWithActivity, combinedActivities.weekYear) should
+      be (combinerUserActivity2.weekHoursWithActivity, combinerUserActivity2.weekYear)
   }
 
   it should "aggregate two user activities with overlapping hours in diferent weeks" in new WithDiferentWeek {
     val aggregatedActivities = userActivityWeek1.aggregate(userActivityWeek2)
-    (aggregatedActivities.weekHoursWithActivity, aggregatedActivities.weekYear) should be
-    (aggregatedUserActivity1.weekHoursWithActivity, aggregatedUserActivity1.weekYear)
+    (aggregatedActivities.weekHoursWithActivity, aggregatedActivities.weekYear) should
+      be (aggregatedUserActivity1.weekHoursWithActivity, aggregatedUserActivity1.weekYear)
   }
 
   it should "aggregate two user activities with non overlapping hours in diferent weeks" in new WithDiferentWeek {
     val combinedActivities = userActivityWeek1.aggregate(userActivityWeek3)
-    (combinedActivities.weekHoursWithActivity, combinedActivities.weekYear) should be
-    (aggregatedUserActivity2.weekHoursWithActivity, aggregatedUserActivity2.weekYear)
+    (combinedActivities.weekHoursWithActivity, combinedActivities.weekYear) should
+      be (aggregatedUserActivity2.weekHoursWithActivity, aggregatedUserActivity2.weekYear)
   }
 
   it should "calculate the user activities average with non overlapped hours" in new WithDiferentWeek {
