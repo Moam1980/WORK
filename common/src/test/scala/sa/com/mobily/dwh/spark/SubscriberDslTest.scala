@@ -19,13 +19,19 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
     val subscriber1Msisdn = 966544312356L
     val subscriber2Msisdn = 966565366654L
     val subscriber3Msisdn = 966565366658L
-    val customerSubscriber1 = s"$subscriber1Msisdn|Saudi National ID|1016603803|3581870526733101|1234567|M|5049|3" +
-      "|Saudi Arabia|KSA|Pre-Paid|Voice|39.75|Retail Customer|A|Active|Siebel|Saudi Arabia|SamsungI930000|100.050000" +
-      "|A|A|S50|99.04|68.57|133.77|109.99|106.36|125.23"
-    val customerSubscriber2 = s"$subscriber2Msisdn|Saudi National ID|1022832941|3577590541074623|456789|F|4784|7" +
-      "|Saudi Arabia|KSA|Post-Paid|Voice|30.25|Large Corporate|10/24/2012|OTS|MCR|Saudi Arabia|BlackBerryQ1000" +
+    val subscriber1Imsi = "1234567"
+    val subscriber2Imsi = "456789"
+    val subscriber3Imsi = "9101112"
+    val subscriber1Imei = "3581870526733101"
+    val subscriber2Imei = "3577590541074623"
+    val subscriber3Imei = "3577590541074645"
+    val customerSubscriber1 = s"$subscriber1Msisdn|Saudi National ID|1016603803|$subscriber1Imei|$subscriber1Imsi|M" +
+      "|5049|3|Saudi Arabia|KSA|Pre-Paid|Voice|39.75|Retail Customer|A|Active|Siebel|Saudi Arabia|SamsungI930000" +
+      "|100.050000|A|A|S50|99.04|68.57|133.77|109.99|106.36|125.23"
+    val customerSubscriber2 = s"$subscriber2Msisdn|Saudi National ID|1022832941|$subscriber2Imei|$subscriber2Imsi|F" +
+      "|4784|7|Saudi Arabia|KSA|Post-Paid|Voice|30.25|Large Corporate|10/24/2012|OTS|MCR|Saudi Arabia|BlackBerryQ1000" +
       "|74.590000|8/1/2014|7/23/2014|S40|55.17|26.81|60.72|64.14|112.18|6.15"
-    val customerSubscriber3 = s"$subscriber3Msisdn|Saudi National ID|1022832941|3577590541074623|9101112|F" +
+    val customerSubscriber3 = s"$subscriber3Msisdn|Saudi National ID|1022832941|$subscriber3Imei|$subscriber3Imsi|F" +
       "|4784|7|Spain|Spain|Post-Paid|Data|30.25|Large Corporate|10/24/2012|OTS|MCR|Saudi Arabia|BlackBerryQ1000" +
       "|74.590000|8/1/2014|7/23/2014|S40|55.17|26.81|60.72|64.14|112.18|6.15"
     val customerSubscriber4 = "Invalid Value|IQAMA|2363880648|||M|2302|2|Great Britain and N Ireland|" +
@@ -37,6 +43,16 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
         customerSubscriber2,
         customerSubscriber3,
         customerSubscriber4))
+  }
+
+  trait WithDuplicatesSubscribers extends WithSubscriberText {
+
+    val duplicateSubscriberStatus = "HotSIM"
+    val duplicateSubscriberImei = "6666"
+    val customerSubscriber1WithDifferentStatus= s"$subscriber1Msisdn|Saudi National ID|1016603803" +
+      s"|$duplicateSubscriberImei|$subscriber1Imsi|M|5049|3|Saudi Arabia|KSA|Pre-Paid|Voice|39.75|Retail Customer|A" +
+      s"|HotSIM|$duplicateSubscriberStatus|Saudi Arabia|SamsungI930000|100.050000|A|A|S50|99.04|68.57|133.77|109.99" +
+      s"|106.36|125.23"
   }
 
   "SubscriberDsl" should "get correctly parsed data" in new WithSubscriberText {
@@ -106,5 +122,55 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
   it should "get the subscribers with revenues greater than a value" in new WithSubscriberText {
     val subscribersHigherThanMean = subscriber.toSubscriber.subscribersByRevenueGreaterThanValue(500)
     subscribersHigherThanMean.count should be(1)
+  }
+
+  it should "broadcast the user mapping by msisdn using the default method to get rid of duplicates" in new
+      WithDuplicatesSubscribers {
+    val subscribers = sc.parallelize(
+      Array(
+        customerSubscriber1,
+        customerSubscriber1WithDifferentStatus,
+        customerSubscriber2))
+    val broadcastMap = subscribers.toSubscriber.toBroadcastSubscriberByMsisdn()
+    broadcastMap.value.size should be (2)
+    broadcastMap.value(subscriber1Msisdn).imei should be(subscriber1Imei)
+  }
+
+  it should "broadcast the user mapping by msisdn using a custom method to get rid of duplicates" in new
+      WithDuplicatesSubscribers {
+    val subscribers = sc.parallelize(
+      Array(
+        customerSubscriber1,
+        customerSubscriber1WithDifferentStatus,
+        customerSubscriber2))
+    val broadcastMap = subscribers.toSubscriber.toBroadcastSubscriberByMsisdn(
+      (s1, s2) => if (s2.activeStatus==HotSIM) s2 else s1)
+    broadcastMap.value.size should be (2)
+    broadcastMap.value(subscriber1Msisdn).imei should be(duplicateSubscriberImei)
+  }
+
+  it should "broadcast the user mapping by imsi using the default method to get rid of duplicates" in new
+      WithDuplicatesSubscribers {
+    val subscribers = sc.parallelize(
+      Array(
+        customerSubscriber1,
+        customerSubscriber1WithDifferentStatus,
+        customerSubscriber2))
+    val broadcastMap = subscribers.toSubscriber.toBroadcastSubscriberByImsi()
+    broadcastMap.value.size should be (2)
+    broadcastMap.value(subscriber1Imsi).imei should be(subscriber1Imei)
+  }
+
+  it should "broadcast the user mapping by imsi using a custom method to get rid of duplicates" in new
+      WithDuplicatesSubscribers {
+    val subscribers = sc.parallelize(
+      Array(
+        customerSubscriber1,
+        customerSubscriber1WithDifferentStatus,
+        customerSubscriber2))
+    val broadcastMap = subscribers.toSubscriber.toBroadcastSubscriberByImsi(
+      (s1, s2) => if (s2.activeStatus==HotSIM) s2 else s1)
+    broadcastMap.value.size should be (2)
+    broadcastMap.value(subscriber1Imsi).imei should be(duplicateSubscriberImei)
   }
 }

@@ -23,6 +23,8 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       "Saudi Arabia","SamsungI930000","100.050000","8/1/2014","8/1/2014","S50","99.04","68.57","133.77","109.99",
       "106.36","125.23")
 
+    val subscriberTypes = SubscriberTypes(PrePaid, "SamsungI930000")
+    val subscriberPackages = SubscriberPackages(Voice, RetailCustomer)
     val customerSubscriber = Subscriber(
       user = User(
         imei = "3581870526733101",
@@ -35,8 +37,8 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       siteId = Some(5049),
       regionId = Some(3),
       nationalies = Nationalities("SAUDI ARABIA", "KSA"),
-      types = SubscriberTypes(PrePaid, "SamsungI930000"),
-      packages = SubscriberPackages(Voice, RetailCustomer),
+      types = subscriberTypes,
+      packages = subscriberPackages,
       date = SubscriberDates(Some(1367355600000l), Some(1406840400000l), Some(1406840400000l)),
       activeStatus  = Active,
       sourceActivation = Siebel,
@@ -78,8 +80,8 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Saudi National identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, SaudiNational.id)) should be
-      (customerSubscriber.copy(idType = SaudiNational))
+    fromCsv.fromFields(fields.updated(1, SaudiNational.id)) should
+      be (customerSubscriber.copy(idType = SaudiNational))
   }
 
   it should "be built from CSV with Gcc identification type" in new WithCustomerSubscriber {
@@ -87,8 +89,8 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Diplomatic Card identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, DiplomaticCard.id)) should be
-      (customerSubscriber.copy(idType = DiplomaticCard))
+    fromCsv.fromFields(fields.updated(1, DiplomaticCard.id)) should
+      be (customerSubscriber.copy(idType = DiplomaticCard))
   }
 
   it should "be built from CSV with Tax Number identification type" in new WithCustomerSubscriber {
@@ -96,28 +98,28 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Mobily Employee identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, MobilyEmployee.id)) should be
-      (customerSubscriber.copy(idType = MobilyEmployee))
+    fromCsv.fromFields(fields.updated(1, MobilyEmployee.id)) should
+      be (customerSubscriber.copy(idType = MobilyEmployee))
   }
 
   it should "be built from CSV with Commercial Registration identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, CommercialRegistration.id)) should be
-      (customerSubscriber.copy(idType = CommercialRegistration))
+    fromCsv.fromFields(fields.updated(1, CommercialRegistration.id)) should
+      be (customerSubscriber.copy(idType = CommercialRegistration))
   }
 
   it should "be built from CSV with Mobily Cost Center identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, MobilyCostCenter.id)) should be
-      (customerSubscriber.copy(idType = MobilyCostCenter))
+    fromCsv.fromFields(fields.updated(1, MobilyCostCenter.id)) should
+      be (customerSubscriber.copy(idType = MobilyCostCenter))
   }
 
   it should "be built from CSV with Iqama identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, Iqama.id)) should be
-      (customerSubscriber.copy(idType = Iqama))
+    fromCsv.fromFields(fields.updated(1, Iqama.id)) should
+      be (customerSubscriber.copy(idType = Iqama))
   }
 
   it should "be built from CSV with Family Card identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, FamilyCard.id)) should be
-      (customerSubscriber.copy(idType = FamilyCard))
+    fromCsv.fromFields(fields.updated(1, FamilyCard.id)) should
+      be (customerSubscriber.copy(idType = FamilyCard))
   }
 
   it should "be built from CSV with Ms identification type" in new WithCustomerSubscriber {
@@ -125,18 +127,16 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Driver Licence Number identification type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(1, DriverLicenceNumber.id)) should be
-      (customerSubscriber.copy(idType = DriverLicenceNumber))
+    fromCsv.fromFields(fields.updated(1, DriverLicenceNumber.id)) should
+      be (customerSubscriber.copy(idType = DriverLicenceNumber))
   }
 
   it should "be built from CSV with Post-Paid pay type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(9, PostPaid.id)) should be
-      (customerSubscriber.copy(types = (customerSubscriber.types.copy(pay = PostPaid))))
+    fromCsv.fromFields(fields.updated(10, PostPaid.id)).types should be (subscriberTypes.copy(pay = PostPaid))
   }
 
   it should "be built from CSV with Unknown pay type" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(9, "A")) should be
-      (customerSubscriber.copy(types = (customerSubscriber.types.copy(pay = UnknownPayType))))
+    fromCsv.fromFields(fields.updated(10, "A")).types should be (subscriberTypes.copy(pay = UnknownPayType))
   }
 
   it should "be built from CSV with Ots active status" in new WithCustomerSubscriber {
@@ -152,28 +152,24 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Data datapackage" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(11, Data.id)) should be
-      (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(data = Data))))
+    fromCsv.fromFields(fields.updated(11, Data.id)).packages should be (subscriberPackages.copy(data = Data))
   }
 
   it should "be built from CSV with Unknown datapackage" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(11, "A")) should be
-      (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(data = UnknownDataPackage))))
+    fromCsv.fromFields(fields.updated(11, "A")).packages should be (subscriberPackages.copy(data = UnknownDataPackage))
   }
 
   it should "be built from CSV with Iuc corp package" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(13, Iuc.id)) should be
-      (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(corp = Iuc))))
+    fromCsv.fromFields(fields.updated(13, Iuc.id)).packages should be (subscriberPackages.copy(corp = Iuc))
   }
 
   it should "be built from CSV with Large Corporate corp package" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(13, LargeCorporate.id)) should be
-      (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(corp = LargeCorporate))))
+    fromCsv.fromFields(fields.updated(13, LargeCorporate.id)).packages should
+      be (subscriberPackages.copy(corp = LargeCorporate))
   }
 
   it should "be built from CSV with Unknown corp package" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(13, "A")) should be
-    (customerSubscriber.copy(packages = (customerSubscriber.packages.copy(corp = UnknownCorpPackage))))
+    fromCsv.fromFields(fields.updated(13, "A")).packages should be (subscriberPackages.copy(corp = UnknownCorpPackage))
   }
 
   it should "be built from CSV with Mcr source activation" in new WithCustomerSubscriber {
@@ -185,8 +181,8 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Unknown source activation" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(17, "A")) should be
-      (customerSubscriber.copy(sourceActivation = UnknownSourceActivation))
+    fromCsv.fromFields(fields.updated(16, "A")) should
+      be (customerSubscriber.copy(sourceActivation = UnknownSourceActivation))
   }
 
   it should "be built from CSV with W segmentc calculated" in new WithCustomerSubscriber {
@@ -210,7 +206,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with Unknown segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(22, "A")) should be
-      (customerSubscriber.copy(m1CalculatedSegment = UnknownSourceCalculatedSegmetn))
+    fromCsv.fromFields(fields.updated(22, "A")) should
+      be (customerSubscriber.copy(m1CalculatedSegment = UnknownSourceCalculatedSegment))
   }
 }
