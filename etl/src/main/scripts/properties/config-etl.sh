@@ -28,6 +28,7 @@ HADOOP_PATH=/user/tdatuser
 HADOOP_CS_PROBES_FILE_PATH=${HADOOP_PATH}/cs-probes
 HADOOP_CS_PROBES_VERSION=0.3
 HADOOP_CS_PROBES_FORMAT=csv
+HADOOP_CS_PROBES_PARQUET_FORMAT=parquet
 
 # ISOP hadoop configuration -- Internet Analytics
 HADOOP_ISOP_FILE_PATH=${HADOOP_PATH}/ia
@@ -47,3 +48,9 @@ CS_DIRECTORIES=("A-Interface" "IUCS-Interface")
 CS_DATA_SEPARATOR=("" ".")
 CS_FILE_PREFIXES=("ADR_AINT_6-" "TDR-IU-7-")
 CS_FILE_EXTENSIONS=(".gz" ".gz")
+
+SUBSCRIBERS_FILE="/user/tdatuser/subscribers-oracle/0.6/2014/12/01/csv/customer-base-20141201.csv"
+EVENTS_PARQUET_DIR="/user/tdatuser/cs-probes/event"
+
+SPARK_ARTIFACTS_DIR="/data/local-staging/tdatuser/artifacts"
+
