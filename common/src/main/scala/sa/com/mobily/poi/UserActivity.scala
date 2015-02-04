@@ -5,6 +5,7 @@
 package sa.com.mobily.poi
 
 import org.apache.spark.mllib.linalg.{Vectors, Vector}
+import org.joda.time.format.DateTimeFormat
 
 import sa.com.mobily.user.User
 
@@ -38,6 +39,21 @@ case class UserActivity(
 
 object UserActivity {
 
+  val CentroidTypePrefix = "Type"
   val HoursPerWeek = 168
   val DefaultMinActivityRatio = 0.1
+  val DefaultSundayZeroHours = "1970-01-04 00:00:00"
+  val TableauDateFormatter = "yyyy-MM-dd HH:mm:ss"
+  final val TableauFmt = DateTimeFormat.forPattern(TableauDateFormatter)
+
+  def getRowsOfCentroids(clusterCenters: Array[Vector]): Seq[Array[String]] = {
+    clusterCenters.zipWithIndex.flatMap { centroidAndIndex =>
+      val date = TableauFmt.parseDateTime(DefaultSundayZeroHours)
+      (0 until centroidAndIndex._1.size).map(hour =>
+        Array(
+          CentroidTypePrefix + centroidAndIndex._2,
+          TableauFmt.print(date.plusHours(hour)),
+          centroidAndIndex._1(hour).toString))
+    }
+  }
 }

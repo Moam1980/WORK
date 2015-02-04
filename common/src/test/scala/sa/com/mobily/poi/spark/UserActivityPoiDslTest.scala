@@ -128,7 +128,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       " 821851.1 3087551.4, 821920.3 3087501.1, 821982.7 3087442.5, 822037.3 3087376.6, 822083.1 3087304.3, 822119.6" +
       " 3087226.9, 822146 3087145.5, 822162.1 3087061.4, 822167.4 3086976))", Coordinates.SaudiArabiaUtmSrid)
 
-    val centroidsMapping = Map(0 -> Home, 1 -> Work, 2 -> HighActivity, 3 -> Leisure)
+    val centroidsMapping = Map(0 -> Home, 1 -> Work, 2 -> Home, 3 -> Work)
     val pois = userActivity.pois(model, centroidsMapping)
     val userPois = userActivity.userPois(model, centroidsMapping)
   }
