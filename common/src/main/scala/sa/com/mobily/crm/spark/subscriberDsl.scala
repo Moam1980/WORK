@@ -15,7 +15,6 @@ import org.apache.spark.rdd.RDD
 import sa.com.mobily.crm._
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
-import sa.com.mobily.user.User
 
 class SubscriberReader(self: RDD[String]) {
 
@@ -41,15 +40,15 @@ trait SubscriberDsl {
 
 class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
 
-  def toBroadcastSubscriberByMsisdn(
-      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[Long, User]] =
+  def toBroadcastImsiByMsisdn(
+      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[Long, String]] =
     self.sparkContext.broadcast(
-      self.keyBy(s => (s.user.msisdn)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user)).collectAsMap)
+      self.keyBy(s => (s.user.msisdn)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.imsi)).collectAsMap)
 
-  def toBroadcastSubscriberByImsi(
-      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[String, User]] =
+  def toBroadcastMsisdnByImsi(
+      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[String, Long]] =
     self.sparkContext.broadcast(
-      self.keyBy(s => (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user)).collectAsMap)
+      self.keyBy(s => (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collectAsMap)
 }
 
 class SubscriberStatistics(self: RDD[Subscriber]) {
