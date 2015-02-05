@@ -7,6 +7,8 @@ package sa.com.mobily.utils
 import org.joda.time.format.DateTimeFormat
 import org.scalatest._
 
+import sa.com.mobily.roaming.CountryCode
+
 class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   trait WithManyDecimalNumbers {
@@ -403,5 +405,9 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "get the proper saudi week for the first Sunday of the year" in new WithDates {
     EdmCoreUtils.saudiWeekOfYear(firstSundayOfTheYear) should be (2)
+  }
+
+  it should "get the proper time zone from country iso code" in {
+    EdmCoreUtils.timeZone(CountryCode.SaudiArabiaIsoCode) should be (EdmCoreUtils.TimeZoneSaudiArabia)
   }
 }

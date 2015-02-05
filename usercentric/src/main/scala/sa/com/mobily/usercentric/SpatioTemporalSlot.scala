@@ -4,6 +4,9 @@
 
 package sa.com.mobily.usercentric
 
+import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
+
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
@@ -66,14 +69,14 @@ case class SpatioTemporalSlot(
   def fields(implicit cellCatalogue: Map[(Int, Int), Cell]): Array[String] =
     user.fields ++
       Array(
-        EdmCoreUtils.fmt.print(startTime),
-        EdmCoreUtils.fmt.print(endTime),
+        EdmCoreUtils.Fmt.print(startTime),
+        EdmCoreUtils.Fmt.print(endTime),
         numEvents.toString,
         outMinSpeed.toString,
         avgIntraMinSpeed.toString,
         cells.mkString(EdmCoreUtils.IntraSequenceSeparator),
-        EdmCoreUtils.fmt.print(firstEventBeginTime),
-        EdmCoreUtils.fmt.print(lastEventEndTime),
+        EdmCoreUtils.Fmt.print(firstEventBeginTime),
+        EdmCoreUtils.Fmt.print(lastEventEndTime),
         GeomUtils.wkt(geom),
         countryIsoCode,
         typeEstimate.id)
@@ -98,4 +101,7 @@ object SpatioTemporalSlot {
     User.header ++
       Array("startTime", "endTime", "numEvents", "outMinSpeed", "avgIntraMinSpeed", "cells", "firstEventBeginTime",
         "lastEventEndTime", "geomWkt", "countryIsoCode", "typeEstimate")
+
+  def secondsInBetween(firstSlot: SpatioTemporalSlot, secondSlot: SpatioTemporalSlot): Int =
+    (new DateTime(firstSlot.endTime) to new DateTime(secondSlot.startTime)).toDuration.getStandardSeconds.toInt
 }

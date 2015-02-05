@@ -12,7 +12,6 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone}
 
 import sa.com.mobily.roaming.CountryCallingCode
-import sa.com.mobily.user.User
 
 /**
  * Generic utility class for External Data Monetization
@@ -21,7 +20,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   val outputDateTimeFormat = "yyyy/MM/dd HH:mm:ss"
   final val TimeZoneSaudiArabia = DateTimeZone.forID("Asia/Riyadh")
-  final val fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+  final val Fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
   final val phoneNumberUtil = PhoneNumberUtil.getInstance
   val BaseForHexadecimal: Int = 16
   val MillisInSecond = 1000
@@ -122,7 +121,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
     }
   }
 
-  def parseTimestampToSaudiDate(timestamp: Long): String = fmt.print(timestamp)
+  def parseTimestampToSaudiDate(timestamp: Long): String = Fmt.print(timestamp)
 
   def roundTimestampHourly(timestamp: Long): Long =
     new DateTime(timestamp, DateTimeZone.UTC).hourOfDay.roundFloorCopy.getMillis
@@ -163,4 +162,8 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   }
 
   def regionId(lac: Int): String = lac.toString.substring(0, 1)
+
+  def timeZone(countryIsoCode: String): DateTimeZone = countryIsoCode match {
+    case _ => TimeZoneSaudiArabia
+  }
 }

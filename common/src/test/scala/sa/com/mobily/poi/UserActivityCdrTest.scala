@@ -67,6 +67,10 @@ class UserActivityCdrTest extends FlatSpec with ShouldMatchers with LocalSparkCo
     CsvParser.fromLine(userActivityText).value.get should be (userActivitiesObject)
   }
 
+  it should "be built from fields" in new WithUserActivityCdrText {
+    fromCsv.fromFields(fields) should be (userActivitiesObject)
+  }
+
   it should "be discarded when the CSV format is wrong" in new WithUserActivityCdrText {
     an [Exception] should be thrownBy fromCsv.fromFields(fields.updated(3, "WrongRegionId"))
   }
