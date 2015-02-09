@@ -42,24 +42,24 @@ class AiCsXdrWriter(self: RDD[AiCsXdr]) {
 class AiCsXdrParser(self: RDD[AiCsXdr]) {
 
   def toEvent: RDD[Event] = self.filter { aiCs =>
-    (aiCs.csUser.imei.isDefined ||
-      aiCs.csUser.imsi.isDefined ||
-      aiCs.csUser.msisdn.isDefined) &&
-    !aiCs.aiTime.csTime.begin.isEmpty &&
-    !aiCs.aiTime.csTime.end.isEmpty &&
-    aiCs.aiCell.id._1.isDefined &&
-    aiCs.aiCell.id._2.isDefined
+    (aiCs.user.imei.isDefined ||
+      aiCs.user.imsi.isDefined ||
+      aiCs.user.msisdn.isDefined) &&
+    !aiCs.time.csTime.begin.isEmpty &&
+    !aiCs.time.csTime.end.isEmpty &&
+    aiCs.cell.id._1.isDefined &&
+    aiCs.cell.id._2.isDefined
   }.map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
     val nonEmptyOptionString = List(
-      ("imei", aiCs.csUser.imei),
-      ("imsi", aiCs.csUser.imsi),
-      ("cellId", aiCs.aiCell.firstCellId),
-      ("firstLac", aiCs.aiCell.csCell.firstLac))
-    val nonEmptyOptionLong = List(("msisdn", aiCs.csUser.msisdn))
-    val nonEmptyString = List(("beginTime", aiCs.aiTime.csTime.begin), ("endTime", aiCs.aiTime.csTime.end),
-      ("type", aiCs.aiCall.scenario))
+      ("imei", aiCs.user.imei),
+      ("imsi", aiCs.user.imsi),
+      ("cellId", aiCs.cell.firstCellId),
+      ("firstLac", aiCs.cell.csCell.firstLac))
+    val nonEmptyOptionLong = List(("msisdn", aiCs.user.msisdn))
+    val nonEmptyString = List(("beginTime", aiCs.time.csTime.begin), ("endTime", aiCs.time.csTime.end),
+      ("type", aiCs.call.scenario))
 
     List(("total", 1)) ++
       SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => !value.isDefined) ++

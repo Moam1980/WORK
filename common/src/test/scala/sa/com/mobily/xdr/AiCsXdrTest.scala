@@ -157,7 +157,7 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       AiConnection(
         csConnection = CsConnection(majorMinor = 0, transactionId = Some("03")),
         servingRncId = None))
-    val aiCsXdrException = aiCsXdr.copy(csUser = aiCsXdr.csUser.copy(imei = None, imsi = None, msisdn = None))
+    val aiCsXdrException = aiCsXdr.copy(user = aiCsXdr.user.copy(imei = None, imsi = None, msisdn = None))
 
     val wrongRow = Row(Row("0", "0149b9829192", "0149b982d8e6", "0", "201097345297", "01", null, null, "1", "8",
       "21", "0", null, null, null, "1", null, "0", "ba", "60"), Row(null), Row("1751", "0839", "517d", null, null,
@@ -180,14 +180,14 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
 
   trait WithAiCsEventsToParse extends WithAiCsEvents {
 
-    val aiCsXdrMod = aiCsXdr.copy(csUser = CsUser(
+    val aiCsXdrMod = aiCsXdr.copy(user = CsUser(
         imei = Some("42104770740"),
         imsi = Some("420034104770740"),
         msisdn = Some(352387063L),
         tmsi = Some("61c5f3e5"),
         imeisv = Some("3523870633105423"),
         oldTmsi = Some("61c5f3e5")),
-      aiCell = aiCsXdr.aiCell.copy(servingCellId = Some("413a")))
+      cell = aiCsXdr.cell.copy(servingCellId = Some("413a")))
     val event = Event(
       User("42104770740", "420034104770740", 352387063),
       1416156582290L,
@@ -202,7 +202,7 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       None,
       None)
 
-    val aiCsXdrModWithoutEventType = aiCsXdrMod.copy(aiCall = aiCsXdrMod.aiCall.copy(scenario = "NaN"))
+    val aiCsXdrModWithoutEventType = aiCsXdrMod.copy(call = aiCsXdrMod.call.copy(scenario = "NaN"))
     val eventWithoutEventType = event.copy(eventType = None)
   }
 
