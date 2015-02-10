@@ -139,32 +139,32 @@ final case class  AiChannel(
     redirectingPartyOrServiceCentreNoa: Option[String])
 
 final case class  AiCsXdr(
-    aiCall: AiCall,
-    aiCell: AiCell,
-    aiTime: AiTime,
-    csUser: CsUser,
-    csPointCode: CsPointCode,
-    aiError: AiError,
-    csType: CsType,
-    aiCause: AiCause,
-    aiFlag: AiFlag,
-    csTransport: CsTransport,
-    aiChannel: AiChannel,
-    csOperation: CsOperation,
-    csStatistic: CsStatistic,
-    aiConnection: AiConnection) {
+    call: AiCall,
+    cell: AiCell,
+    time: AiTime,
+    user: CsUser,
+    pointCode: CsPointCode,
+    error: AiError,
+    ttype: CsType,
+    cause: AiCause,
+    flag: AiFlag,
+    transport: CsTransport,
+    channel: AiChannel,
+    operation: CsOperation,
+    statistic: CsStatistic,
+    connection: AiConnection) {
 
   def toEvent: Event = {
     Event(
-      User(imei= "", imsi = csUser.imsi.getOrElse(""), msisdn = 0L),
-      beginTime = EdmCoreUtils.hexToLong(aiTime.csTime.begin),
-      endTime = EdmCoreUtils.hexToLong(aiTime.csTime.end),
-      lacTac = aiCell.id._1.get,
-      cellId = aiCell.id._2.get,
+      User(imei= "", imsi = user.imsi.getOrElse(""), msisdn = 0L),
+      beginTime = EdmCoreUtils.hexToLong(time.csTime.begin),
+      endTime = EdmCoreUtils.hexToLong(time.csTime.end),
+      lacTac = cell.id._1.get,
+      cellId = cell.id._2.get,
       source = CsAInterfaceSource,
-      eventType = EdmCoreUtils.hexToDecimal(aiCall.scenario).map(_.toString),
-      subsequentLacTac = Try { aiCell.csCell.secondLac.get.toInt }.toOption,
-      subsequentCellId = Try { aiCell.secondCellId.get.toInt }.toOption)
+      eventType = EdmCoreUtils.hexToDecimal(call.scenario).map(_.toString),
+      subsequentLacTac = Try { cell.csCell.secondLac.get.toInt }.toOption,
+      subsequentCellId = Try { cell.secondCellId.get.toInt }.toOption)
   }
 }
 
@@ -227,7 +227,7 @@ object AiCsXdr {
       val Array(isInterSystemHandoverOccurred, sdcchDrop, frequencyBandUsed) = chunk23
 
       AiCsXdr(
-        aiCall = AiCall(
+        call = AiCall(
           csCall = CsCall(callType = EdmCoreUtils.parseShort(callType), calledSsn = EdmCoreUtils.parseShort(calledSsn)),
           scenario = EdmCoreUtils.parseNullString(scenario),
           calledNo = EdmCoreUtils.parseString(calledNo),
@@ -246,7 +246,7 @@ object AiCsXdr {
           pcmMultiplexNumber = EdmCoreUtils.parseString(pcmMultiplexNumber),
           frequencyBandUsed = EdmCoreUtils.parseString(frequencyBandUsed),
           imsiDetachStatus = EdmCoreUtils.parseString(imsiDetachStatus)),
-        aiCell = AiCell(
+        cell = AiCell(
           csCell = CsCell(
             firstLac = EdmCoreUtils.parseString(firstLac),
             secondLac = EdmCoreUtils.parseString(secondLac),
@@ -261,7 +261,7 @@ object AiCsXdr {
           servingCellId = EdmCoreUtils.parseString(servingCellId),
           oldMcc = EdmCoreUtils.parseString(oldMcc),
           oldMnc = EdmCoreUtils.parseString(oldMnc)),
-        aiTime = AiTime(
+        time = AiTime(
           csTime = CsTime(
             begin = EdmCoreUtils.parseNullString(begin),
             end = EdmCoreUtils.parseNullString(end),
@@ -277,17 +277,17 @@ object AiCsXdr {
           pagingTime = EdmCoreUtils.parseString(pagingTime),
           callSetupTime = EdmCoreUtils.parseString(callSetupTime),
           pcmActiveTimeSlot = EdmCoreUtils.parseString(pcmActiveTimeSlot)),
-        csUser = CsUser(
+        user = CsUser(
           imei = EdmCoreUtils.parseString(imei),
           imsi = EdmCoreUtils.parseString(imsi),
           msisdn = EdmCoreUtils.validMsisdn(msisdn),
           imeisv = EdmCoreUtils.parseString(imeisv),
           tmsi = EdmCoreUtils.parseString(tmsi),
           oldTmsi = EdmCoreUtils.parseString(oldTmsi)),
-        csPointCode = CsPointCode(
+        pointCode = CsPointCode(
           origin = EdmCoreUtils.parseNullString(origin),
           destination = EdmCoreUtils.parseNullString(destination)),
-        aiError = AiError(
+        error = AiError(
           rrCauseBssmap = EdmCoreUtils.parseString(rrCauseBssmap),
           causeBssmap = EdmCoreUtils.parseString(causeBssmap),
           lcsCauseBssmap = EdmCoreUtils.parseString(lcsCauseBssmap),
@@ -299,10 +299,10 @@ object AiCsXdr {
           assignedCipherModeRejectCause = EdmCoreUtils.parseString(assignedCipherModeRejectCause),
           noHandoverFailure = EdmCoreUtils.parseString(noHandoverFailure),
           ssErrorCode = EdmCoreUtils.parseString(ssErrorCode)),
-        csType = CsType(
+        ttype = CsType(
           locationUpdate = EdmCoreUtils.hexToShort(locationUpdateType),
           cmServiceRequest = EdmCoreUtils.hexToShort(cmServiceRequestType)),
-        aiCause = AiCause(
+        cause = AiCause(
           csCause = CsCause(
             disconnection = EdmCoreUtils.hexToShort(disconnection),
             dtmfReject = EdmCoreUtils.hexToShort(dtmfRejectCause),
@@ -319,7 +319,7 @@ object AiCsXdr {
           serviceCategory = EdmCoreUtils.parseString(serviceCategory),
           sccpConnectionRefusal = EdmCoreUtils.parseShort(sccpConnectionRefusalCause),
           causeLocation = EdmCoreUtils.parseString(causeLocation)),
-        aiFlag = AiFlag(
+        flag = AiFlag(
           csFlag = CsFlag(
             ccMessage = EdmCoreUtils.parseString(ccMessage),
             mmMessage = EdmCoreUtils.parseString(mmMessage),
@@ -327,13 +327,13 @@ object AiCsXdr {
           bssmapMessage = EdmCoreUtils.parseString(bssmapMessage),
           ssMessage = EdmCoreUtils.parseString(ssMessage),
           sdcchDrop = EdmCoreUtils.parseString(sdcchDrop)),
-        csTransport = CsTransport(
+        transport = CsTransport(
           referenceNo = EdmCoreUtils.parseString(referenceNo),
           protocolIdentifier = EdmCoreUtils.hexToShort(protocolIdentifier),
           commandType = EdmCoreUtils.parseShort(commandType),
           status = EdmCoreUtils.parseShort(status),
           failureCause = EdmCoreUtils.hexToShort(failureCause)),
-        aiChannel = AiChannel(
+        channel = AiChannel(
           causeDtaprr = EdmCoreUtils.parseString(causeDtaprr),
           firstChannelType = EdmCoreUtils.parseString(firstChannelType),
           secondChannelType = EdmCoreUtils.parseString(secondChannelType),
@@ -344,15 +344,15 @@ object AiCsXdr {
           srnti = EdmCoreUtils.parseString(srnti),
           redirectingPartyOrServiceCentreNo = EdmCoreUtils.parseString(redirectingPartyOrServiceCentreNo),
           redirectingPartyOrServiceCentreNoa = EdmCoreUtils.parseString(redirectingPartyOrServiceCentreNoa)),
-        csOperation = CsOperation(
+        operation = CsOperation(
           ccCode1 = EdmCoreUtils.parseInt(ccCode1),
           ccCode2 = EdmCoreUtils.parseInt(ccCode2),
           ssCode1 = EdmCoreUtils.parseInt(ssCode1),
           ssCode2 = EdmCoreUtils.parseInt(ssCode2)),
-        csStatistic = CsStatistic(
+        statistic = CsStatistic(
             smsLength = EdmCoreUtils.parseString(smsLength),
             dtmfNumberBits = EdmCoreUtils.parseString(dtmfNumberBits)),
-        aiConnection = AiConnection(
+        connection = AiConnection(
           csConnection = CsConnection(
             majorMinor = majorMinor.toShort,
             transactionId = EdmCoreUtils.parseString(transactionId)),
@@ -476,7 +476,7 @@ object AiCsXdr {
       val Seq(Seq(majorMinor, transactionId), servingRncId) = connectionRow
 
       AiCsXdr(
-        aiCall = AiCall(
+        call = AiCall(
           csCall = CsCall(
             callType = EdmCoreUtils.shortOption(callType),
             calledSsn = EdmCoreUtils.shortOption(calledSsn)),
@@ -497,7 +497,7 @@ object AiCsXdr {
           pcmMultiplexNumber = EdmCoreUtils.stringOption(pcmMultiplexNumber),
           frequencyBandUsed = EdmCoreUtils.stringOption(frequencyBandUsed),
           imsiDetachStatus = EdmCoreUtils.stringOption(imsiDetachStatus)),
-        aiCell = AiCell(
+        cell = AiCell(
           csCell = CsCell(
             firstLac = EdmCoreUtils.stringOption(firstLac),
             secondLac = EdmCoreUtils.stringOption(secondLac),
@@ -512,7 +512,7 @@ object AiCsXdr {
           servingCellId = EdmCoreUtils.stringOption(servingCellId),
           oldMcc = EdmCoreUtils.stringOption(oldMcc),
           oldMnc = EdmCoreUtils.stringOption(oldMnc)),
-        aiTime = AiTime(
+        time = AiTime(
           csTime = CsTime(
             begin = begin.asInstanceOf[String],
             end = end.asInstanceOf[String],
@@ -528,17 +528,17 @@ object AiCsXdr {
           pagingTime = EdmCoreUtils.stringOption(pagingTime),
           callSetupTime = EdmCoreUtils.stringOption(callSetupTime),
           pcmActiveTimeSlot = EdmCoreUtils.stringOption(pcmActiveTimeSlot)),
-        csUser = CsUser(
+        user = CsUser(
           imei = EdmCoreUtils.stringOption(imei),
           imsi = EdmCoreUtils.stringOption(imsi),
           msisdn = EdmCoreUtils.longOption(msisdn),
           imeisv = EdmCoreUtils.stringOption(imeisv),
           tmsi = EdmCoreUtils.stringOption(tmsi),
           oldTmsi = EdmCoreUtils.stringOption(oldTmsi)),
-        csPointCode = CsPointCode(
+        pointCode = CsPointCode(
           origin = origin.asInstanceOf[String],
           destination = destination.asInstanceOf[String]),
-        aiError = AiError(
+        error = AiError(
           rrCauseBssmap = EdmCoreUtils.stringOption(rrCauseBssmap),
           causeBssmap = EdmCoreUtils.stringOption(causeBssmap),
           lcsCauseBssmap = EdmCoreUtils.stringOption(lcsCauseBssmap),
@@ -550,10 +550,10 @@ object AiCsXdr {
           assignedCipherModeRejectCause = EdmCoreUtils.stringOption(assignedCipherModeRejectCause),
           noHandoverFailure = EdmCoreUtils.stringOption(noHandoverFailure),
           ssErrorCode = EdmCoreUtils.stringOption(ssErrorCode)),
-        csType = CsType(
+        ttype = CsType(
           locationUpdate = EdmCoreUtils.shortOption(locationUpdate),
           cmServiceRequest = EdmCoreUtils.shortOption(cmServiceRequest)),
-        aiCause = AiCause(
+        cause = AiCause(
           CsCause(
             disconnection = EdmCoreUtils.shortOption(disconnection),
             dtmfReject = EdmCoreUtils.shortOption(dtmfRejectCause),
@@ -570,7 +570,7 @@ object AiCsXdr {
           serviceCategory = EdmCoreUtils.stringOption(serviceCategory),
           sccpConnectionRefusal = EdmCoreUtils.shortOption(sccpConnectionRefusal),
           causeLocation = EdmCoreUtils.stringOption(causeLocation)),
-        aiFlag = AiFlag(
+        flag = AiFlag(
           csFlag = CsFlag(
             ccMessage = EdmCoreUtils.stringOption(ccMessage),
             mmMessage = EdmCoreUtils.stringOption(mmMessage),
@@ -578,13 +578,13 @@ object AiCsXdr {
           bssmapMessage = EdmCoreUtils.stringOption(bssmapMessage),
           ssMessage = EdmCoreUtils.stringOption(ssMessage),
           sdcchDrop = EdmCoreUtils.stringOption(sdcchDrop)),
-        csTransport = CsTransport(
+        transport = CsTransport(
           referenceNo = EdmCoreUtils.stringOption(referenceNo),
           protocolIdentifier = EdmCoreUtils.shortOption(protocolIdentifier),
           commandType = EdmCoreUtils.shortOption(commandType),
           status = EdmCoreUtils.shortOption(status),
           failureCause = EdmCoreUtils.shortOption(failureCause)),
-        aiChannel = AiChannel(
+        channel = AiChannel(
           causeDtaprr = EdmCoreUtils.stringOption(causeDtaprr),
           firstChannelType = EdmCoreUtils.stringOption(firstChannelType),
           secondChannelType = EdmCoreUtils.stringOption(secondChannelType),
@@ -595,16 +595,16 @@ object AiCsXdr {
           srnti = EdmCoreUtils.stringOption(srnti),
           redirectingPartyOrServiceCentreNo = EdmCoreUtils.stringOption(redirectingPartyOrServiceCentreNo),
           redirectingPartyOrServiceCentreNoa = EdmCoreUtils.stringOption(redirectingPartyOrServiceCentreNoa)),
-        csOperation = CsOperation(
+        operation = CsOperation(
           ccCode1 = EdmCoreUtils.intOption(ccCode1),
           ccCode2 = EdmCoreUtils.intOption(ccCode2),
           ssCode1 = EdmCoreUtils.intOption(ssCode1),
           ssCode2 = EdmCoreUtils.intOption(ssCode2)),
-        csStatistic =
+        statistic =
           CsStatistic(
             smsLength = EdmCoreUtils.stringOption(smsLength),
             dtmfNumberBits = EdmCoreUtils.stringOption(dtmfNumberBits)),
-        aiConnection = AiConnection(
+        connection = AiConnection(
           csConnection = CsConnection(majorMinor.asInstanceOf[Short], EdmCoreUtils.stringOption(transactionId)),
           servingRncId = EdmCoreUtils.stringOption(servingRncId)))
     }
