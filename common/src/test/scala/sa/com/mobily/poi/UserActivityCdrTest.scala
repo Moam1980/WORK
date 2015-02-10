@@ -93,6 +93,15 @@ class UserActivityCdrTest extends FlatSpec with ShouldMatchers with LocalSparkCo
     }
   }
 
+  it should "generate the kMeans model graphs plotting the centroids together" in new WithWeekUserActivities {
+    withTemporaryDirectory { directory =>
+      val numberOfClusters = 3
+      val model = kMeansModel(numberOfClusters, userActivitiesCdrVector)
+      kMeansModelGraphs(model, directory.path.concat("/"), true)
+      directory.list.length should be(1)
+    }
+  }
+
   it should "translate day-hour pairs into weekly values" in {
     weekHour(1, 0) should be(0)
     weekHour(1, 5) should be(5)
