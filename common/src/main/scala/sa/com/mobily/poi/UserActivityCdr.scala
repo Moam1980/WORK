@@ -11,6 +11,7 @@ import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.jfree.chart.axis.{NumberAxis, NumberTickUnit, SymbolAxis}
+import scalax.chart.XYChart
 import scalax.chart.api._
 
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
@@ -26,11 +27,12 @@ case class UserActivityCdr(
 
 object UserActivityCdr {
 
-  val DefaultMinActivityRatio = 0.1
   val HoursInWeek = 168
   val HoursInDay = 24
   val DaysInWeek = 7
+  val SeriesPrefix = "Type "
   val GraphPrefix = "kmeans-graph-"
+  val GraphMergedName = "kmeans-graphs-merged"
   val GraphSuffix = ".png"
   val WeekDaysLabel = "Week days"
   val WeekDays = Array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -73,13 +75,26 @@ object UserActivityCdr {
     kMeans.run(data)
   }
 
-  def kMeansModelGraphs(kMeansModel: KMeansModel, outputPath: String): Unit = {
-    val modelGraphs = for (centroid <- kMeansModel.clusterCenters;
-      graphValues <- Seq(graphValues(centroid))) yield graphValues
-    for (graphNumber <- 1 until modelGraphs.length + 1)
+  def kMeansModelGraphs(kMeansModel: KMeansModel, outputPath: String, plotCentroidsTogether: Boolean = false): Unit = {
+    val centroidsData =
+      for (centroid <- kMeansModel.clusterCenters; graphValues <- Seq(graphValues(centroid))) yield graphValues
+    if (plotCentroidsTogether) plotCentroidsSameGraph(outputPath, centroidsData)
+    else plotCentroidsDifferentGraphs(outputPath, centroidsData)
+  }
+
+  def plotCentroidsSameGraph(outputPath: String, centroidsData: Array[IndexedSeq[(Int, Double)]]): Unit = {
+    val seriesNames = for (seriesIndex <- 1 to centroidsData.size) yield SeriesPrefix + seriesIndex
+    val chartData = seriesNames zip centroidsData
+    pngKMeansGraph(
+      outputPath + File.separator + UserActivityCdr.GraphMergedName + UserActivityCdr.GraphSuffix,
+      XYLineChart(chartData))
+  }
+
+  def plotCentroidsDifferentGraphs(outputPath: String, centroidsData: Array[IndexedSeq[(Int, Double)]]): Unit = {
+    for (graphNumber <- 1 until centroidsData.length + 1)
       pngKMeansGraph(
         outputPath + File.separator + UserActivityCdr.GraphPrefix + graphNumber + UserActivityCdr.GraphSuffix,
-        modelGraphs(graphNumber - 1))
+        XYLineChart(centroidsData(graphNumber - 1)))
   }
 
   def graphValues(centroid: Vector): IndexedSeq[(Int, Double)] = {
@@ -91,12 +106,11 @@ object UserActivityCdr {
     chart.saveAsPNG(filePath)
   }
 
-  def pngKMeansGraph(filePath: String, data: Seq[(Int, Double)]): Unit = {
+  def pngKMeansGraph(filePath: String, chart: XYChart): Unit = {
     val xAxis = new NumberAxis
     xAxis.setTickUnit(new NumberTickUnit(2))
     xAxis.setRange(0, HoursInWeek - 1)
     val symbolAxis = new SymbolAxis(WeekDaysLabel, WeekDays)
-    val chart = XYLineChart(data)
     chart.plot.setDomainAxes(Array(xAxis, symbolAxis))
     chart.saveAsPNG(filePath, (GraphHorizontalSize, GraphVerticalSize))
   }
