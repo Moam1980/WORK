@@ -53,9 +53,9 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
     val nonEmptyString = List(("type", aiCs.call.scenario))
 
     List(("total", 1)) ++
-      SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => !value.isDefined) ++
-      SanityUtils.sanityMethod[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
-      SanityUtils.sanityMethod[String](nonEmptyString, value => value.isEmpty)
+      SanityUtils.perform[Option[String]](nonEmptyOptionString, value => !value.isDefined) ++
+      SanityUtils.perform[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
+      SanityUtils.perform[String](nonEmptyString, value => value.isEmpty)
   }).reduceByKey(_ + _)
 }
 

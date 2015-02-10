@@ -82,9 +82,9 @@ class UfdrPsXdrParser(self: RDD[UfdrPsXdr]) {
     val greatThanZero = List(("category.identifier", ufdrPs.protocol.category.identifier))
 
     List(("total", 1)) ++
-      SanityUtils.sanityMethod[String](nonEmpty, value => value.isEmpty) ++
-      SanityUtils.sanityMethod[Long](greatThanZeroLong, value => !(value > 0L)) ++
-      SanityUtils.sanityMethod[Int](greatThanZero, value => !(value > 0))
+      SanityUtils.perform[String](nonEmpty, value => value.isEmpty) ++
+      SanityUtils.perform[Long](greatThanZeroLong, value => !(value > 0L)) ++
+      SanityUtils.perform[Int](greatThanZero, value => !(value > 0))
   }).reduceByKey(_ + _)
 }
 

@@ -51,14 +51,13 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
       ("firstSac", iuCs.cell.firstSac))
       val nonEmptyOptionLong = List(("msisdn", iuCs.user.msisdn))
       val nonEmptyShort = List(("type", iuCs.ttype.iuDialogue))
-      val nonEmptyString = List(
-        ("dialogueIndicator", iuCs.connection.dialogueIndicator))
+      val nonEmptyString = List(("dialogueIndicator", iuCs.connection.dialogueIndicator))
 
     List(("total", 1)) ++
-      SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => value.isEmpty) ++
-      SanityUtils.sanityMethod[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
-      SanityUtils.sanityMethod[Short](nonEmptyShort, value => !value.isInstanceOf[Short]) ++
-      SanityUtils.sanityMethod[String](nonEmptyString, value => value.isEmpty)
+      SanityUtils.perform[Option[String]](nonEmptyOptionString, value => value.isEmpty) ++
+      SanityUtils.perform[Option[Long]](nonEmptyOptionLong, value => !value.isDefined) ++
+      SanityUtils.perform[Short](nonEmptyShort, value => !value.isInstanceOf[Short]) ++
+      SanityUtils.perform[String](nonEmptyString, value => value.isEmpty)
   }).reduceByKey(_ + _)
 }
 
