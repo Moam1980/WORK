@@ -330,4 +330,37 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     cell.hashCode == cell.id.hashCode should be(true)
     cell.hashCode.equals(cell.id.hashCode) should be(true)
   }
+
+  it should "return false when the user imsi is not valid to be parsed as event" in new WithAiCsEvents {
+    val aiCsXdrEventWithoutImsi = aiCsXdr.copy(user = aiCsXdr.user.copy(imsi = None))
+    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithoutImsi) should be(false)
+  }
+
+  it should "return false when the begin time is not valid to be parsed as event" in new WithAiCsEvents {
+    val aiCsXdrEventWithEmptyBeginTime = aiCsXdr.copy(
+      time = aiCsXdr.time.copy(csTime = aiCsXdr.time.csTime.copy(begin = "")))
+    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithEmptyBeginTime) should be(false)
+  }
+
+  it should "return false when the end time is not valid to be parsed as event" in new WithAiCsEvents {
+    val aiCsXdrEventWithEmptyEndTime = aiCsXdr.copy(
+      time = aiCsXdr.time.copy(csTime = aiCsXdr.time.csTime.copy(end = "")))
+    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithEmptyEndTime) should be(false)
+  }
+
+  it should "return false when the cell id first element is not valid to be parsed as event" in new WithAiCsEvents {
+    val aiCsXdrEventWithFirstCellIdNotDefined = aiCsXdr.copy(
+      cell = aiCsXdr.cell.copy(firstCellId = None))
+    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithFirstCellIdNotDefined) should be(false)
+  }
+
+  it should "return false when the cell id second element is not valid to be parsed as event" in new WithAiCsEvents {
+    val aiCsXdrEventWithSecondCellIdNotDefined = aiCsXdr.copy(
+      cell = aiCsXdr.cell.copy(csCell = aiCsXdr.cell.csCell.copy(firstLac = None)))
+    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithSecondCellIdNotDefined) should be(false)
+  }
+
+  it should "return true when the aiCsXdr is valid to be parsed as event" in new WithAiCsEvents {
+    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdr) should be(true)
+  }
 }

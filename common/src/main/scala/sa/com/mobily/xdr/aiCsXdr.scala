@@ -58,6 +58,8 @@ final case class  AiCell(
     if (firstCellId.isDefined && !firstCellId.get.isEmpty) (None, Some(EdmCoreUtils.hexToInt(firstCellId.get)))
     else (None, None)
 
+  def validId: Boolean = id._1.isDefined && id._2.isDefined
+
   def fields: Array[String] =
     csCell.fields ++ Array(cic.getOrElse(""), firstCellId.getOrElse(""), secondCellId.getOrElse(""),
       thirdCellId.getOrElse(""), servingLac.getOrElse(""), servingCellId.getOrElse(""), oldMcc.getOrElse(""),
@@ -609,4 +611,7 @@ object AiCsXdr {
           servingRncId = EdmCoreUtils.stringOption(servingRncId)))
     }
   }
+
+  def isValidToBeParsedAsEvent(aiCs: AiCsXdr): Boolean =
+    aiCs.user.imsi.isDefined && aiCs.time.csTime.validTime && aiCs.cell.validId
 }

@@ -41,15 +41,7 @@ class AiCsXdrWriter(self: RDD[AiCsXdr]) {
 
 class AiCsXdrParser(self: RDD[AiCsXdr]) {
 
-  def toEvent: RDD[Event] = self.filter { aiCs =>
-    (aiCs.user.imei.isDefined ||
-      aiCs.user.imsi.isDefined ||
-      aiCs.user.msisdn.isDefined) &&
-    !aiCs.time.csTime.begin.isEmpty &&
-    !aiCs.time.csTime.end.isEmpty &&
-    aiCs.cell.id._1.isDefined &&
-    aiCs.cell.id._2.isDefined
-  }.map(_.toEvent)
+  def toEvent: RDD[Event] = self.filter(aiCs => AiCsXdr.isValidToBeParsedAsEvent(aiCs)).map(_.toEvent)
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
     val nonEmptyOptionString = List(

@@ -39,7 +39,10 @@ case class CsTime(
     complete: Option[String],
     callOnHold: Option[String],
     holding: Option[String],
-    conversation: Option[String])
+    conversation: Option[String]) {
+
+  def validTime: Boolean = !begin.isEmpty && !end.isEmpty
+}
 
 case class CsType(locationUpdate: Option[Short], cmServiceRequest: Option[Short])
 

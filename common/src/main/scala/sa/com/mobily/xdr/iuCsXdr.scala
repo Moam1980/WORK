@@ -35,6 +35,8 @@ final case class IuCell(
       if (firstSac.isDefined && !firstSac.get.isEmpty) (None, Some(EdmCoreUtils.hexToInt(firstSac.get)))
       else (None, None)
 
+  def validId: Boolean = id._1.isDefined && id._2.isDefined
+
   def fields: Array[String] =
     csCell.fields ++ Array(mcc.getOrElse(""), mnc.getOrElse(""), firstRac.getOrElse(""), secondRac.getOrElse(""),
       thirdRac.getOrElse(""), firstSac.getOrElse(""), secondSac.getOrElse(""), thirdSac.getOrElse(""),
@@ -545,4 +547,7 @@ object IuCsXdr {
           assignedUplinkMaximumBitRate = EdmCoreUtils.longOption(assignedUplinkMaximumBitRate)))
     }
   }
+
+  def isValidToBeParsedAsEvent(iuCs: IuCsXdr): Boolean =
+    iuCs.user.imsi.isDefined && iuCs.time.csTime.validTime && iuCs.cell.validId
 }
