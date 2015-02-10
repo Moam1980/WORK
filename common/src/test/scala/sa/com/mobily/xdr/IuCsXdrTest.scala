@@ -18,8 +18,8 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
 
   trait WithIuCsXdrEvent {
 
-    val iuCsXdrLine = "2,04,0149b9851507,0149b9851a93,0,0,0,0,9dd,22c,4939008,13173274,58c,131,142,_,_,_,_,_,_,_,_," +
-      "_,_,d4b,_,d4b,_,_,_,_,83,_,_,_,_,_,_,_,_,420,03,0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_," +
+    val iuCsXdrLine = "2,04,0149b9851507,0149b9851a93,0,0,0,0,9dd,22c,4939008,13173274,58c,131,142,_,_,_,_,_,_," +
+      "_,_,_,_,d4b,_,d4b,_,_,_,_,83,_,_,_,_,_,_,_,_,420,03,0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_," +
       "420032275422214,_,8636190157279614,a65ca98e,b25cb3dc,_,_,_,_,_,_,_,_,_,ef9,d4b,82eb,_,c00c0086,_,_,_,_,_,0,_," +
       "166,_,_,_,51a00200,0,82eb,_,1,_,_,_,_,_"
     val iuCsXdrFields: Array[String] = Array("2","04","0149b9851507","0149b9851a93","0","0","0","0","9dd","22c",
@@ -34,7 +34,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       Row(Row(null, 142.toShort), null, null, null, null, null),
       Row(Row(0.toShort, null), "2", 131.toShort, null, null, null, "166", null, null, null),
       Row(
-        Row("0149b9851507", "0149b9851a93", "58c", null, null, null),
+        Row(1416156747015L, 1416156748435L, "58c", null, null, null),
         null,
         null,
         0.toShort,
@@ -68,7 +68,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       Row(Row(null, 142.toShort), null, null, null, null, null),
       Row(Row(0.toShort, null), 131.toShort, "2", null, null, null, "166", null, null, null),
       Row(
-        Row("0149b9851507", "0149b9851a93", "58c", null, null, null),
+        Row(1416156747015L, 1416156748435L, "58c", null, null, null),
         null,
         null,
         0.toShort,
@@ -140,8 +140,8 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         noRabSubFlows = None),
       time = IuTime(
         csTime = CsTime(
-          begin = "0149b9851507",
-          end = "0149b9851a93",
+          begin = 1416156747015L,
+          end = 1416156748435L,
           complete = Some("58c"),
           callOnHold = None,
           holding = None,
@@ -201,8 +201,8 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         requestedUplinkGuranteedBitRate = None,
         assignedDownlinkMaximumBitRate = None,
         assignedUplinkMaximumBitRate = None))
-    val iuCsXdrEventWrong = iuCsXdrEvent.copy(time = iuCsXdrEvent.time.copy(
-      csTime = iuCsXdrEvent.time.csTime.copy(begin = "")))
+    val iuCsXdrEventWrong = iuCsXdrEvent.copy(user = iuCsXdrEvent.user.copy(
+      imsi = None))
     val iuCsXdrEvent2 = iuCsXdrEvent.copy(
       user = iuCsXdrEvent.user.copy(
         imei = Some("8636190157279614"), imsi = Some("420032275422214"), msisdn = Some(666666666L)),
@@ -351,18 +351,6 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   it should "return false when the user imsi is not valid to be parsed as event" in new WithIuCsXdrEvent {
     val iuCsXdrEventWithoutImsi = iuCsXdrEvent.copy(user = iuCsXdrEvent.user.copy(imsi = None))
     IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithoutImsi) should be(false)
-  }
-
-  it should "return false when the begin time is not valid to be parsed as event" in new WithIuCsXdrEvent {
-    val iuCsXdrEventWithEmptyBeginTime = iuCsXdrEvent.copy(
-      time = iuCsXdrEvent.time.copy(csTime = iuCsXdrEvent.time.csTime.copy(begin = "")))
-    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithEmptyBeginTime) should be(false)
-  }
-
-  it should "return false when the end time is not valid to be parsed as event" in new WithIuCsXdrEvent {
-    val iuCsXdrEventWithEmptyBeginTime = iuCsXdrEvent.copy(
-      time = iuCsXdrEvent.time.copy(csTime = iuCsXdrEvent.time.csTime.copy(end = "")))
-    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithEmptyBeginTime) should be(false)
   }
 
   it should "return false when the cell id first element is not valid to be parsed as event" in new WithIuCsXdrEvent {

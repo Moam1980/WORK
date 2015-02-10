@@ -50,8 +50,7 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
       ("cellId", aiCs.cell.firstCellId),
       ("firstLac", aiCs.cell.csCell.firstLac))
     val nonEmptyOptionLong = List(("msisdn", aiCs.user.msisdn))
-    val nonEmptyString = List(("beginTime", aiCs.time.csTime.begin), ("endTime", aiCs.time.csTime.end),
-      ("type", aiCs.call.scenario))
+    val nonEmptyString = List(("type", aiCs.call.scenario))
 
     List(("total", 1)) ++
       SanityUtils.sanityMethod[Option[String]](nonEmptyOptionString, value => !value.isDefined) ++

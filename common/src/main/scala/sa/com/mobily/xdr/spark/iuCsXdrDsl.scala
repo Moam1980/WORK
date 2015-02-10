@@ -52,8 +52,6 @@ class IuCsXdrParser(self: RDD[IuCsXdr]) {
       val nonEmptyOptionLong = List(("msisdn", iuCs.user.msisdn))
       val nonEmptyShort = List(("type", iuCs.ttype.iuDialogue))
       val nonEmptyString = List(
-        ("beginTime", iuCs.time.csTime.begin),
-        ("endTime", iuCs.time.csTime.end),
         ("dialogueIndicator", iuCs.connection.dialogueIndicator))
 
     List(("total", 1)) ++

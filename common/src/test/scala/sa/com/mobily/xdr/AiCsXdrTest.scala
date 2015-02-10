@@ -70,8 +70,8 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
         oldMnc = None),
       AiTime(
         csTime = CsTime(
-          begin = "0149b9829192",
-          end = "0149b982d8e6",
+          begin = 1416156582290L,
+          end = 1416156600550L,
           complete = Some("424e"),
           callOnHold = None,
           holding = Some("00004330"),
@@ -169,7 +169,7 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
       null, null), Row(null, null, null, null, null, null, null, null, null, null, "03"), Row(16, null, null, null))
     val row = Row(Row(Row(0.toShort, 254.toShort), "0", "201097345297", "01", null, null, "1", "8", "21", "0", null,
       null, "1", null, "0", "ba", "60", "00"), Row(Row("0839", null, "0839", "0839", "0839"), "1751", "517d", null,
-      "517d", null, null, null, null), Row(Row("0149b9829192", "0149b982d8e6", "424e", null, "00004330", null), null,
+      "517d", null, null, null, null), Row(Row(1416156582290L, 1416156600550L, "424e", null, "00004330", null), null,
       null, "00004754", "00000260", "00000702", null, null, "11"), Row(null, "420034104770740", null,
       "3523870633105423", "61c5f3e5", "61c5f3e5"), Row("000392", "000146"), Row(null, "9", null, null, null, "10",
       null, null, null, null, null), Row(null, 1.toShort), Row(Row(16.toShort, null, null, null, null, 0.toShort),
@@ -334,18 +334,6 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   it should "return false when the user imsi is not valid to be parsed as event" in new WithAiCsEvents {
     val aiCsXdrEventWithoutImsi = aiCsXdr.copy(user = aiCsXdr.user.copy(imsi = None))
     AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithoutImsi) should be(false)
-  }
-
-  it should "return false when the begin time is not valid to be parsed as event" in new WithAiCsEvents {
-    val aiCsXdrEventWithEmptyBeginTime = aiCsXdr.copy(
-      time = aiCsXdr.time.copy(csTime = aiCsXdr.time.csTime.copy(begin = "")))
-    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithEmptyBeginTime) should be(false)
-  }
-
-  it should "return false when the end time is not valid to be parsed as event" in new WithAiCsEvents {
-    val aiCsXdrEventWithEmptyEndTime = aiCsXdr.copy(
-      time = aiCsXdr.time.copy(csTime = aiCsXdr.time.csTime.copy(end = "")))
-    AiCsXdr.isValidToBeParsedAsEvent(aiCsXdrEventWithEmptyEndTime) should be(false)
   }
 
   it should "return false when the cell id first element is not valid to be parsed as event" in new WithAiCsEvents {

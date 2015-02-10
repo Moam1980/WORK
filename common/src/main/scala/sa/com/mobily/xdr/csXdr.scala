@@ -34,15 +34,12 @@ case class CsCall(callType: Option[Short], calledSsn: Option[Short])
 case class CsConnection(majorMinor: Short, transactionId: Option[String])
 
 case class CsTime(
-    begin: String,
-    end: String,
+    begin: Long,
+    end: Long,
     complete: Option[String],
     callOnHold: Option[String],
     holding: Option[String],
-    conversation: Option[String]) {
-
-  def validTime: Boolean = !begin.isEmpty && !end.isEmpty
-}
+    conversation: Option[String])
 
 case class CsType(locationUpdate: Option[Short], cmServiceRequest: Option[Short])
 
