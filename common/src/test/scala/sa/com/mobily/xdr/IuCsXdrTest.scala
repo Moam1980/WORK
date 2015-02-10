@@ -347,4 +347,37 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     cell.hashCode  == cell.id.hashCode should be (true)
     cell.hashCode.equals(cell.id.hashCode) should be (true)
   }
+
+  it should "return false when the user imsi is not valid to be parsed as event" in new WithIuCsXdrEvent {
+    val iuCsXdrEventWithoutImsi = iuCsXdrEvent.copy(user = iuCsXdrEvent.user.copy(imsi = None))
+    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithoutImsi) should be(false)
+  }
+
+  it should "return false when the begin time is not valid to be parsed as event" in new WithIuCsXdrEvent {
+    val iuCsXdrEventWithEmptyBeginTime = iuCsXdrEvent.copy(
+      time = iuCsXdrEvent.time.copy(csTime = iuCsXdrEvent.time.csTime.copy(begin = "")))
+    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithEmptyBeginTime) should be(false)
+  }
+
+  it should "return false when the end time is not valid to be parsed as event" in new WithIuCsXdrEvent {
+    val iuCsXdrEventWithEmptyBeginTime = iuCsXdrEvent.copy(
+      time = iuCsXdrEvent.time.copy(csTime = iuCsXdrEvent.time.csTime.copy(end = "")))
+    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithEmptyBeginTime) should be(false)
+  }
+
+  it should "return false when the cell id first element is not valid to be parsed as event" in new WithIuCsXdrEvent {
+    val iuCsXdrEventWithFirstSacNotDefined = iuCsXdrEvent.copy(
+      cell = iuCsXdrEvent.cell.copy(firstSac = None))
+    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithFirstSacNotDefined) should be(false)
+  }
+
+  it should "return false when the cell id second element is not valid to be parsed as event" in new WithIuCsXdrEvent {
+    val iuCsXdrEventWithFirstSacNotDefined = iuCsXdrEvent.copy(
+      cell = iuCsXdrEvent.cell.copy(csCell = iuCsXdrEvent.cell.csCell.copy(firstLac = None)))
+    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEventWithFirstSacNotDefined) should be(false)
+  }
+
+  it should "return true when the iuCsXdrEvent is valid to be parsed as event" in new WithIuCsXdrEvent {
+    IuCsXdr.isValidToBeParsedAsEvent(iuCsXdrEvent) should be(true)
+  }
 }
