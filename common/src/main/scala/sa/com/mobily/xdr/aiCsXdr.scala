@@ -159,8 +159,8 @@ final case class  AiCsXdr(
   def toEvent: Event = {
     Event(
       User(imei= "", imsi = user.imsi.getOrElse(""), msisdn = 0L),
-      beginTime = EdmCoreUtils.hexToLong(time.csTime.begin),
-      endTime = EdmCoreUtils.hexToLong(time.csTime.end),
+      beginTime = time.csTime.begin,
+      endTime = time.csTime.end,
       lacTac = cell.id._1.get,
       cellId = cell.id._2.get,
       source = CsAInterfaceSource,
@@ -265,8 +265,8 @@ object AiCsXdr {
           oldMnc = EdmCoreUtils.parseString(oldMnc)),
         time = AiTime(
           csTime = CsTime(
-            begin = EdmCoreUtils.parseNullString(begin),
-            end = EdmCoreUtils.parseNullString(end),
+            begin = EdmCoreUtils.hexToLong(begin),
+            end = EdmCoreUtils.hexToLong(end),
             complete = EdmCoreUtils.parseString(complete),
             callOnHold = EdmCoreUtils.parseString(callOnHold),
             holding = EdmCoreUtils.parseString(holding),
@@ -516,8 +516,8 @@ object AiCsXdr {
           oldMnc = EdmCoreUtils.stringOption(oldMnc)),
         time = AiTime(
           csTime = CsTime(
-            begin = begin.asInstanceOf[String],
-            end = end.asInstanceOf[String],
+            begin = begin.asInstanceOf[Long],
+            end = end.asInstanceOf[Long],
             complete = EdmCoreUtils.stringOption(complete),
             callOnHold = EdmCoreUtils.stringOption(callOnHold),
             holding = EdmCoreUtils.stringOption(holding),
@@ -612,6 +612,5 @@ object AiCsXdr {
     }
   }
 
-  def isValidToBeParsedAsEvent(aiCs: AiCsXdr): Boolean =
-    aiCs.user.imsi.isDefined && aiCs.time.csTime.validTime && aiCs.cell.validId
+  def isValidToBeParsedAsEvent(aiCs: AiCsXdr): Boolean = aiCs.user.imsi.isDefined && aiCs.cell.validId
 }

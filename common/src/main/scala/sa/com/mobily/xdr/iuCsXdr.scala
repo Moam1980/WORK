@@ -153,8 +153,8 @@ case class IuCsXdr(
   def toEvent: Event = {
     Event(
       User(imei = "", imsi = user.imsi.getOrElse(""), msisdn = 0L),
-      beginTime = EdmCoreUtils.hexToLong(time.csTime.begin),
-      endTime = EdmCoreUtils.hexToLong(time.csTime.end),
+      beginTime = time.csTime.begin,
+      endTime = time.csTime.end,
       lacTac = cell.id._1.get,
       cellId = cell.id._2.get,
       source = CsIuSource,
@@ -257,8 +257,8 @@ object IuCsXdr {
           noRabSubFlows = EdmCoreUtils.parseString(noRabSubFlows)),
         time = IuTime(
           csTime = CsTime(
-            begin = EdmCoreUtils.parseNullString(startDatetime),
-            end = EdmCoreUtils.parseNullString(endDateTime),
+            begin = EdmCoreUtils.hexToLong(startDatetime),
+            end = EdmCoreUtils.hexToLong(endDateTime),
             complete = EdmCoreUtils.parseString(completeTime),
             callOnHold = EdmCoreUtils.parseString(callOnHoldTime),
             holding = EdmCoreUtils.parseString(holdingTime),
@@ -470,8 +470,8 @@ object IuCsXdr {
           rabId = EdmCoreUtils.longOption(rabId),
           noRabSubFlows = EdmCoreUtils.stringOption(noRabSubFlows)),
         time = IuTime(
-          csTime = CsTime(begin = begin.asInstanceOf[String],
-            end = end.asInstanceOf[String],
+          csTime = CsTime(begin = begin.asInstanceOf[Long],
+            end = end.asInstanceOf[Long],
             complete = EdmCoreUtils.stringOption(complete),
             callOnHold = EdmCoreUtils.stringOption(callOnHold),
             holding = EdmCoreUtils.stringOption(holding),
@@ -548,6 +548,5 @@ object IuCsXdr {
     }
   }
 
-  def isValidToBeParsedAsEvent(iuCs: IuCsXdr): Boolean =
-    iuCs.user.imsi.isDefined && iuCs.time.csTime.validTime && iuCs.cell.validId
+  def isValidToBeParsedAsEvent(iuCs: IuCsXdr): Boolean = iuCs.user.imsi.isDefined && iuCs.cell.validId
 }
