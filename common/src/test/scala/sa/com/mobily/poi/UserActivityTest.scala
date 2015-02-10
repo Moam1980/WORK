@@ -4,7 +4,7 @@
 
 package sa.com.mobily.poi
 
-import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.scalatest._
 
 import sa.com.mobily.user.User
@@ -86,6 +86,18 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val userActivityWeek3 = UserActivity(user1, siteId, regionId, user1ActivityVectorWeek3, weekYear3)
   }
 
+  trait WithClusterCentersVectors {
+    val vector0 = Vectors.zeros(0)
+    val emptyKmeansArrayVectors = Array(vector0)
+    val vector1 = Vectors.zeros(3)
+    val vector2 = Vectors.zeros(3)
+    val kmeansArrayVectors = Array(vector1, vector2)
+    val resultSeq: Seq[String] = Seq(
+      Array("Type0", "1970-01-04 00:00:00", "0.0"), Array("Type0", "1970-01-04 01:00:00", "0.0"),
+      Array("Type0", "1970-01-04 02:00:00", "0.0"), Array("Type1", "1970-01-04 00:00:00", "0.0"),
+      Array("Type1", "1970-01-04 01:00:00", "0.0"), Array("Type1", "1970-01-04 02:00:00", "0.0")).map(_.mkString(","))
+  }
+
   "UserActivity" should "return the proper key" in new WithAverageActivity {
     userActivity1.key should be(expectedKey)
   }
@@ -134,5 +146,13 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
     val activityVector2 =
       userActivityWeek3.aggregate(userActivityWeek2).aggregate(userActivityWeek1).activityVector
     activityVector1 should be (activityVector2)
+  }
+
+  it should "create an array of formatted strings of cluster centers vectors" in new WithClusterCentersVectors {
+    UserActivity.getRowsOfCentroids(kmeansArrayVectors).map(_.mkString(",")) should be (resultSeq)
+  }
+
+  it should "create an empty array of formatted strings of cluster centers vectors" in new WithClusterCentersVectors {
+    UserActivity.getRowsOfCentroids(emptyKmeansArrayVectors).map(_.mkString(",")) should be (Seq())
   }
 }

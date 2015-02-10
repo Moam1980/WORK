@@ -40,16 +40,16 @@ class UserActivityDslTest extends FlatSpec with ShouldMatchers with LocalSparkCo
       List(userActivity1, userActivity2, userActivity3, userActivity4, userActivity5))
   }
 
-  "UserActivityDsl" should "compute the average for activity vectors" in new WithUserActivity {
-    userActivities.averageActivity().collect.length should be (1)
+  "UserActivityDsl" should "compute the aggregate for activity vectors" in new WithUserActivity {
+    userActivities.byYearWeek.aggregateActivity.collect.length should be (1)
   }
 
-  it should "compute the average for weekly activity and overriding default ratio" in new WithUserActivity {
-    userActivities.averageActivity(0.2).collect.length should be (0)
+  it should "compute the aggregate for weekly activity and overriding default ratio" in new WithUserActivity {
+    userActivities.byYearWeek.aggregateActivity.removeLittleActivity(0.2).collect.length should be (0)
   }
 
   it should "filter activities user with low activity" in new WithUserActivity {
-    userActivities.filteringLittleActivity().collect.length should be (2)
+    userActivities.byYearWeek.aggregateActivity.removeLittleActivity(0.1).collect.length should be (1)
   }
 
   it should "group activities by weekYear" in new WithUserActivity {

@@ -18,13 +18,12 @@ class UserActivityFunctions(self: RDD[UserActivity]) {
 
   def byYearWeek: RDD[UserActivity] = self.keyBy(_.keyByWeek).reduceByKey(_.combineByWeekYear(_)).values
 
-  def filteringLittleActivity(minimumActivityRatio: Double = DefaultMinActivityRatio): RDD[UserActivity] = {
+  def removeLittleActivity(minimumActivityRatio: Double = DefaultMinActivityRatio): RDD[UserActivity] = {
     val minNumberOfHours = HoursPerWeek * minimumActivityRatio
-    byYearWeek.filter(_.activityVector.toArray.count(element => element == 1) > minNumberOfHours)
+    self.filter(_.weekHoursWithActivity.size > minNumberOfHours)
   }
 
-  def averageActivity(minimumActivityRatio: Double = DefaultMinActivityRatio): RDD[UserActivity] =
-    filteringLittleActivity(minimumActivityRatio).keyBy(_.key).reduceByKey(_.aggregate(_)).values
+  def aggregateActivity: RDD[UserActivity] = self.keyBy(_.key).reduceByKey(_.aggregate(_)).values
 }
 
 trait UserActivityDsl {
