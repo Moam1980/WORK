@@ -71,6 +71,11 @@ object Coordinates {
 
   def srid(epsg: String): Int = epsg.substring(epsg.indexOf(Coordinates.AuthoritySridSep) + 1).toInt
 
+  def precisionModel(epsg: String): PrecisionModel = epsg match {
+    case SaudiArabiaUtmEpsg => UtmPrecisionModel
+    case _ => LatLongPrecisionModel
+  }
+
   def epsg(srid: Int): String = s"$EpsgAuthority$AuthoritySridSep$srid"
 
   def isoCodeUtmSrid(isoCode: String): Int = isoCode match {

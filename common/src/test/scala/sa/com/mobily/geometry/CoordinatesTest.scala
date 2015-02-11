@@ -40,6 +40,14 @@ class CoordinatesTest extends FlatSpec with ShouldMatchers {
     Coordinates.utmSridIsoCode(9999) should be (CountryCode.SaudiArabiaIsoCode)
   }
 
+  it should "return precision model for Saudi Arabia UTM EPSG" in {
+    Coordinates.precisionModel(Coordinates.SaudiArabiaUtmEpsg) should be (Coordinates.UtmPrecisionModel)
+  }
+
+  it should "return precision model for other EPSG as full precision" in {
+    Coordinates.precisionModel(Coordinates.Wgs84GeodeticEpsg) should be (Coordinates.LatLongPrecisionModel)
+  }
+
   "UtmCoordinates" should "transform to LatLongCoordinates (WGS84 geodetic)" in new WithUtmCoordinates
       with WithLatLongCoordinates {
     utmCoords.latLongCoordinates() should be (latLongCoords)

@@ -14,17 +14,21 @@ addCommandAlias("test-common", ";project edm-core-common ;test ;project /")
 
 addCommandAlias("test-usercentric", ";project edm-core-usercentric ;test ;project /")
 
+addCommandAlias("test-customer", ";project edm-core-customer ;test ;project /")
+
 addCommandAlias("test-complete", ";project edm-core-complete ;test ;project /")
 
-addCommandAlias("test-all", ";test-common ;test-usercentric ;test-complete ;project /")
+addCommandAlias("test-all", ";test-common ;test-usercentric ;test-customer ;test-complete ;project /")
 
 addCommandAlias("scoverage-common", ";project edm-core-common ;scoverage:test ;project /")
 
 addCommandAlias("scoverage-usercentric", ";project edm-core-usercentric ;scoverage:test ;project /")
 
+addCommandAlias("scoverage-customer", ";project edm-core-customer ;scoverage:test ;project /")
+
 addCommandAlias("scoverage-complete", ";project edm-core-complete ;scoverage:test ;project /")
 
-addCommandAlias("scoverage-all", ";scoverage-common ;scoverage-usercentric ;scoverage-complete ;project /")
+addCommandAlias("scoverage-all", ";scoverage-common ;scoverage-usercentric ;scoverage-customer ;scoverage-complete ;project /")
 
 addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverage-all ;assembly")
 

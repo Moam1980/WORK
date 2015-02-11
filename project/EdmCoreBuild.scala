@@ -35,7 +35,7 @@ object EdmCoreBuild extends Build {
     configs(IntegrationTest)
     settings(Defaults.itSettings: _*)
     settings(testParallelSettings: _*)
-    aggregate(complete, common, usercentric)
+    aggregate(complete, common, usercentric, customer)
     settings(aggregate in test := false)
     )
 
@@ -56,6 +56,16 @@ object EdmCoreBuild extends Build {
     dependsOn(common % "compile->compile;test->test")
     )
 
+  lazy val customer = (Project(id = projectId("customer"), base = file("customer"))
+    settings(ScoverageSbtPlugin.instrumentSettings: _*)
+    settings(ScalastylePlugin.Settings: _*)
+    configs(IntegrationTest)
+    settings(Defaults.itSettings : _*)
+    settings(testParallelSettings: _*)
+    dependsOn(common % "compile->compile;test->test")
+    dependsOn(usercentric % "compile->compile;test->test")
+    )
+
   lazy val complete = (
     Project(
       id = projectId("complete"),
@@ -69,5 +79,6 @@ object EdmCoreBuild extends Build {
     settings(testParallelSettings: _*)
     dependsOn(common % "compile->compile;test->test")
     dependsOn(usercentric % "compile->compile;test->test")
+    dependsOn(customer % "compile->compile;test->test")
     )
 }
