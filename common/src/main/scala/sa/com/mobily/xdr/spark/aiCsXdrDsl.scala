@@ -7,6 +7,7 @@ package sa.com.mobily.xdr.spark
 import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext._
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
@@ -42,6 +43,11 @@ class AiCsXdrWriter(self: RDD[AiCsXdr]) {
 class AiCsXdrParser(self: RDD[AiCsXdr]) {
 
   def toEvent: RDD[Event] = self.filter(aiCs => AiCsXdr.isValidToBeParsedAsEvent(aiCs)).map(_.toEvent)
+
+  def toEventWithMatchingSubscribers(implicit bcSubscribersCatalogue: Broadcast[Map[String, Long]]): RDD[Event] =
+    toEvent.filter(e => bcSubscribersCatalogue.value.isDefinedAt(e.user.imsi)).map(e =>
+      e.copy(user = e.user.copy(msisdn = bcSubscribersCatalogue.value(e.user.imsi))))
+
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
     val nonEmptyOptionString = List(

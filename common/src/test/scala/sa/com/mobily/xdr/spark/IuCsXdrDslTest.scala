@@ -53,8 +53,9 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       iuCsXdrLine2,
       iuCsXdrLine3,
       iuCsXdrLine4))
+    val user1Imsi = "420032275422214"
     val event1 = Event(
-      User("8636190157279614", "420032275422214", 666666666),
+      User("8636190157279614", user1Imsi, 666666666),
       1416156747015L,
       1416156748435L,
       3403,
@@ -81,6 +82,13 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       None)
     val event3 = event2.copy(user = User("", "420032186210267", 0L))
     val events = sc.parallelize(Array(event1, event2, event3))
+  }
+
+  trait WithSubscribersBroadcastMap extends WithIuCsXdrAndEventText {
+    
+    val user1OverridedMsisdn = 1234L
+    val subscribersCatalogue = Map((user1Imsi, user1OverridedMsisdn))
+    val bcCellCatalogue = sc.broadcast(subscribersCatalogue)
   }
 
   trait WithSanity extends WithIuCsXdrAndEventText {
@@ -122,6 +130,13 @@ class IuCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
   it should "parse RDD[IuCsXdr] to RDD[Event]" in new WithIuCsXdrAndEventText {
     iuCsXdrEvents.toIuCsXdr.toEvent.collect should be (events.collect)
   }
+
+  it should "parse RDD[IuCsXdr] to RDD[Event] discarding users that are not in the subscribers broadcast map" in
+    new WithSubscribersBroadcastMap {
+      val matchingSubscribersEvents = iuCsXdrEvents.toIuCsXdr.toEventWithMatchingSubscribers(bcCellCatalogue).collect
+      matchingSubscribersEvents.length should be(1)
+      matchingSubscribersEvents(0).user.msisdn should be(user1OverridedMsisdn)
+    }
 
   it should "take sanity metrics" in new WithSanity {
     private val collect: Array[(String, Int)] = iuCsXdrEvents.toIuCsXdr.sanity.collect

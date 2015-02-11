@@ -50,13 +50,14 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       "0839,517d,_,_,_,00004330,_,_,00004754,00000260,00000702,_,_,0,_,9,_,_,420034770740,10,_,_,0839,517d,_,_,_,_," +
       "0839,_,_,10,_,_,03,61c5f3e5,3523870633105423,00,_,0,_,_,0,0,254,_,_,_,_,1,_,0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_," +
       "_,_,_,_,_,d8000c00,80000,230e0000,0,0,16,_,_,_,_,00,0839,_,1a,_,_,424e,_,0,ba,11,_,1,0,60"
+    val user1Imsi = "420034104770740"
     val aiCsXdrs = sc.parallelize(Array(
       aiCsXdrLine1,
       aiCsXdrLine2,
       aiCsXdrLine3,
       aiCsXdrLine4))
     val event1 = Event(
-      User("42104770740", "420034104770740", 3523870),
+      User("42104770740", user1Imsi, 3523870),
       1416156582290L,
       1416156600550L,
       2105,
@@ -83,6 +84,13 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       None)
     val event3 = event2.copy(user = User("", "420032370264779", 0L))
     val eventsParsed = sc.parallelize(Array(event1, event2, event3))
+  }
+
+  trait WithSubscribersBroadcastMap extends WithAiCsEventsToParse {
+
+    val user1OverridedMsisdn = 1234L
+    val subscribersCatalogue = Map((user1Imsi, user1OverridedMsisdn))
+    val bcCellCatalogue = sc.broadcast(subscribersCatalogue)
   }
 
   trait WithSanity extends WithAiCsEventsToParse {
@@ -120,6 +128,13 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
   it should "parse RDD[AiCsXdr] to RDD[Event]" in new WithAiCsEventsToParse {
     aiCsXdrs.toAiCsXdr.toEvent.collect should be (eventsParsed.collect)
   }
+
+  it should "parse RDD[AiCsXdr] to RDD[Event] discarding users that are not in the subscribers broadcast map" in
+    new WithSubscribersBroadcastMap {
+      val events = aiCsXdrs.toAiCsXdr.toEventWithMatchingSubscribers(bcCellCatalogue).collect
+      events.length should be(1)
+      events(0).user.msisdn should be(user1OverridedMsisdn)
+    }
 
   it should "take sanity metrics" in new WithSanity {
     aiCsXdrs.toAiCsXdr.sanity.collect.sameElements(metrics) should be (true)
