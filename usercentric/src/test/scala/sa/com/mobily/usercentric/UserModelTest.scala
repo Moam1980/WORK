@@ -42,6 +42,10 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val slot1AfterWkt = "POLYGON ((200 200, 210 200, 210 210, 200 210, 200 200))"
     val slot2AfterWkt = "POLYGON ((205 200, 215 200, 215 210, 205 210, 205 200))"
     val suffix2Wkt = "POLYGON ((220 200, 220 210, 230 210, 230 200, 220 200))"
+    val cellTimeExt1Wkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))"
+    val cellTimeExt2Wkt = "POLYGON ((35010 0, 35010 10, 35020 10, 35020 0, 35010 0))"
+    val cellTimeExt3Wkt = "POLYGON ((100010 0, 100010 10, 100020 10, 100020 0, 100010 0))"
+    val cellTimeExt4Wkt = "POLYGON ((200900 0, 200900 10, 200910 10, 200910 0, 200900 0))"
 
     val cellPrefix = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4, "1", cellPrefixWkt)
     val cellSlot1 = cellPrefix.copy(cellId = 2, coverageWkt = cellSlot1Wkt)
@@ -51,6 +55,14 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val cellSlot2After = cellPrefix.copy(cellId = 6, coverageWkt = slot2AfterWkt)
     val cellSuffix2 = cellPrefix.copy(cellId = 7, coverageWkt = suffix2Wkt)
 
+    val cellTimeExt1 = Cell(1, 2, UtmCoordinates(0, 0), FourGFdd, Micro, 20, 180, 45, 4, "1", cellTimeExt1Wkt)
+    val cellTimeExt2 =
+      cellTimeExt1.copy(cellId = 2, planarCoords = UtmCoordinates(35010, 0), coverageWkt = cellTimeExt2Wkt)
+    val cellTimeExt3 =
+      cellTimeExt1.copy(cellId = 3, planarCoords = UtmCoordinates(100010, 0), coverageWkt = cellTimeExt3Wkt)
+    val cellTimeExt4 =
+      cellTimeExt1.copy(cellId = 4, planarCoords = UtmCoordinates(200900, 0), coverageWkt = cellTimeExt4Wkt)
+
     implicit val cellCatalogue = Map(
       (1, 1) -> cellPrefix,
       (1, 2) -> cellSlot1,
@@ -58,7 +70,11 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       (1, 4) -> cellSuffix,
       (1, 5) -> cellSlot1After,
       (1, 6) -> cellSlot2After,
-      (1, 7) -> cellSuffix2)
+      (1, 7) -> cellSuffix2,
+      (2, 1) -> cellTimeExt1,
+      (2, 2) -> cellTimeExt2,
+      (2, 3) -> cellTimeExt3,
+      (2, 4) -> cellTimeExt4)
   }
 
   trait WithSpatioTemporalSlots extends WithEvents {
@@ -231,18 +247,100 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val jvp2 = JourneyViaPoint(slotJvp2.copy(typeEstimate = JourneyViaPointEstimate), 0)
   }
 
+  trait WithModelSlotsForTimeExtension extends WithCellCatalogue {
+
+    val startOfDay = 1423429200000L
+    val endOfDay = 1423515599999L
+
+    val dwellSlot1 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423468095000L,
+      endTime = 1423469636000L,
+      cells = Set((2, 1)),
+      firstEventBeginTime = 1423468095000L,
+      lastEventEndTime = 1423469636000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot20 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423471436000L,
+      endTime = 1423505663000L,
+      cells = Set((2, 2)),
+      firstEventBeginTime = 1423471436000L,
+      lastEventEndTime = 1423505663000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot21 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423503235000L,
+      endTime = 1423505663000L,
+      cells = Set((2, 2)),
+      firstEventBeginTime = 1423503235000L,
+      lastEventEndTime = 1423505663000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot22 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423471436000L,
+      endTime = 1423505663000L,
+      cells = Set((2, 3)),
+      firstEventBeginTime = 1423471436000L,
+      lastEventEndTime = 1423505663000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot23 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423503235000L,
+      endTime = 1423505663000L,
+      cells = Set((2, 3)),
+      firstEventBeginTime = 1423503235000L,
+      lastEventEndTime = 1423505663000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val viaPoint15 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423471436000L,
+      endTime = 1423505663000L,
+      cells = Set((2, 2)),
+      firstEventBeginTime = 1423471436000L,
+      lastEventEndTime = 1423505663000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4,
+      typeEstimate = JourneyViaPointEstimate)
+    val viaPoint16 = viaPoint15.copy(startTime = 1423489415000L, endTime = 1423489931000L, cells = Set((2, 3)))
+    val viaPoint17 = viaPoint15.copy(startTime = 1423493522000L, endTime = 1423505663000L, cells = Set((2, 3)))
+    val dwellSlot30 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423507833000L,
+      endTime = 1423514411000L,
+      cells = Set((2, 3)),
+      firstEventBeginTime = 1423507833000L,
+      lastEventEndTime = 1423514411000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot31 = dwellSlot30.copy(cells = Set((2, 4)))
+  }
+
   "UserModel" should "return an empty list with no events when aggregating same cells" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
       UserModel.aggTemporalOverlapAndSameCell(List()) should be(List())
     }
-  
+
   it should "return a single spatio-temporal item with a list with a single element when aggregating same cells" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggTemporalOverlapAndSameCell(List(event1)) should be (List(SpatioTemporalSlot(event1)))
+      UserModel.aggTemporalOverlapAndSameCell(List(event1)) should be(List(SpatioTemporalSlot(event1)))
     }
 
   it should "return different spatio-temporal items with a list with no events with the same cell " +
-      "when aggregating same cells" in new WithSpatioTemporalSlots with WithCellCatalogue {
+    "when aggregating same cells" in new WithSpatioTemporalSlots with WithCellCatalogue {
+
     UserModel.aggTemporalOverlapAndSameCell(List(event1, event2, event3)) should
       be(List(SpatioTemporalSlot(event1), SpatioTemporalSlot(event2), SpatioTemporalSlot(event3)))
   }
@@ -250,16 +348,16 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
   it should "aggregate consecutive events having the same cell" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
       UserModel.aggTemporalOverlapAndSameCell(List(event1, event1, event1, event2)) should
-        be (List(slot1, SpatioTemporalSlot(event2)))
+        be(List(slot1, SpatioTemporalSlot(event2)))
     }
 
   it should "aggregate consecutive events overlapping in time" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
-      UserModel.aggTemporalOverlapAndSameCell(List(event1, event1, event4, event1)) should be (List(slot1And4))
+      UserModel.aggTemporalOverlapAndSameCell(List(event1, event1, event4, event1)) should be(List(slot1And4))
     }
 
   it should "do nothing when computing scores for an empty list" in new WithSpatioTemporalSlots with WithCellCatalogue {
-    UserModel.computeScores(List()) should be (List())
+    UserModel.computeScores(List()) should be(List())
   }
 
   it should "not compute any score for a list with a single element" in
@@ -274,33 +372,33 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
 
   it should "not merge any slot when the max score is None (single element)" in
     new WithCompatibilitySlots with WithCellCatalogue {
-      UserModel.aggregateCompatible(List(suffixSlot)) should be (List(suffixSlot))
+      UserModel.aggregateCompatible(List(suffixSlot)) should be(List(suffixSlot))
     }
 
   it should "not merge any slot when the max score is zero" in new WithCompatibilitySlots with WithCellCatalogue {
-    UserModel.aggregateCompatible(List(prefixSlot, suffixSlot)) should be (List(prefixSlot, suffixSlot))
+    UserModel.aggregateCompatible(List(prefixSlot, suffixSlot)) should be(List(prefixSlot, suffixSlot))
   }
 
   it should "merge slots when they are in between other slots (and recompute scores)" in
     new WithCompatibilitySlots with WithCellCatalogue {
       UserModel.aggregateCompatible(List(prefixSlot, slot1, slot2, suffixSlot)) should
-        be (List(prefixSlot, mergedSlot, suffixSlot))
+        be(List(prefixSlot, mergedSlot, suffixSlot))
     }
 
   it should "merge slots when there are no slots before (and recompute scores)" in
     new WithCompatibilitySlots with WithCellCatalogue {
-      UserModel.aggregateCompatible(List(slot1, slot2, suffixSlot)) should be (List(mergedSlot, suffixSlot))
+      UserModel.aggregateCompatible(List(slot1, slot2, suffixSlot)) should be(List(mergedSlot, suffixSlot))
     }
 
   it should "merge slots when there are no slots after (and recompute scores)" in
     new WithCompatibilitySlots with WithCellCatalogue {
       UserModel.aggregateCompatible(List(prefixSlot, slot1, slot2)) should
-        be (List(prefixSlot, mergedSlot.copy(score = None)))
+        be(List(prefixSlot, mergedSlot.copy(score = None)))
     }
 
   it should "merge slots when there are no slots before and after" in
     new WithCompatibilitySlots with WithCellCatalogue {
-      UserModel.aggregateCompatible(List(slot1, slot2)) should be (List(mergedSlot.copy(score = None)))
+      UserModel.aggregateCompatible(List(slot1, slot2)) should be(List(mergedSlot.copy(score = None)))
     }
 
   it should "merge slots when there are several pairs with the same score (and recompute scores)" in
@@ -312,25 +410,25 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     }
 
   it should "accept an empty list of slots when filling via points" in new WithModelSlots {
-    UserModel.fillViaPoints(List()) should be (List())
+    UserModel.fillViaPoints(List()) should be(List())
   }
 
   it should "leave unprocessed a single-element list of slots when filling via points" in new WithModelSlots {
-    UserModel.fillViaPoints(List(slot1)) should be (List(slot1))
+    UserModel.fillViaPoints(List(slot1)) should be(List(slot1))
   }
 
   it should "not set to via points slots with a low minimum speed" in new WithModelSlots {
-    UserModel.fillViaPoints(List(slot1, slot2, slot3)) should be (List(slot1, slot2, slot3))
+    UserModel.fillViaPoints(List(slot1, slot2, slot3)) should be(List(slot1, slot2, slot3))
   }
 
   it should "set to via points slots following a high minimum speed (single slot)" in new WithModelSlots {
     UserModel.fillViaPoints(List(slot1, slotJvp1, slot2)) should
-      be (List(slot1, slotJvp1.copy(typeEstimate = JourneyViaPointEstimate), slot2))
+      be(List(slot1, slotJvp1.copy(typeEstimate = JourneyViaPointEstimate), slot2))
   }
 
   it should "set to via points slots following a high minimum speed (several slots)" in new WithModelSlots {
     UserModel.fillViaPoints(List(slot1, slotJvp1, slotJvp2, slot2)) should
-      be (List(
+      be(List(
         slot1,
         slotJvp1.copy(typeEstimate = JourneyViaPointEstimate),
         slotJvp2.copy(typeEstimate = JourneyViaPointEstimate),
@@ -338,15 +436,15 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "accept an empty list of slots when building model" in new WithModelSlots {
-    UserModel.userCentric(List()) should be ((List(), List(), List()))
+    UserModel.userCentric(List()) should be((List(), List(), List()))
   }
 
   it should "treat as Dwell a list with a single slot" in new WithModelSlots {
-    UserModel.userCentric(List(slot1)) should be ((List(dwell1), List(), List()))
+    UserModel.userCentric(List(slot1)) should be((List(dwell1), List(), List()))
   }
 
   it should "build intermediate journeys with no via points" in new WithModelSlots {
-    UserModel.userCentric(List(slot1, slot2)) should be ((List(dwell1, dwell2), List(journey1To2NoVp), List()))
+    UserModel.userCentric(List(slot1, slot2)) should be((List(dwell1, dwell2), List(journey1To2NoVp), List()))
   }
 
   it should "build intermediate journeys with via points" in new WithModelSlots {
@@ -354,6 +452,78 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
       slot1,
       slotJvp1.copy(typeEstimate = JourneyViaPointEstimate),
       slotJvp2.copy(typeEstimate = JourneyViaPointEstimate),
-      slot2)) should be ((List(dwell1, dwell2), List(journey1To2), List(jvp1, jvp2)))
+      slot2)) should be((List(dwell1, dwell2), List(journey1To2), List(jvp1, jvp2)))
+  }
+
+  it should "compute journey duration (short distance)" in {
+    val distanceLowerThanThreshold = 30000
+    UserModel.journeyDuration(distanceLowerThanThreshold) should be(2160)
+  }
+
+  it should "compute journey duration (long distance)" in {
+    val distanceHigherThanThreshold = 130000
+    UserModel.journeyDuration(distanceHigherThanThreshold) should be(5200)
+  }
+
+  it should "accept an empty list of slots when extending time of slots" in new WithModelSlotsForTimeExtension {
+    UserModel.extendTime(List()) should be(List())
+  }
+
+  it should "extend time from beginning to end of day for a single slot" in new WithModelSlotsForTimeExtension {
+    UserModel.extendTime(List(dwellSlot1)) should be(List(dwellSlot1.copy(startTime = startOfDay, endTime = endOfDay)))
+  }
+
+  it should "extend time for dwells without via points (short distance, short time gap)" in
+    new WithModelSlotsForTimeExtension {
+      UserModel.extendTime(List(dwellSlot1, dwellSlot20)) should
+        be(List(dwellSlot1.copy(startTime = startOfDay), dwellSlot20.copy(endTime = endOfDay)))
+    }
+
+  it should "extend time for dwells without via points (short distance, long time gap)" in
+    new WithModelSlotsForTimeExtension {
+      val halfTimeShift = 15539000
+      UserModel.extendTime(List(dwellSlot1, dwellSlot21)) should
+        be(List(
+          dwellSlot1.copy(startTime = startOfDay, endTime = dwellSlot1.endTime + halfTimeShift),
+          dwellSlot21.copy(startTime = dwellSlot21.startTime - halfTimeShift, endTime = endOfDay)))
+    }
+
+  it should "extend time for dwells without via points (long distance, short time gap)" in
+    new WithModelSlotsForTimeExtension {
+      UserModel.extendTime(List(dwellSlot1, dwellSlot22)) should
+        be(List(dwellSlot1.copy(startTime = startOfDay), dwellSlot22.copy(endTime = endOfDay)))
+    }
+
+  it should "extend time for dwells without via points (long distance, long time gap)" in
+    new WithModelSlotsForTimeExtension {
+      val halfTimeShift = 14799000
+      UserModel.extendTime(List(dwellSlot1, dwellSlot23)) should
+        be(List(
+          dwellSlot1.copy(startTime = startOfDay, endTime = dwellSlot1.endTime + halfTimeShift),
+          dwellSlot23.copy(startTime = dwellSlot23.startTime - halfTimeShift, endTime = endOfDay)))
+    }
+
+  it should "extend time for dwells followed/following via point (short time gap)" in
+    new WithModelSlotsForTimeExtension {
+      UserModel.extendTime(List(dwellSlot1, viaPoint15, dwellSlot30)) should
+        be(List(dwellSlot1.copy(startTime = startOfDay), viaPoint15, dwellSlot30.copy(endTime = endOfDay)))
+    }
+
+  it should "extend time for dwells followed/following via point (long time gap)" in
+    new WithModelSlotsForTimeExtension {
+      UserModel.extendTime(List(dwellSlot1, viaPoint16, dwellSlot31)) should
+        be(List(
+          dwellSlot1.copy(startTime = startOfDay, endTime = viaPoint16.startTime - 4000000),
+          viaPoint16,
+          dwellSlot31.copy(startTime = viaPoint16.endTime + 4036000, endTime = endOfDay)))
+  }
+
+  it should "not extend time for two consecutive via points" in new WithModelSlotsForTimeExtension {
+    UserModel.extendTime(List(dwellSlot1, viaPoint16, viaPoint17, dwellSlot31)) should
+      be(List(
+        dwellSlot1.copy(startTime = startOfDay, endTime = viaPoint16.startTime - 4000000),
+        viaPoint16,
+        viaPoint17,
+        dwellSlot31.copy(endTime = endOfDay)))
   }
 }

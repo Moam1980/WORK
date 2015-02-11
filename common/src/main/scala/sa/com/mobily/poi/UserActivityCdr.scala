@@ -36,11 +36,11 @@ object UserActivityCdr {
   val GraphSuffix = ".png"
   val WeekDaysLabel = "Week days"
   val WeekDays = Array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+  val UserPhoneCallSeparator = ","
 
   private val GraphHorizontalSize = 2000
   private val GraphVerticalSize = 1000
 
-  final val UserPhoneCallSeparator = ","
   final val lineCsvParserObject = new OpenCsvParser
 
   implicit val fromCsv = new CsvParser[UserActivityCdr] {

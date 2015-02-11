@@ -52,6 +52,9 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val slot1AfterWkt = "POLYGON ((200 200, 210 200, 210 210, 200 210, 200 200))"
     val slot2AfterWkt = "POLYGON ((205 200, 215 200, 215 210, 205 210, 205 200))"
     val suffix2Wkt = "POLYGON ((220 200, 220 210, 230 210, 230 200, 220 200))"
+    val cellTimeExt1Wkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))"
+    val cellTimeExt3Wkt = "POLYGON ((100010 0, 100010 10, 100020 10, 100020 0, 100010 0))"
+    val cellTimeExt4Wkt = "POLYGON ((200900 0, 200900 10, 200910 10, 200910 0, 200900 0))"
 
     val cellPrefix = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4, "1", cellPrefixWkt)
     val cellSlot1 = cellPrefix.copy(cellId = 2, coverageWkt = cellSlot1Wkt)
@@ -60,9 +63,16 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val cellSlot1After = cellPrefix.copy(cellId = 5, coverageWkt = slot1AfterWkt)
     val cellSlot2After = cellPrefix.copy(cellId = 6, coverageWkt = slot2AfterWkt)
     val cellSuffix2 = cellPrefix.copy(cellId = 7, coverageWkt = suffix2Wkt)
+    val cellTimeExt1 = Cell(1, 2, UtmCoordinates(0, 0), FourGFdd, Micro, 20, 180, 45, 4, "1", cellTimeExt1Wkt)
+    val cellTimeExt3 =
+      cellTimeExt1.copy(cellId = 3, planarCoords = UtmCoordinates(100010, 0), coverageWkt = cellTimeExt3Wkt)
+    val cellTimeExt4 =
+      cellTimeExt1.copy(cellId = 4, planarCoords = UtmCoordinates(200900, 0), coverageWkt = cellTimeExt4Wkt)
+
 
     implicit val bcCellCatalogue = sc.parallelize(
-      Array(cellPrefix, cellSlot1, cellSlot2, cellSuffix, cellSlot1After, cellSlot2After, cellSuffix2)).toBroadcastMap
+      Array(cellPrefix, cellSlot1, cellSlot2, cellSuffix, cellSlot1After, cellSlot2After, cellSuffix2, cellTimeExt1,
+        cellTimeExt3, cellTimeExt4)).toBroadcastMap
   }
 
   trait WithSpatioTemporalSlots extends WithEvents {
@@ -168,6 +178,46 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val slots = sc.parallelize(
       Array((User("", "", 1L), List(prefixSlot, slot1, slot2, suffixSlot, slot1After, slot2After, suffixSlot2))))
     val onlySlot = sc.parallelize(Array((User("", "", 1L), List(prefixSlot))))
+  }
+
+  trait WithModelSlotsForTimeExtension {
+
+    val startOfDay = 1423429200000L
+    val endOfDay = 1423515599999L
+
+    val dwellSlot1 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423468095000L,
+      endTime = 1423469636000L,
+      cells = Set((2, 1)),
+      firstEventBeginTime = 1423468095000L,
+      lastEventEndTime = 1423469636000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val viaPoint16 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423489415000L,
+      endTime = 1423489931000L,
+      cells = Set((2, 3)),
+      firstEventBeginTime = 1423489415000L,
+      lastEventEndTime = 1423489931000L,
+      outMinSpeed = 7.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4,
+      typeEstimate = JourneyViaPointEstimate)
+    val dwellSlot31 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 1423507833000L,
+      endTime = 1423514411000L,
+      cells = Set((2, 4)),
+      firstEventBeginTime = 1423507833000L,
+      lastEventEndTime = 1423514411000L,
+      outMinSpeed = 0.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+
+    val slotsForTimeExtension = sc.parallelize(Array((User("", "1", 1), List(dwellSlot1, viaPoint16, dwellSlot31))))
   }
 
   trait WithModelSlots extends WithCellCatalogue {
@@ -323,6 +373,21 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     model._1.size should be (3)
     model._2.size should be (2)
     model._3.size should be (2)
+  }
+
+  it should "extend time of user model entities" in new WithModelSlotsForTimeExtension with WithCellCatalogue {
+    val modelEntities = slotsForTimeExtension.toUserCentric.first._2
+    modelEntities._1.size should be (2)
+    val dwell1 = modelEntities._1.head
+    val dwell2 = modelEntities._1.last
+    dwell1.startTime should be (startOfDay)
+    dwell1.endTime should be (viaPoint16.startTime - 4000000)
+    dwell2.startTime should be (viaPoint16.endTime + 4036000)
+    dwell2.endTime should be (endOfDay)
+    modelEntities._3.size should be (1)
+    val viaPoint = modelEntities._3.head
+    viaPoint.startTime should be (viaPoint16.startTime)
+    viaPoint.endTime should be (viaPoint16.endTime)
   }
 
   it should "get correctly parsed dwells" in new WithUserModelText {

@@ -126,6 +126,11 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
     event3SpatioTemporalSlot.avgIntraMinSpeed should be (0)
   }
 
+  it should "compute the seconds in between two slots" in new WithSpatioTemporalSlots {
+    SpatioTemporalSlot.secondsInBetween(
+      slotWithTwoEvents.copy(endTime = 33000), slotWithTwoEvents.copy(startTime = 48000)) should be (15)
+  }
+
   "CellsGeometry" should "compute geometry from cells" in new WithSpatioTemporalSlots with WithCellCatalogue {
     slotWithTwoEvents.geom should
       equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))

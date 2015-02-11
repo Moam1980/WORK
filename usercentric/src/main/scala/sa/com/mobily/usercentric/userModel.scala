@@ -7,6 +7,7 @@ package sa.com.mobily.usercentric
 import scala.annotation.tailrec
 import scala.util.Try
 
+import com.github.nscala_time.time.Imports._
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.geom.util.PolygonExtracter
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier
@@ -14,6 +15,7 @@ import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
+import sa.com.mobily.utils.EdmCoreUtils
 
 trait CellsGeometry {
 
@@ -48,6 +50,15 @@ trait CountryGeometry {
 }
 
 object UserModel {
+
+  val DistanceThresholdInMeters = 90000
+  val UrbanSpeedInMetersPerSecond = 50 / 3.6
+  val InterUrbanSpeedInMetersPerSecond = 90 / 3.6
+
+  private val LatestHourInDay = 23
+  private val LatestMinuteInHour = 59
+  private val LatestSecondInMinute = 59
+  private val LatestMillisInSecond = 999
 
   @tailrec
   def aggTemporalOverlapAndSameCell(
@@ -124,6 +135,46 @@ object UserModel {
   }
 
   @tailrec
+  def extendTime( // scalastyle:ignore cyclomatic.complexity
+      slots: List[SpatioTemporalSlot],
+      result: List[SpatioTemporalSlot] = List(),
+      firstElem: Boolean = true)
+      (implicit cellCatalogue: Map[(Int, Int), Cell]): List[SpatioTemporalSlot] = slots match {
+    case Nil => result
+    case first :: tail if firstElem =>
+      extendTime(
+        slots =
+          first.copy(startTime = new DateTime(first.startTime).withZone(
+            EdmCoreUtils.timeZone(first.countryIsoCode)).withTimeAtStartOfDay.getMillis) :: tail,
+        result = result,
+        firstElem = false)
+    case last :: Nil if !firstElem =>
+      result :+
+        last.copy(endTime = new DateTime(last.endTime).withZone(EdmCoreUtils.timeZone(last.countryIsoCode)).withTime(
+          LatestHourInDay, LatestMinuteInHour, LatestSecondInMinute, LatestMillisInSecond).getMillis)
+    case first :: second :: tail =>
+      val maxDuration = SpatioTemporalSlot.secondsInBetween(first, second)
+      val estimatedDuration = journeyDuration(first.geom.getCentroid.distance(second.geom.getCentroid))
+      val journeyTime = math.min(maxDuration, estimatedDuration)
+      val halfTimeShift = (maxDuration - journeyTime) / 2
+      val (newFirst, newSecond) = (first.typeEstimate, second.typeEstimate) match {
+        case (DwellEstimate, DwellEstimate) =>
+          (first.copy(endTime = new DateTime(first.endTime).plusSeconds(halfTimeShift).getMillis),
+            second.copy(startTime = new DateTime(second.startTime).minusSeconds(halfTimeShift).getMillis))
+        case (DwellEstimate, JourneyViaPointEstimate) =>
+          (first.copy(endTime = new DateTime(first.endTime).plusSeconds(maxDuration - journeyTime).getMillis), second)
+        case (JourneyViaPointEstimate, DwellEstimate) =>
+          (first,
+            second.copy(startTime = new DateTime(second.startTime).minusSeconds(maxDuration - journeyTime).getMillis))
+        case (_, _) => (first, second)
+      }
+      extendTime(
+        slots = newSecond :: tail,
+        result = result :+ newFirst,
+        firstElem = false)
+  }
+
+  @tailrec
   def userCentric(
       slots: List[SpatioTemporalSlot],
       dwellsResult: List[Dwell] = List(),
@@ -145,4 +196,11 @@ object UserModel {
           jvpResult = jvpResult ++ viaPoints,
           journeyIdSeq = journeyIdSeq + 1)
     }
+
+  def journeyDuration(distance: Double): Int = {
+    val speed =
+      if (distance > DistanceThresholdInMeters) InterUrbanSpeedInMetersPerSecond
+      else UrbanSpeedInMetersPerSecond
+    (distance / speed).round.toInt
+  }
 }

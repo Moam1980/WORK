@@ -35,12 +35,12 @@ case class Journey(
     user.fields ++
       Array(
         id.toString,
-        EdmCoreUtils.fmt.print(startTime),
-        EdmCoreUtils.fmt.print(endTime),
+        EdmCoreUtils.Fmt.print(startTime),
+        EdmCoreUtils.Fmt.print(endTime),
         geomWkt,
         cells.mkString(EdmCoreUtils.IntraSequenceSeparator),
-        EdmCoreUtils.fmt.print(firstEventBeginTime),
-        EdmCoreUtils.fmt.print(lastEventEndTime),
+        EdmCoreUtils.Fmt.print(firstEventBeginTime),
+        EdmCoreUtils.Fmt.print(lastEventEndTime),
         numEvents.toString,
         countryIsoCode)
 }
@@ -181,12 +181,12 @@ object Journey {
       Journey(
         user = User(imei = imei, imsi = imsi, msisdn = msisdn.toLong),
         id = id.toInt,
-        startTime = EdmCoreUtils.fmt.parseDateTime(startTime).getMillis,
-        endTime = EdmCoreUtils.fmt.parseDateTime(endTime).getMillis,
+        startTime = EdmCoreUtils.Fmt.parseDateTime(startTime).getMillis,
+        endTime = EdmCoreUtils.Fmt.parseDateTime(endTime).getMillis,
         geomWkt = geomWkt,
         cells = Cell.parseCellTuples(cells),
-        firstEventBeginTime = EdmCoreUtils.fmt.parseDateTime(firstEventBeginTime).getMillis,
-        lastEventEndTime = EdmCoreUtils.fmt.parseDateTime(lastEventEndTime).getMillis,
+        firstEventBeginTime = EdmCoreUtils.Fmt.parseDateTime(firstEventBeginTime).getMillis,
+        lastEventEndTime = EdmCoreUtils.Fmt.parseDateTime(lastEventEndTime).getMillis,
         numEvents = numEvents.toLong,
         countryIsoCode = countryIsoCode)
     }
