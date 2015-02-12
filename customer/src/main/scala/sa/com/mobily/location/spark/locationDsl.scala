@@ -6,7 +6,6 @@ package sa.com.mobily.location.spark
 
 import scala.language.implicitConversions
 
-import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
@@ -18,7 +17,7 @@ import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 
 class LocationReader(self: RDD[String]) {
 
-  import sa.com.mobily.parsing.spark.ParsedItemsDsl._
+  import ParsedItemsDsl._
 
   def toParsedLocation: RDD[ParsedItem[Location]] = SparkParser.fromCsv[Location](self)
 
@@ -29,18 +28,21 @@ class LocationReader(self: RDD[String]) {
 
 class LocationFunctions(self: RDD[Location]) {
 
-  def intersectingCells(
-      implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]],
-      longitudeFirstForCells: Boolean = true): RDD[(Location, Iterable[Cell])] = {
+  def withTransformedGeom
+      (longitudeFirstInCells: Boolean = true)
+      (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[Location] = {
     val geomFactory = cellCatalogue.value.headOption.map(cellTuple => cellTuple._2.coverageGeom.getFactory).getOrElse(
       GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid))
-
     self.map(location =>
-      (location, {
-        val locationGeom = GeomUtils.transformGeom(location.geom, geomFactory, longitudeFirstForCells)
-        cellCatalogue.value.collect {
-          case (k, v) if v.coverageGeom.intersects(locationGeom) => v
-        }}))
+      location.copy(
+        epsg = Coordinates.epsg(geomFactory.getSRID),
+        geomWkt = GeomUtils.wkt(GeomUtils.transformGeom(location.geom, geomFactory, longitudeFirstInCells))))
+  }
+
+  def intersectingCells
+      (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(Location, Seq[(Int, Int)])] = {
+    val cellSeq = cellCatalogue.value.toSeq
+    self.map(location => (location, cellSeq.collect { case (k, v) if v.coverageGeom.intersects(location.geom) => k }))
   }
 }
 
