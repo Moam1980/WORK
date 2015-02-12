@@ -48,7 +48,6 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
     toEvent.filter(e => bcSubscribersCatalogue.value.isDefinedAt(e.user.imsi)).map(e =>
       e.copy(user = e.user.copy(msisdn = bcSubscribersCatalogue.value(e.user.imsi))))
 
-
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
     val nonEmptyOptionString = List(
       ("imei", aiCs.user.imei),
