@@ -58,9 +58,9 @@ object FileHdfs {
         sourceName = sourceNameText,
         fileFormat = EdmCoreUtils.parseString(formatText),
         name = nameText,
-        fileDate = Try { EdmCoreUtils.fmt.parseMillis(dateText) }.toOption,
-        modificationDate = EdmCoreUtils.fmt.parseMillis(modificationDateText),
-        accessTime = EdmCoreUtils.fmt.parseMillis(accessTimeText),
+        fileDate = Try { EdmCoreUtils.Fmt.parseMillis(dateText) }.toOption,
+        modificationDate = EdmCoreUtils.Fmt.parseMillis(modificationDateText),
+        accessTime = EdmCoreUtils.Fmt.parseMillis(accessTimeText),
         volumeBytes = volumeBytesText.toLong)
     }
   }
@@ -91,7 +91,7 @@ object FileHdfs {
           sourceName = fileSource,
           fileFormat = Some(fileFormat),
           name = fileName,
-          fileDate = Some(EdmCoreUtils.fmt.parseMillis(s"$year/$month/$day 00:00:00")),
+          fileDate = Some(EdmCoreUtils.Fmt.parseMillis(s"$year/$month/$day 00:00:00")),
           modificationDate = file.getModificationTime,
           accessTime = file.getAccessTime,
           volumeBytes = file.getLen)
@@ -100,7 +100,7 @@ object FileHdfs {
           sourceName = fileSource,
           fileFormat = None,
           name = fileName,
-          fileDate = Some(EdmCoreUtils.fmt.parseMillis(s"$year/$month/$day 00:00:00")),
+          fileDate = Some(EdmCoreUtils.Fmt.parseMillis(s"$year/$month/$day 00:00:00")),
           modificationDate = file.getModificationTime,
           accessTime = file.getAccessTime,
           volumeBytes = file.getLen)
@@ -109,7 +109,7 @@ object FileHdfs {
           sourceName = fileSource,
           fileFormat = Some(fileFormat),
           name = fileName,
-          fileDate = Some(EdmCoreUtils.fmt.parseMillis(s"$year/$month/01 00:00:00")),
+          fileDate = Some(EdmCoreUtils.Fmt.parseMillis(s"$year/$month/01 00:00:00")),
           modificationDate = file.getModificationTime,
           accessTime = file.getAccessTime,
           volumeBytes = file.getLen)
@@ -118,7 +118,7 @@ object FileHdfs {
           sourceName = fileSource,
           fileFormat = None,
           name = fileName,
-          fileDate = Some(EdmCoreUtils.fmt.parseMillis(s"$year/$month/01 00:00:00")),
+          fileDate = Some(EdmCoreUtils.Fmt.parseMillis(s"$year/$month/01 00:00:00")),
           modificationDate = file.getModificationTime,
           accessTime = file.getAccessTime,
           volumeBytes = file.getLen)

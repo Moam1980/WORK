@@ -27,15 +27,11 @@ object Poi {
 
     override def fromRow(row: Row): Poi = {
       val user = User.fromRow.fromRow(row(0).asInstanceOf[Row])
-      val poiType = row(1).asInstanceOf[PoiType]
-      val geomWkt = row(2).asInstanceOf[String]
-      val countryIsoCode = row(3).asInstanceOf[String]
+      val poiType = PoiType(row(1).asInstanceOf[Row].getString(0))
+      val geomWkt = row.getString(2)
+      val countryIsoCode = row.getString(3)
 
-      Poi(
-        user = user,
-        poiType = poiType,
-        geomWkt = geomWkt,
-        countryIsoCode = countryIsoCode)
+      Poi(user = user, poiType = poiType, geomWkt = geomWkt, countryIsoCode = countryIsoCode)
     }
   }
 }

@@ -8,7 +8,6 @@ import org.apache.spark.sql._
 
 import sa.com.mobily.metrics.MeasurableById
 import sa.com.mobily.parsing.RowParser
-import sa.com.mobily.poi.{Poi, PoiType}
 import sa.com.mobily.roaming.CountryCode
 
 case class User(
@@ -59,9 +58,9 @@ object User {
   implicit val fromRow = new RowParser[User] {
 
     override def fromRow(row: Row): User = {
-      val imei = row(0).asInstanceOf[String]
-      val imsi = row(1).asInstanceOf[String]
-      val msisdn = row(2).asInstanceOf[Long]
+      val imei = row.getString(0)
+      val imsi = row.getString(1)
+      val msisdn = row.getLong(2)
 
       User(imei = imei, imsi = imsi, msisdn = msisdn)
     }
