@@ -7,7 +7,7 @@ package sa.com.mobily.poi.spark
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
-import org.scalatest._
+import org.scalatest.{ShouldMatchers, FlatSpec}
 
 import sa.com.mobily.cell.{EgBts, TwoG}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
@@ -151,8 +151,8 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
 
     userPoisList.length should be(2)
     userPoisList should contain ((User("", "", firstUserMsisdn),
-      List((Home, List((secondUserSiteId, secondUserRegionId.toString))),
-        (Work, List((firstUserSiteId, firstUserRegionId.toString), (firstUserSiteId, firstUserRegionId.toString))))))
+      List((Work, List((firstUserSiteId, firstUserRegionId.toString), (firstUserSiteId, firstUserRegionId.toString))),
+        (Home, List((secondUserSiteId, secondUserRegionId.toString))))))
     userPoisList should contain(
       User("", "", secondUserMsisdn),
       List((Home, List((secondUserSiteId, secondUserRegionId.toString)))))
@@ -164,19 +164,20 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
       model, centroidsMapping, broadcastCatalogue).collect.toList
 
     userPoisWithGeomsList.length should be(3)
-    userPoisWithGeomsList(1) should be(
-      (User("", "", firstUserMsisdn), Work, Seq(egBts1.geom, egBts2.geom, egBts1.geom, egBts2.geom)))
-    userPoisWithGeomsList(2) should be((User("", "", secondUserMsisdn), Home, Seq(egBts2.geom)))
+    userPoisWithGeomsList should contain theSameElementsAs (List(
+      (User("", "", firstUserMsisdn), Work, Seq(egBts1.geom, egBts2.geom, egBts1.geom, egBts2.geom)),
+      (User("", "", firstUserMsisdn), Home, Seq(egBts2.geom)),
+      (User("", "", secondUserMsisdn), Home, Seq(egBts2.geom))))
   }
 
   it should "return the user Pois and their aggregated geoms" in new WithUserActivity {
     val broadcastCatalogue = sc.broadcast(btsCatalogue)
-    val userPoisWithGeomsList =
-      userActivity.userPoisWithAggregatedGeoms(model, centroidsMapping, broadcastCatalogue).collect.toList
+    val poi = userActivity.userPoisWithAggregatedGeoms(model, centroidsMapping, broadcastCatalogue).collect.toList
 
-    userPoisWithGeomsList.length should be(3)
-    userPoisWithGeomsList(0) should be((User("", "", firstUserMsisdn), Home, homeGeom))
-    userPoisWithGeomsList(1) should be((User("", "", firstUserMsisdn), Work, unionGeom))
-    userPoisWithGeomsList(2) should be((User("", "", secondUserMsisdn), Home, homeGeom))
+    poi.length should be(3)
+    poi should contain theSameElementsAs (List(
+      Poi(User("", "", firstUserMsisdn), Work, GeomUtils.wkt(unionGeom)),
+      Poi(User("", "", firstUserMsisdn), Home, GeomUtils.wkt(homeGeom)),
+      Poi(User("", "", secondUserMsisdn), Home, GeomUtils.wkt(homeGeom))))
   }
 }

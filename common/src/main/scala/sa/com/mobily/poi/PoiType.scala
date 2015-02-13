@@ -4,13 +4,13 @@
 
 package sa.com.mobily.poi
 
-sealed trait PoiType { val identifier: String }
+sealed case class PoiType(identifier: String)
 
-case object Home extends PoiType { override val identifier = "Home" }
-case object Work extends PoiType { override val identifier = "Work" }
-case object TypeOne extends PoiType { override val identifier = "TypeOne" }
-case object TypeTwo extends PoiType { override val identifier = "TypeTwo" }
-case object TypeThree extends PoiType { override val identifier = "TypeThree" }
-case object TypeFour extends PoiType { override val identifier = "TypeFour" }
-case object TypeFive extends PoiType { override val identifier = "TypeFive" }
-case object TypeSix extends PoiType { override val identifier = "TypeSix" }
+object Home extends PoiType(identifier = "Home")
+object Work extends PoiType(identifier = "Work")
+object TypeOne extends PoiType(identifier = "TypeOne")
+object TypeTwo extends PoiType(identifier = "TypeTwo")
+object TypeThree extends PoiType(identifier = "TypeThree")
+object TypeFour extends PoiType(identifier = "TypeFour")
+object TypeFive extends PoiType(identifier = "TypeFive")
+object TypeSix extends PoiType(identifier = "TypeSix")

@@ -5,9 +5,12 @@
 package sa.com.mobily.geometry
 
 import scala.math._
+import scala.util.Try
 
 import com.vividsolutions.jts.geom._
+import com.vividsolutions.jts.geom.util.PolygonExtracter
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
+import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier
 import com.vividsolutions.jts.util.GeometricShapeFactory
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -169,5 +172,14 @@ object GeomUtils {
     factory.setSize(2 * radius)
     factory.setNumPoints(numPoints)
     factory
+  }
+
+  def unionGeoms(geometries: Iterable[Geometry]): Geometry = {
+    val firstGeom = geometries.head
+    val remainingGeoms = geometries.tail
+    val unionCandidate = remainingGeoms.foldLeft(firstGeom)((accumGeom, geom) =>
+      Try { accumGeom.union(geom) }.toOption.getOrElse(accumGeom))
+    firstGeom.getFactory.buildGeometry(PolygonExtracter.getPolygons(
+      DouglasPeuckerSimplifier.simplify(unionCandidate, SimplifyGeomTolerance)))
   }
 }
