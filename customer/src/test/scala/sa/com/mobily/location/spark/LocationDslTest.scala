@@ -4,12 +4,17 @@
 
 package sa.com.mobily.location.spark
 
+import com.github.nscala_time.time.Imports._
 import org.scalatest._
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.cell.spark.CellDsl._
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
-import sa.com.mobily.location.Location
+import sa.com.mobily.location.{Footfall, Location}
+import sa.com.mobily.poi.{Home, Work, Poi}
+import sa.com.mobily.roaming.CountryCode
+import sa.com.mobily.user.User
+import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.utils.{EdmCustomMatchers, LocalSparkContext}
 
 class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext with EdmCustomMatchers {
@@ -105,6 +110,92 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val locations = sc.parallelize(Array(location))
   }
 
+  trait WithDwellsForMatching {
+
+    val location1 = Location(name = "location1", client = "client", epsg = Coordinates.SaudiArabiaUtmEpsg,
+      geomWkt = "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
+    val location2 = location1.copy(name = "location2", geomWkt = "POLYGON ((10 10, 20 10, 20 20, 10 20, 10 10))")
+    val locations = sc.parallelize(Array(location1, location2))
+
+    val user1 = User(imei = "", imsi = "420031", msisdn = 9661)
+    val user2 = User(imei = "", imsi = "420032", msisdn = 9662)
+    val user3 = User(imei = "", imsi = "420033", msisdn = 9663)
+
+    val dwell1 = Dwell(
+      user = user1,
+      startTime = 1000,
+      endTime = 60000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 9,
+      numEvents = 2)
+    val dwell2 = dwell1.copy(user = user2, startTime = 55000, endTime = 120000,
+      geomWkt = "POLYGON ((12 12, 12 20, 20 20, 20 12, 12 12))")
+    val dwell3 = dwell1.copy(user = user3, startTime = 40000, endTime = 53000,
+      geomWkt = "POLYGON ((7.5 7.5, 7.5 11.5, 11.5 11.5, 11.5 7.5, 7.5 7.5))")
+    val dwell4 = dwell3.copy(startTime = 55000, endTime = 58000)
+    val dwell5 = dwell3.copy(startTime = 133000, endTime = 145000,
+      geomWkt = "POLYGON ((30 30, 30 40, 40 40, 40 30, 30 30))")
+    val dwells = sc.parallelize(Array(dwell1, dwell2, dwell3, dwell4, dwell5))
+    val intervals = Location.intervals(new DateTime(0), new DateTime(180000), 1)
+
+    val footfallLoc1Time1 = Footfall(users = Set(user1, user3), numDwells = 3, avgPrecision = 44)
+    val footfallLoc2Time1 = Footfall(users = Set(user2), numDwells = 1, avgPrecision = 64)
+    val footfallLoc2Time2 = Footfall(users = Set(user2), numDwells = 1, avgPrecision = 64)
+    val locIntDwells =
+      Array(
+        ((location1, intervals(0)), dwell1),
+        ((location1, intervals(0)), dwell3),
+        ((location1, intervals(0)), dwell4),
+        ((location2, intervals(0)), dwell2),
+        ((location2, intervals(1)), dwell2))
+    val footfall =
+      Array(
+        ((location1, intervals(0)), footfallLoc1Time1),
+        ((location2, intervals(0)), footfallLoc2Time1),
+        ((location2, intervals(1)), footfallLoc2Time2))
+    val profile =
+      Array(
+        ((location1, intervals(0)), user1),
+        ((location1, intervals(0)), user3),
+        ((location2, intervals(0)), user2),
+        ((location2, intervals(1)), user2))
+  }
+
+  trait WithPoisForMatching {
+
+    val location1 = Location(name = "location1", client = "client", epsg = Coordinates.SaudiArabiaUtmEpsg,
+      geomWkt = "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
+    val location2 = location1.copy(name = "location2", geomWkt = "POLYGON ((10 10, 20 10, 20 20, 10 20, 10 10))")
+    val locations = sc.parallelize(Array(location1, location2))
+
+    val user1 = User(imei = "", imsi = "420031", msisdn = 9661)
+    val user2 = User(imei = "", imsi = "420032", msisdn = 9662)
+    val user3 = User(imei = "", imsi = "420033", msisdn = 9663)
+
+    val poi1User1 = Poi(
+      user = user1,
+      poiType = Home,
+      geomWkt = "POLYGON ((3 3, 10 3, 10 10, 3 10, 3 3))",
+      countryIsoCode = CountryCode.SaudiArabiaIsoCode)
+    val poi2User1 = poi1User1.copy(poiType = Work, geomWkt = "POLYGON ((7 7, 15 7, 15 15, 7 15, 7 7))")
+    val poi1User2 = poi1User1.copy(user = user2, poiType = Home, geomWkt = "POLYGON ((1 1, 3 1, 3 3, 1 3, 1 1))")
+    val poi2User2 = poi1User1.copy(user = user2, poiType = Work, geomWkt = "POLYGON ((7 7, 11 7, 11 11, 7 11, 7 7))")
+    val poi1User3 =
+      poi1User1.copy(user = user3, poiType = Work, geomWkt = "POLYGON ((11 11, 15 11, 15 15, 11 15, 11 11))")
+    val nonMatchingPoi = poi1User1.copy(geomWkt = "POLYGON ((30 30, 40 30, 40 40, 30 40, 30 30))")
+    val pois = sc.parallelize(Array(poi1User1, poi2User1, poi1User2, poi2User2, poi1User3, nonMatchingPoi))
+
+    val locIntPois =
+      Array(
+        (location1, poi1User1),
+        (location1, poi1User2),
+        (location1, poi2User2),
+        (location2, poi2User1),
+        (location2, poi1User3))
+  }
+
   "LocationDsl" should "get correctly parsed data" in new WithLocationText {
     locationsText.toLocation.count should be (3)
   }
@@ -136,5 +227,21 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
   it should "get intersecting cells for each location" in new WithLocations with WithCellCatalogue {
     locations.intersectingCells.collect should
       be (Array((location1, Seq((1, 1), (1, 2), (1, 3))), (location2, Seq((1, 4))), (location3, Seq())))
+  }
+
+  it should "match dwells with some given intervals" in new WithDwellsForMatching {
+    locations.matchDwell(dwells, intervals).collect should contain theSameElementsAs (locIntDwells)
+  }
+
+  it should "compute footfall per location and time interval" in new WithDwellsForMatching {
+    locations.matchDwell(dwells, intervals).footfall.collect should contain theSameElementsAs (footfall)
+  }
+
+  it should "get users per location and time interval (profile)" in new WithDwellsForMatching {
+    locations.matchDwell(dwells, intervals).profile.collect should contain theSameElementsAs (profile)
+  }
+
+  it should "get PoIs per location" in new WithPoisForMatching {
+    locations.matchPoi(pois).collect should contain theSameElementsAs (locIntPois)
   }
 }

@@ -14,8 +14,8 @@ case class User(
 
   require(!imei.isEmpty || !imsi.isEmpty || msisdn != 0)
 
-  lazy val mcc: String = if (imsi.isEmpty) User.UnknownMcc else imsi.substring(User.MccStartIndex, User.MncStartIndex)
-  lazy val mnc: String = {
+  def mcc: String = if (imsi.isEmpty) User.UnknownMcc else imsi.substring(User.MccStartIndex, User.MncStartIndex)
+  def mnc: String = {
     val mncs = CountryCode.MccCountryOperatorsLookup.get(mcc).map(operators => operators.map(_.mnc)).getOrElse(List())
     mncs.find(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).getOrElse(User.UnknownMnc)
   }

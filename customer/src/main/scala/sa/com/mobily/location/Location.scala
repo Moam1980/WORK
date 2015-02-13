@@ -4,7 +4,11 @@
 
 package sa.com.mobily.location
 
-import com.vividsolutions.jts.geom.Geometry
+import scala.annotation.tailrec
+
+import com.github.nscala_time.time.Imports._
+import com.vividsolutions.jts.geom.{Geometry, GeometryCollection, Point}
+import com.vividsolutions.jts.geom.util.PolygonExtracter
 
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
@@ -32,12 +36,30 @@ object Location {
 
     override def fromFields(fields: Array[String]): Location = {
       val Array(nameText, clientText, epsgText, geomWktText) = fields
-
-      Location(
-        name = nameText,
-        client = clientText,
-        epsg = epsgText,
-        geomWkt = geomWktText)
+      Location(name = nameText, client = clientText, epsg = epsgText, geomWkt = geomWktText)
     }
   }
+
+  def isMatch(geom: Geometry, location: Location): Boolean = geom.intersects(location.geom)
+
+  def bestMatch(geom: Geometry, locations: Seq[Location]): Location = geom match {
+    case geom: GeometryCollection =>
+      val polygons = PolygonExtracter.getPolygons(geom).toArray.map(_.asInstanceOf[Geometry])
+      if (locations.exists(_.geom.isInstanceOf[Point]))
+        locations.minBy(l =>
+          polygons.minBy(_.getCentroid.distance(l.geom.getCentroid)).getCentroid.distance(l.geom.getCentroid))
+      else
+        locations.maxBy(l =>
+          GeomUtils.intersectionRatio(polygons.maxBy(p => GeomUtils.intersectionRatio(p, l.geom)), l.geom))
+    case _ =>
+      if (locations.exists(_.geom.isInstanceOf[Point])) locations.minBy(_.geom.getCentroid.distance(geom.getCentroid))
+      else locations.maxBy(l => GeomUtils.intersectionRatio(l.geom, geom))
+  }
+
+  @tailrec
+  def intervals(start: DateTime, end: DateTime, minutes: Int, result: List[Interval] = Nil): List[Interval] =
+    if (start.plusMinutes(minutes) >= end)
+      result :+ new Interval(start, end)
+    else
+      intervals(start.plusMinutes(minutes), end, minutes, result :+ new Interval(start, start.plusMinutes(minutes)))
 }

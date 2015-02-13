@@ -19,7 +19,7 @@ import sa.com.mobily.utils.EdmCoreUtils
 
 trait CellsGeometry {
 
-  require(!cells.isEmpty)
+  require(cells.nonEmpty)
 
   val cells: Set[(Int, Int)]
 
