@@ -4,7 +4,11 @@
 
 package sa.com.mobily.user
 
+import org.apache.spark.sql._
+
 import sa.com.mobily.metrics.MeasurableById
+import sa.com.mobily.parsing.RowParser
+import sa.com.mobily.poi.{Poi, PoiType}
 import sa.com.mobily.roaming.CountryCode
 
 case class User(
@@ -51,4 +55,15 @@ object User {
   val UnknownMnc = "Unknown"
 
   def header: Array[String] = Array("imei", "imsi", "msisdn")
+
+  implicit val fromRow = new RowParser[User] {
+
+    override def fromRow(row: Row): User = {
+      val imei = row(0).asInstanceOf[String]
+      val imsi = row(1).asInstanceOf[String]
+      val msisdn = row(2).asInstanceOf[Long]
+
+      User(imei = imei, imsi = imsi, msisdn = msisdn)
+    }
+  }
 }

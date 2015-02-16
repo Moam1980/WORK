@@ -13,7 +13,8 @@ import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.EgBts
-import sa.com.mobily.poi.{PoiType, UserActivity, UserActivityPoi}
+import sa.com.mobily.geometry.GeomUtils
+import sa.com.mobily.poi.{Poi, PoiType, UserActivity}
 import sa.com.mobily.user.User
 
 class UserActivityPoiFunctions(self: RDD[UserActivity]) {
@@ -39,15 +40,15 @@ class UserActivityPoiFunctions(self: RDD[UserActivity]) {
       centroidMapping: Map[Int, PoiType],
       btsCatalogue: Broadcast[Map[(String, String), Iterable[EgBts]]]): RDD[(User, PoiType, Iterable[Geometry])] = {
     for (userPois <- userPois(model, centroidMapping); poi <- userPois._2)
-    yield (userPois._1, poi._1, UserActivityPoi.findGeometries(poi._2, btsCatalogue.value))
+    yield (userPois._1, poi._1, UserActivity.findGeometries(poi._2, btsCatalogue.value))
   }
 
   def userPoisWithAggregatedGeoms(
       implicit model: KMeansModel,
       centroidMapping: Map[Int, PoiType],
-      btsCatalogue: Broadcast[Map[(String, String), Iterable[EgBts]]]): RDD[(User, PoiType, Geometry)] = {
+      btsCatalogue: Broadcast[Map[(String, String), Iterable[EgBts]]]): RDD[Poi] = {
     userPoisWithGeoms(model, centroidMapping, btsCatalogue).map(userPoi =>
-      (userPoi._1, userPoi._2, UserActivityPoi.unionGeoms(userPoi._3)))
+      Poi(userPoi._1, userPoi._2, GeomUtils.wkt(GeomUtils.unionGeoms(userPoi._3))))
   }
 }
 

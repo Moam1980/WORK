@@ -7,6 +7,8 @@ package sa.com.mobily.geometry
 import com.vividsolutions.jts.geom.{Coordinate, PrecisionModel}
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.cell.{TwoG, EgBts}
+import sa.com.mobily.poi.UserActivity
 import sa.com.mobily.utils.EdmCustomMatchers
 
 class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
@@ -259,6 +261,55 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
       GeomUtils.parseWkt("POLYGON ((0.5 1, 1 1, 1 0, 0.5 0, 0.5 1))", Coordinates.SaudiArabiaUtmSrid)
   }
 
+  trait WithGeometry {
+
+    val coords1 = UtmCoordinates(821375.9, 3086866.0)
+    val coords2 = UtmCoordinates(821485.9, 3086976.0)
+    val egBts1 = EgBts("6539", "6539", "New-Addition", coords1, "", "", 57, "BTS", "Alcatel", "E317",
+      "42003000576539", TwoG, "17", "Macro", 0, 0)
+    val egBts2 = EgBts("6540", "6540", "New-Addition", coords2, "", "", 57, "BTS", "Alcatel", "E317",
+      "42003000576539", TwoG, "17", "Macro", 535.49793639, 681.54282813)
+    val geometry1 = egBts1.geom
+    val geometry2 = egBts2.geom
+  }
+
+  trait WithUserActivity extends WithGeometry {
+
+    val firstUserSiteId = "2541"
+    val secondUserSiteId = "2566"
+    val firstUserRegionId = "1"
+    val secondUserRegionId = "2"
+    val nonExistingSiteId = "0"
+    val nonExistingRegionId = "0"
+    val poiLocation1 = (firstUserSiteId, firstUserRegionId)
+    val poiLocation2 = (secondUserSiteId, secondUserRegionId)
+    val nonExistingPoiLocation = (nonExistingSiteId, nonExistingRegionId)
+    val poisLocation = Seq(poiLocation1, poiLocation2)
+    val poisLocationWithoutGeom = Seq(nonExistingPoiLocation)
+    val btsCatalogue =
+      Map(
+        (firstUserSiteId, firstUserRegionId) -> Seq(egBts1),
+        (secondUserSiteId, secondUserRegionId) -> Seq(egBts2),
+        ("9999", "3") -> Seq())
+  }
+
+  trait WithUnionGeometries extends WithGeometry {
+
+    val shapeWkt1 = "POLYGON (( 130 10, 130 14, 2 14, 2 10, 130 10 ))"
+    val shapeWkt2 = "POLYGON (( 13 14, 17 14, 17 10, 13 14 ))"
+    val shapeWkt3 = "POLYGON (( 230 0, 230 4, 2 4, 2 0, 230 0 ))"
+    val shapeWkt4 = "POLYGON (( 13 114, 17 114, 17 10, 13 114 ))"
+    val shapeWktUnion = "MULTIPOLYGON (((230 0, 2 0, 2 4, 230 4, 230 0)), ((17 14, 130 14, 130 10, 2 10, 2 14, 16.8 14, " +
+        "13 114, 17 114, 17 14)))"
+
+    val geom1 = GeomUtils.parseWkt(shapeWkt1 , coords1.srid)
+    val geom2 = GeomUtils.parseWkt(shapeWkt2 , coords1.srid)
+    val geom3 = GeomUtils.parseWkt(shapeWkt3 , coords1.srid)
+    val geom4 = GeomUtils.parseWkt(shapeWkt4 , coords1.srid)
+    val geomUnion = GeomUtils.parseWkt(shapeWktUnion , coords1.srid)
+    val geoms = Seq(geom1, geom2, geom3, geom4)
+  }
+
   "GeomUtils" should "parse WKT text and assign SRID" in new WithShapes {
     GeomUtils.parseWkt(polygonWkt, sridPlanar) should equalGeometry (poly)
   }
@@ -385,4 +436,18 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
       GeomUtils.transformGeom(geomWsg84, geomFactoryUtm38N, true) should
         equalGeometry (geomUtm38N, Coordinates.OneDecimalScale)
     }
+
+  it should "find geometries" in new WithUserActivity {
+    val geometries = UserActivity.findGeometries(poisLocation, btsCatalogue)
+    geometries should be(Seq(geometry1, geometry2))
+  }
+
+  it should "return an empty sequence when it does not find a geometry" in new WithUserActivity {
+    val geometries = UserActivity.findGeometries(poisLocationWithoutGeom, btsCatalogue)
+    geometries should be(Seq.empty)
+  }
+
+  it should "union geometries and apply the Douglas Peucker Simplifier" in new WithUnionGeometries {
+    GeomUtils.unionGeoms(geoms) should be (geomUnion)
+  }
 }

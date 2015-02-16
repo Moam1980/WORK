@@ -4,8 +4,11 @@
 
 package sa.com.mobily.poi
 
+import com.vividsolutions.jts.geom.Geometry
 import org.apache.spark.mllib.linalg.{Vectors, Vector}
 import org.joda.time.format.DateTimeFormat
+
+import sa.com.mobily.cell.EgBts
 
 import sa.com.mobily.user.User
 
@@ -55,5 +58,14 @@ object UserActivity {
           TableauFmt.print(date.plusHours(hour)),
           centroidAndIndex._1(hour).toString))
     }
+  }
+
+  def findGeometries(
+      btsIds: Iterable[(String, String)],
+      btsCatalogue: Map[(String, String), Iterable[EgBts]]): Iterable[Geometry] = {
+    btsIds.flatMap(btsIds => btsCatalogue.get((btsIds._1, btsIds._2)) match {
+      case Some(location) => location.map(_.geom)
+      case _ => Seq()
+    })
   }
 }
