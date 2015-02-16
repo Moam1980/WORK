@@ -4,6 +4,7 @@
 
 package sa.com.mobily.location
 
+import com.github.nscala_time.time.Imports._
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
@@ -43,6 +44,36 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
     val locationFields = Array("locationTest", "clientTest", Coordinates.Wgs84GeodeticEpsg, shapeWgs84Wkt)
   }
 
+  trait WithMatchingLocations {
+
+    val locationNoPoint1 = Location(name = "location", client = "client", epsg = Coordinates.SaudiArabiaUtmEpsg,
+      geomWkt = "POLYGON ((0 0, 100 0, 100 100, 0 100, 0 0))")
+    val locationNoPoint2 = locationNoPoint1.copy(geomWkt = "POLYGON ((100 0, 135 0, 135 100, 100 100, 100 0))")
+    val matchingGeom1 = GeomUtils.parseWkt("POLYGON ((3 3, 13 3, 13 13, 3 13, 3 3))", locationNoPoint1.geom.getSRID)
+    val nonMatchingGeom1 =
+      GeomUtils.parseWkt("POLYGON ((103 103, 113 103, 113 113, 103 113, 103 103))", locationNoPoint1.geom.getSRID)
+
+    val multiPolygonGeom = GeomUtils.parseWkt(
+      "MULTIPOLYGON (((103 0, 103 101, 113 101, 113 0, 103 0)), ((37 37, 37 39, 39 39, 39 37, 37 37)), " +
+        "((97 0, 97 100, 103 100, 103 0, 97 0)))",
+      locationNoPoint1.geom.getSRID)
+    val singlePolygonGeom =
+      GeomUtils.parseWkt("POLYGON ((97 0, 97 100, 104 100, 104 0, 97 0))", locationNoPoint1.geom.getSRID)
+    val locations = List(locationNoPoint1, locationNoPoint2)
+
+    val locationPoint1 = locationNoPoint1.copy(geomWkt = "POINT (50 51)")
+    val locationPoint2 = locationNoPoint1.copy(geomWkt = "POINT (130 50)")
+    val pointLocations = List(locationPoint1, locationPoint2)
+  }
+
+  trait WithIntervals {
+
+    val interval1 = new Interval(0, 3600000)
+    val interval2 = new Interval(3600000, 7200000)
+    val interval3 = new Interval(7200000, 10800000)
+    val intervals = List(interval1, interval2, interval3)
+  }
+
   "Location" should "return correct header" in new WithLocation {
     Location.header should be (locationHeader)
   }
@@ -61,5 +92,37 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
 
   it should "be discarded when the CSV format is wrong" in new WithLocation {
     an [Exception] should be thrownBy fromCsv.fromFields(locationFields :+ "|")
+  }
+
+  it should "detect matching geometries" in new WithMatchingLocations {
+    Location.isMatch(matchingGeom1, locationNoPoint1) should be (true)
+  }
+
+  it should "detect non-matching geometries" in new WithMatchingLocations {
+    Location.isMatch(nonMatchingGeom1, locationNoPoint1) should be (false)
+  }
+
+  it should "take best match when there are no point geometries in locations (and geom is multipolygon)" in
+    new WithMatchingLocations {
+      Location.bestMatch(multiPolygonGeom, locations) should be (locationNoPoint1)
+    }
+
+  it should "take best match when there are no point geometries in locations (and geom is polygon)" in
+    new WithMatchingLocations {
+      Location.bestMatch(singlePolygonGeom, locations) should be (locationNoPoint2)
+    }
+
+  it should "take best match when there are point geometries in locations (and geom is multipolygon)" in
+    new WithMatchingLocations {
+      Location.bestMatch(multiPolygonGeom, pointLocations) should be (locationPoint1)
+    }
+
+  it should "take best match when there are point geometries in locations (and geom is polygon)" in
+    new WithMatchingLocations {
+      Location.bestMatch(singlePolygonGeom, pointLocations) should be (locationPoint2)
+    }
+
+  it should "create intervals from start/end and interval period in minutes" in new WithIntervals {
+    Location.intervals(new DateTime(0), new DateTime(10800000), 60) should be (intervals)
   }
 }
