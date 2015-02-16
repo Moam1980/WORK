@@ -4,7 +4,7 @@
 
 package sa.com.mobily.crm.spark
 
-import scala.collection.Map
+import scala.collection.immutable.Map
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
@@ -40,21 +40,21 @@ trait SubscriberDsl {
 
 class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
 
-  def toBroadcastImsiByMsisdn(
-      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[Long, String]] =
-    self.sparkContext.broadcast(
-      self.keyBy(s => (s.user.msisdn)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.imsi)).collectAsMap)
+  def toBroadcastImsiByMsisdn(chooseSubscriber: (Subscriber, Subscriber) =>
+        Subscriber = (s1, s2) => s1): Broadcast[Map[Long, String]] =
+    self.sparkContext.broadcast(self.keyBy(s =>
+      (s.user.msisdn)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.imsi)).collect.toMap)
 
-  def toBroadcastMsisdnByImsi(
-      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[String, Long]] =
-    self.sparkContext.broadcast(
-      self.keyBy(s => (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collectAsMap)
+  def toBroadcastMsisdnByImsi(chooseSubscriber: (Subscriber, Subscriber) =>
+        Subscriber = (s1, s2) => s1): Broadcast[Map[String, Long]] =
+    self.sparkContext.broadcast(self.keyBy(s =>
+      (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collect.toMap)
 }
 
 class SubscriberStatistics(self: RDD[Subscriber]) {
 
   def countSubscribers[A: ClassTag](f: Subscriber => (A, Int)): Map[A, Int] =
-    self.map(f).reduceByKey(_ + _).collectAsMap
+    self.map(f).reduceByKey(_ + _).collect.toMap
 
   def countSubscribersByGender: Map[String, Int] = countSubscribers(e => (e.gender, 1))
 
