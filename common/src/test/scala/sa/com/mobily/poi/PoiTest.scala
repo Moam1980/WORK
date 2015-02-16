@@ -4,10 +4,9 @@
 
 package sa.com.mobily.poi
 
-import org.apache.spark.sql.catalyst.expressions.Row
+import org.apache.spark.sql.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
-import sa.com.mobily.event.PsEventSource
 import sa.com.mobily.geometry.GeomUtils
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCustomMatchers
@@ -35,7 +34,7 @@ class PoiTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
     val poiFields = user.fields ++ Array("Work", polygonWkt, isoCode)
     val header = User.header ++ Array("poiType", "geomWkt", "countryIsoCode")
 
-    val row = Row(Row("866173010386736", "420034122616618", 560917079L), Work, polygonWkt, isoCode)
+    val row = Row(Row("866173010386736", "420034122616618", 560917079L), Row("Work"), polygonWkt, isoCode)
     val wrongRow = Row(Row(866173010386L, "420034122616618", 560917079L), Work)
   }
 
