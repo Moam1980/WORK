@@ -11,12 +11,13 @@ import scala.reflect.ClassTag
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
 import sa.com.mobily.crm._
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
-import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
+import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 
-class SubscriberReader(self: RDD[String]) {
+class SubscriberCsvReader(self: RDD[String]) {
 
   import ParsedItemsDsl._
 
@@ -29,13 +30,17 @@ class SubscriberReader(self: RDD[String]) {
 
 trait SubscriberDsl {
 
-  implicit def customerSubscriberReader(csv: RDD[String]): SubscriberReader = new SubscriberReader(csv)
+  implicit def subscriberCsvReader(csv: RDD[String]): SubscriberCsvReader = new SubscriberCsvReader(csv)
 
   implicit def customerSubscriberStatistics(subscribers: RDD[Subscriber]): SubscriberStatistics =
     new SubscriberStatistics(subscribers)
 
   implicit def customerSubscriberFunctions(subscribers: RDD[Subscriber]): SubscriberFunctions =
     new SubscriberFunctions(subscribers)
+
+  implicit def subscriberWriter(self: RDD[Subscriber]): SubscriberWriter = new SubscriberWriter(self)
+
+  implicit def subscriberRowReader(self: RDD[Row]): SubscriberRowReader = new SubscriberRowReader(self)
 }
 
 class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
@@ -69,13 +74,13 @@ class SubscriberStatistics(self: RDD[Subscriber]) {
   def countSubscribersBySourceActivation: Map[SourceActivation, Int] = countSubscribers(e => (e.sourceActivation, 1))
 
   def countSubscribersByCalculatedSegment: Map[CalculatedSegment, Int] =
-    countSubscribers(e => (e.m1CalculatedSegment, 1))
+    countSubscribers(e => (e.calculatedSegment, 1))
 
   def nationalitiesComparison: RDD[((String, String), Int)] =
-    self.map(e => ((e.nationalies.declared, e.nationalies.inferred), 1)).reduceByKey(_ + _)
+    self.map(e => ((e.nationalities.declared, e.nationalities.inferred), 1)).reduceByKey(_ + _)
 
   def subscribersByMatchingNationatility: RDD[Subscriber] =
-    self.filter(e => e.nationalies.declared == e.nationalies.inferred)
+    self.filter(e => e.nationalities.declared == e.nationalities.inferred)
 
   def subscribersByRevenueHigherThanMean: RDD[Subscriber] = {
     val subscribersRevenueMean = self.map(e => e.revenues.totalRevenue).mean
@@ -89,6 +94,16 @@ class SubscriberStatistics(self: RDD[Subscriber]) {
 
   def subscribersByRevenueGreaterThanValue(value: Long): RDD[Subscriber] =
     self.filter(subscriber => subscriber.revenues.totalRevenue > value)
+}
+
+class SubscriberWriter(self: RDD[Subscriber]) {
+
+  def saveAsParquetFile(path: String): Unit = SparkWriter.saveAsParquetFile[Subscriber](self, path)
+}
+
+class SubscriberRowReader(self: RDD[Row]) {
+
+  def toSubscriber: RDD[Subscriber] = SparkParser.fromRow[Subscriber](self)
 }
 
 object SubscriberDsl extends SubscriberDsl with ParsedItemsDsl

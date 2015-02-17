@@ -4,11 +4,13 @@
 
 package sa.com.mobily.crm
 
+import scala.language.existentials
 import scala.util.Try
 
+import org.apache.spark.sql._
 import org.joda.time.format.DateTimeFormat
 
-import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
@@ -110,7 +112,7 @@ case class Subscriber (
     gender: String,
     siteId: Option[Int],
     regionId: Option[Short],
-    nationalies: Nationalities,
+    nationalities: Nationalities,
     types: SubscriberTypes,
     packages: SubscriberPackages,
     date: SubscriberDates,
@@ -118,7 +120,7 @@ case class Subscriber (
     sourceActivation: SourceActivation,
     roamingStatus: String,
     currentBalance: Option[Float],
-    m1CalculatedSegment: CalculatedSegment,
+    calculatedSegment: CalculatedSegment,
     revenues: Revenues)
 
 object Subscriber {
@@ -147,7 +149,7 @@ object Subscriber {
         gender = genderText,
         siteId = EdmCoreUtils.parseInt(siteIdText),
         regionId = EdmCoreUtils.parseShort(regionIdText),
-        nationalies = Nationalities(actualNationalityText.toUpperCase, calNationalityText.toUpperCase),
+        nationalities = Nationalities(actualNationalityText.toUpperCase, calNationalityText.toUpperCase),
         types = SubscriberTypes(parsePayType(payTypeText), handsetTypeText),
         packages = SubscriberPackages(parseDataPackage(isDataPackageText), parseCorpPackage(isCorpPackageText)),
         date = SubscriberDates(
@@ -158,7 +160,7 @@ object Subscriber {
         sourceActivation = parseSourceActivation(sourceActivationText),
         roamingStatus = roamingStatusText,
         currentBalance = EdmCoreUtils.parseFloat(currentBalanceText),
-        m1CalculatedSegment = parseCalculatedSegment(m1CalculatedSegmentText),
+        calculatedSegment = parseCalculatedSegment(m1CalculatedSegmentText),
         revenues = Revenues(
           m1= m1RevenueText.toFloat,
           m2 = m2RevenueText.toFloat,
@@ -166,6 +168,69 @@ object Subscriber {
           m4 = m4RevenueText.toFloat,
           m5 = m5RevenueText.toFloat,
           m6 = m6RevenueText.toFloat))
+    }
+  }
+
+  implicit val fromRow = new RowParser[Subscriber] {
+
+    override def fromRow(row: Row): Subscriber = {// scalastyle:ignore method.length
+      val Seq(
+        userRow,
+        idTypeRow,
+        idNumber,
+        age,
+        gender,
+        siteId,
+        regionId,
+        nationalitiesRow,
+        typesRow,
+        packagesRow,
+        dateRow,
+        activeStatusRow,
+        sourceActivationRow,
+        roamingStatus,
+        currentBalance,
+        calculatedSegmentRow,
+        revenuesRow) = row.toSeq
+      val user =  User.fromRow.fromRow(userRow.asInstanceOf[Row])
+      val Seq(customerIdType) = idTypeRow.asInstanceOf[Row].toSeq
+      val Seq(declared, inferred) = nationalitiesRow.asInstanceOf[Row].toSeq
+      val Seq(payRow, handset) = typesRow.asInstanceOf[Row].toSeq
+      val Seq(pay) = payRow.asInstanceOf[Row].toSeq
+      val Seq(Seq(data), Seq(corp)) = packagesRow.asInstanceOf[Row].toSeq
+      val Seq(activation, lastActivity, lastRecharge) = dateRow.asInstanceOf[Row].toSeq
+      val Seq(activeStatus) = activeStatusRow.asInstanceOf[Row].toSeq
+      val Seq(sourceActivation) = sourceActivationRow.asInstanceOf[Row].toSeq
+      val Seq(calculatedSegment) = calculatedSegmentRow.asInstanceOf[Row].toSeq
+      val Seq(m1, m2, m3 , m4, m5, m6) = revenuesRow.asInstanceOf[Row].toSeq
+
+      Subscriber(
+        user = user,
+        idType = CustomerIdType(customerIdType.asInstanceOf[String]),
+        idNumber = EdmCoreUtils.longOption(idNumber),
+        age = EdmCoreUtils.floatOption(age),
+        gender = gender.asInstanceOf[String],
+        siteId = EdmCoreUtils.intOption(siteId),
+        regionId = EdmCoreUtils.shortOption(regionId),
+        nationalities = Nationalities(declared.asInstanceOf[String], inferred.asInstanceOf[String]),
+        types = SubscriberTypes(PayType(pay.asInstanceOf[String]), handset.asInstanceOf[String]),
+        packages = SubscriberPackages(DataPackage(data.asInstanceOf[String]), CorpPackage(corp.asInstanceOf[String])),
+        date = SubscriberDates(
+          activation = EdmCoreUtils.longOption(activation),
+          lastActivity = EdmCoreUtils.longOption(lastActivity),
+          lastRecharge = EdmCoreUtils.longOption(lastRecharge)),
+        activeStatus = ActiveStatus(activeStatus.asInstanceOf[String]),
+        sourceActivation = SourceActivation(sourceActivation.asInstanceOf[String]),
+        roamingStatus = roamingStatus.asInstanceOf[String],
+        currentBalance = EdmCoreUtils.floatOption(currentBalance),
+        calculatedSegment = CalculatedSegment(calculatedSegment.asInstanceOf[String]),
+        revenues = Revenues(
+          m1 = m1.asInstanceOf[Float],
+          m2 = m2.asInstanceOf[Float],
+          m3 = m3.asInstanceOf[Float],
+          m4 = m4.asInstanceOf[Float],
+          m5 = m5.asInstanceOf[Float],
+          m6 = m6.asInstanceOf[Float]))
     }
   }
 
