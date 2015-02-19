@@ -4,13 +4,14 @@
 
 package sa.com.mobily.xdr
 
-import org.scalatest.{FlatSpec, ShouldMatchers}
-
 import scala.language.implicitConversions
 
-class CsXdrTest extends FlatSpec with ShouldMatchers {
+import org.scalatest.{FlatSpec, ShouldMatchers}
 
-  import sa.com.mobily.xdr.CsCell._
+import sa.com.mobily.event.{CsIuSource, Event}
+import sa.com.mobily.user.User
+
+class CsXdrTest extends FlatSpec with ShouldMatchers {
 
   trait WithCsCells {
 
@@ -37,6 +38,29 @@ class CsXdrTest extends FlatSpec with ShouldMatchers {
     val csCellWithoutValuesFields = Array("", "", "", "", "")
   }
 
+  trait WithEventSubscribers {
+
+    val user1Imsi = "420032275422214"
+    val user2Imsi = "12343454545455"
+    val user1Msisdn = 4200322L
+    val emptyMsisdn = 0L
+    val eventUser1 = Event(
+      User("", user1Imsi, emptyMsisdn),
+      1416156747015L,
+      1416156748435L,
+      3403,
+      33515,
+      CsIuSource,
+      Some("2"),
+      None,
+      None,
+      None,
+      None,
+      None)
+    val eventUser2 = eventUser1.copy(user = User("", user2Imsi, emptyMsisdn))
+    val subscribersCatalogue = Map((user1Imsi, user1Msisdn))
+  }
+
   "CsXdr" should "return correct header for Cell" in new WithCsCells {
     CsCell.header should be(cellHeader)
   }
@@ -52,5 +76,15 @@ class CsXdrTest extends FlatSpec with ShouldMatchers {
     csCellWithoutOldLac.fields should be(csCellWithoutOldLacFields)
     csCellWithoutNewLac.fields should be(csCellWithoutNewLacFields)
     csCellWithoutValues.fields should be(csCellWithoutValuesFields)
+  }
+
+  it should "fill the user msisdn when the user exists in the subscribers map" in new WithEventSubscribers {
+    val filledEventWithMsisdn = CsXdr.fillUserEventWithMsisdn(subscribersCatalogue, eventUser1)
+    filledEventWithMsisdn.user.msisdn should be(user1Msisdn)
+  }
+  
+  it should "not fill the user msisdn when the user does not exist in the subscribers map" in new WithEventSubscribers {
+    val filledEventWithMsisdn = CsXdr.fillUserEventWithMsisdn(subscribersCatalogue, eventUser2)
+    filledEventWithMsisdn.user.msisdn should be(emptyMsisdn)
   }
 }

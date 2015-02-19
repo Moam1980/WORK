@@ -42,7 +42,7 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       "b0c5b874,0a3e,e882,_,_,_,_,_,_,000004db,_,_,_,_,0,_,9,_,_,_,_,_,_,0a3e,e882,_,_,420,03,0887,_,_,_,_,_,2131231," +
       "3547240635999912,b0c5b874,00,0,_,_,_,0,0,254,_,_,_,_,_,_,0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,18000c00," +
       "56000000,0,0,0,_,_,_,_,_,00,0a3e,_,1a,_,_,_,3,0,_,_,3523871,1,_,60"
-    val aiCsXdrLine3 = "4,0149b982d580,0149b982da5b,000251,000146,1,_,_,_,_,_,_,1,_,_,420032370264779,b0c5b874,0a3e," +
+    val aiCsXdrLine3 = "4,0149b982d580,0149b982da5b,000251,000146,1,_,_,_,_,_,_,1,_,_,420032370264789,b0c5b874,0a3e," +
       "e882,_,_,_,_,_,_,000004db,_,_,_,_,0,_,9,_,_,_,_,_,_,0a3e,e882,_,_,420,03,0887,_,_,_,_,_,2131231," +
       "3547240635999912,b0c5b874,00,0,_,_,_,0,0,254,_,_,_,_,_,_,0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,18000c00," +
       "56000000,0,0,0,_,_,_,_,_,00,0a3e,_,1a,_,_,_,3,0,_,_,_,1,_,60"
@@ -51,6 +51,10 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       "0839,_,_,10,_,_,03,61c5f3e5,3523870633105423,00,_,0,_,_,0,0,254,_,_,_,_,1,_,0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_," +
       "_,_,_,_,_,d8000c00,80000,230e0000,0,0,16,_,_,_,_,00,0839,_,1a,_,_,424e,_,0,ba,11,_,1,0,60"
     val user1Imsi = "420034104770740"
+    val user2Imsi = "420032370264779"
+    val user3Imsi = "420032370264789"
+    val user2Msisdn = 3523871L
+    val emptyMsisdn = 0L
     val aiCsXdrs = sc.parallelize(Array(
       aiCsXdrLine1,
       aiCsXdrLine2,
@@ -70,7 +74,7 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       None,
       None)
     val event2 = Event(
-      User("4202370264779", "420032370264779", 3523871),
+      User("4202370264779", user2Imsi, user2Msisdn),
       1416156599680L,
       1416156600923L,
       2622,
@@ -82,7 +86,7 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
       None,
       None,
       None)
-    val event3 = event2.copy(user = User("", "420032370264779", 0L))
+    val event3 = event2.copy(user = User("", user3Imsi, emptyMsisdn))
     val eventsParsed = sc.parallelize(Array(event1, event2, event3))
   }
 
@@ -91,6 +95,9 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
     val user1OverridedMsisdn = 1234L
     val subscribersCatalogue = Map((user1Imsi, user1OverridedMsisdn))
     val bcCellCatalogue = sc.broadcast(subscribersCatalogue)
+
+    def userMsisdnFromEvents(events: Array[Event], imsi: String): Long =
+      events.find(_.user.imsi == imsi).get.user.msisdn
   }
 
   trait WithSanity extends WithAiCsEventsToParse {
@@ -132,8 +139,10 @@ class AiCsXdrDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCont
   it should "parse RDD[AiCsXdr] to RDD[Event] discarding users that are not in the subscribers broadcast map" in
     new WithSubscribersBroadcastMap {
       val events = aiCsXdrs.toAiCsXdr.toEventWithMatchingSubscribers(bcCellCatalogue).collect
-      events.length should be(1)
-      events(0).user.msisdn should be(user1OverridedMsisdn)
+      events.length should be(3)
+      userMsisdnFromEvents(events, user1Imsi) should be(user1OverridedMsisdn)
+      userMsisdnFromEvents(events, user2Imsi) should be(emptyMsisdn)
+      userMsisdnFromEvents(events, user3Imsi) should be(emptyMsisdn)
     }
 
   it should "take sanity metrics" in new WithSanity {
