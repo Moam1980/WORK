@@ -36,7 +36,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       gender = "M",
       siteId = Some(5049),
       regionId = Some(3),
-      nationalies = Nationalities("SAUDI ARABIA", "KSA"),
+      nationalities = Nationalities("SAUDI ARABIA", "KSA"),
       types = subscriberTypes,
       packages = subscriberPackages,
       date = SubscriberDates(Some(1367355600000l), Some(1406840400000l), Some(1406840400000l)),
@@ -44,7 +44,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       sourceActivation = Siebel,
       roamingStatus = "Saudi Arabia",
       currentBalance = Some(100.050000f),
-      m1CalculatedSegment = S50,
+      calculatedSegment = S50,
       revenues = Revenues(
         m1 = 99.04f,
         m2 = 68.57f,
@@ -186,27 +186,27 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "be built from CSV with W segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(22, Wcs.id)) should be (customerSubscriber.copy(m1CalculatedSegment = Wcs))
+    fromCsv.fromFields(fields.updated(22, Wcs.id)) should be (customerSubscriber.copy(calculatedSegment = Wcs))
   }
 
   it should "be built from CSV with S40 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(22, S40.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S40))
+    fromCsv.fromFields(fields.updated(22, S40.id)) should be (customerSubscriber.copy(calculatedSegment = S40))
   }
 
   it should "be built from CSV with S60 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(22, S60.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S60))
+    fromCsv.fromFields(fields.updated(22, S60.id)) should be (customerSubscriber.copy(calculatedSegment = S60))
   }
 
   it should "be built from CSV with S80 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(22, S80.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S80))
+    fromCsv.fromFields(fields.updated(22, S80.id)) should be (customerSubscriber.copy(calculatedSegment = S80))
   }
 
   it should "be built from CSV with S90 segmentc calculated" in new WithCustomerSubscriber {
-    fromCsv.fromFields(fields.updated(22, S90.id)) should be (customerSubscriber.copy(m1CalculatedSegment = S90))
+    fromCsv.fromFields(fields.updated(22, S90.id)) should be (customerSubscriber.copy(calculatedSegment = S90))
   }
 
   it should "be built from CSV with Unknown segmentc calculated" in new WithCustomerSubscriber {
     fromCsv.fromFields(fields.updated(22, "A")) should
-      be (customerSubscriber.copy(m1CalculatedSegment = UnknownSourceCalculatedSegment))
+      be (customerSubscriber.copy(calculatedSegment = UnknownSourceCalculatedSegment))
   }
 }

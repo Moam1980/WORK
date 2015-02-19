@@ -2,15 +2,16 @@
  * TODO: License goes here!
  */
 
-package sa.com.mobily.dwh.spark
+package sa.com.mobily.crm.spark
+
+import scala.reflect.io.File
 
 import org.scalatest._
 
 import sa.com.mobily.crm._
-import sa.com.mobily.crm.spark.SubscriberDsl
-import sa.com.mobily.utils.LocalSparkContext
+import sa.com.mobily.utils.LocalSparkSqlContext
 
-class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
   import SubscriberDsl._
   
@@ -175,5 +176,13 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkCont
       (s1, s2) => if (s2.activeStatus==HotSIM) s2 else s1)
     broadcastMap.value.size should be (2)
     broadcastMap.value(subscriber1Imsi) should be(duplicateSubscriberMsisdn)
+  }
+
+  it should "save subscribers in parquet" in new WithSubscriberText {
+    val path = File.makeTemp().name
+    val subscribers = subscriber.toSubscriber
+    subscribers.saveAsParquetFile(path)
+    sqc.parquetFile(path).toSubscriber.collect.sameElements(subscribers.collect) should be (true)
+    File(path).deleteRecursively
   }
 }
