@@ -6,7 +6,7 @@ package sa.com.mobily.crm.spark
 
 import scala.reflect.io.File
 
-import org.scalatest._
+import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.crm._
 import sa.com.mobily.utils.LocalSparkSqlContext
@@ -60,7 +60,6 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
   }
 
   "SubscriberDsl" should "get correctly parsed data" in new WithSubscriberText {
-    val subscribers = subscriber.toSubscriber.collect
     subscriber.toSubscriber.count should be (3)
   }
 
@@ -101,14 +100,14 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
   }
 
   it should "get the number of nationalities pairs" in new WithSubscriberText {
-    subscriber.toSubscriber.nationalitiesComparison.collect should be(
+    subscriber.toSubscriber.nationalitiesComparison.collect should contain theSameElementsAs(
       Array(
-        ("SAUDI ARABIA", "KSA") -> 2,
+        ("SAUDI ARABIA", "SAUDI ARABIA") -> 2,
         ("SPAIN", "SPAIN") -> 1))
   }
 
   it should "compare calculated nationality with declared" in new WithSubscriberText {
-    subscriber.toSubscriber.subscribersByMatchingNationatility.count should be(1)
+    subscriber.toSubscriber.subscribersByMatchingNationatility.count should be(3)
   }
 
   it should "get the subscribers with revenues higher than the mean" in new WithSubscriberText {
@@ -184,5 +183,9 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
     subscribers.saveAsParquetFile(path)
     sqc.parquetFile(path).toSubscriber.collect.sameElements(subscribers.collect) should be (true)
     File(path).deleteRecursively
+  }
+
+  it should "parse to SubscriberView" in new WithSubscriberText {
+    subscriber.toSubscriber.toSubscriberView.count should be (3)
   }
 }

@@ -36,7 +36,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       gender = "M",
       siteId = Some(5049),
       regionId = Some(3),
-      nationalities = Nationalities("SAUDI ARABIA", "KSA"),
+      nationalities = Nationalities("SAUDI ARABIA", "SAUDI ARABIA"),
       types = subscriberTypes,
       packages = subscriberPackages,
       date = SubscriberDates(Some(1367355600000l), Some(1406840400000l), Some(1406840400000l)),
@@ -53,6 +53,8 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
         m5 = 106.36f,
         m6 = 125.23f)
     )
+    val badNationality = "BGD"
+    val goodNationality = "BANGLADESH"
   }
 
   "CustomerSubscriber" should "be built from CSV" in new WithCustomerSubscriber {
@@ -208,5 +210,13 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   it should "be built from CSV with Unknown segmentc calculated" in new WithCustomerSubscriber {
     fromCsv.fromFields(fields.updated(22, "A")) should
       be (customerSubscriber.copy(calculatedSegment = UnknownSourceCalculatedSegment))
+  }
+
+  it should "normalize a bad nationality when is built from CSV" in new WithCustomerSubscriber {
+    fromCsv.fromFields(fields.updated(9, badNationality)).nationalities.inferred should be (goodNationality)
+  }
+
+  it should "not normalize a good nationality when is built from CSV" in new WithCustomerSubscriber {
+    fromCsv.fromFields(fields.updated(8, goodNationality)).nationalities.declared should be (goodNationality)
   }
 }

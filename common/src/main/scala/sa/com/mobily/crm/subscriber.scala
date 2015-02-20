@@ -104,7 +104,7 @@ case class SubscriberTypes(
 
 case class Nationalities(declared: String, inferred:String)
 
-case class Subscriber (
+case class Subscriber(
     user: User,
     idType: CustomerIdType,
     idNumber: Option[Long],
@@ -130,6 +130,23 @@ object Subscriber {
 
   implicit val fromCsv = new CsvParser[Subscriber] {
 
+    final lazy val nationalitiesToNormalize: Map[String, String] = Map(("ANTIGUA&BARBUD", "ANTIGUA AND BARBUDA"),
+      ("BGD", "BANGLADESH"), ("BOSNIA AND HERZEGOWINA", "BOSNIA HERZEGOVINA"),
+      ("BOSNIA AND HERZEGOVINA", "BOSNIA HERZEGOVINA"), ("BOSNIA&HERZEG", "BOSNIA HERZEGOVINA"),
+      ("CHAD REPUBLIC", "CHAD"), ("DEMOCRATIC REPUBLIC OF THE CONGO", "CONGO"), ("REPUBLIC OF THE CONGO", "CONGO"),
+      ("EQUITORIAL GUINEA", "EQUATORIAL GUINEA"), ("ETH", "ETHIOPIA"), ("EGY", "EGYPT"), ("EYGEPT", "EGYPT"),
+      ("FALKLAND ISLAN", "FALKLAND ISLANDS"), ("GABON REPUBLIC", "GABON"), ("HOLY SEE (VATICAN CITY STATE", "HOLY SEE"),
+      ("IDN", "INDONESIA"), ("IND", "INDIA"), ("IRAN (ISLAMIC REPUBLIC OF", "IRAN"), ("KSA", "SAUDI ARABIA"),
+      ("SAUDI", "SAUDI ARABIA"), ("SAU", "SAUDI ARABIA"), ("MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF", "MACEDONIA"),
+      ("MACEDONIA, THE FORMER YUGOSLAV", "MACEDONIA"), ("MACETHE FORMER YUGOSLAV REPUBLIC OF MACEDONIA", "MACEDONIA"),
+      ("MOLDOVA, REPUBLIC OF", "MOLDOVA"), ("MARSHAL ISLAND", "MARSHALL ISLANDS"), ("RUSSIAN FEDERATION", "RUSSIA"),
+      ("SLOVAKIA (SLOVAK REPUBLIC", "SLOVAKIA"), ("SOMALIA REPUBLIC", "SOMALIA"), ("SYRIAN ARAB REPUBLIC", "SYRIA"),
+      ("TAIWAN, PROVINCE OF CHINA", "TAIWAN"), ("TANZANIA, UNITED REPUBLIC OF", "TANZANIA"),
+      ("TRINIDAD&TOBAG", "TRINIDAD AND TOBAGO"), ("TUR", "TURKEY"), ("UNITED ARABEMIRATES", "UAE"),
+      ("UNITED ARAB EMIRATES", "UAE"), ("UNITED STATES OF AMERICA", "USA"), ("UNITED STATES", "USA"),
+      ("VIET NAM", "VIETNAM"), ("0", ""), ("999", ""), ("999 FROM ALELM", ""), ("????", ""), ("?????", ""),
+      ("???????", ""), ("????????", ""), ("����", ""), ("�������", ""), ("��������", ""))
+
     override def lineCsvParser: OpenCsvParser = new OpenCsvParser
 
     override def fromFields(fields: Array[String]): Subscriber = {
@@ -149,7 +166,9 @@ object Subscriber {
         gender = genderText,
         siteId = EdmCoreUtils.parseInt(siteIdText),
         regionId = EdmCoreUtils.parseShort(regionIdText),
-        nationalities = Nationalities(actualNationalityText.toUpperCase, calNationalityText.toUpperCase),
+        nationalities = Nationalities(
+          nationalitiesToNormalize.getOrElse(actualNationalityText.toUpperCase, actualNationalityText.toUpperCase),
+          nationalitiesToNormalize.getOrElse(calNationalityText.toUpperCase, calNationalityText.toUpperCase)),
         types = SubscriberTypes(parsePayType(payTypeText), handsetTypeText),
         packages = SubscriberPackages(parseDataPackage(isDataPackageText), parseCorpPackage(isCorpPackageText)),
         date = SubscriberDates(
