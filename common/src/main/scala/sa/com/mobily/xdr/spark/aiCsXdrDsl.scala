@@ -15,7 +15,7 @@ import sa.com.mobily.event.Event
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.utils.SanityUtils
-import sa.com.mobily.xdr.AiCsXdr
+import sa.com.mobily.xdr.{AiCsXdr, CsXdr}
 
 class AiCsXdrCsvReader(self: RDD[String]) {
 
@@ -45,8 +45,7 @@ class AiCsXdrParser(self: RDD[AiCsXdr]) {
   def toEvent: RDD[Event] = self.filter(aiCs => AiCsXdr.isValidToBeParsedAsEvent(aiCs)).map(_.toEvent)
 
   def toEventWithMatchingSubscribers(implicit bcSubscribersCatalogue: Broadcast[Map[String, Long]]): RDD[Event] =
-    toEvent.filter(e => bcSubscribersCatalogue.value.isDefinedAt(e.user.imsi)).map(e =>
-      e.copy(user = e.user.copy(msisdn = bcSubscribersCatalogue.value(e.user.imsi))))
+    toEvent.map(e => CsXdr.fillUserEventWithMsisdn(bcSubscribersCatalogue.value, e))
 
   def sanity: RDD[(String, Int)] = self.flatMap(aiCs => {
     val nonEmptyOptionString = List(

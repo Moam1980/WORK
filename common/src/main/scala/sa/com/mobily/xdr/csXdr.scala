@@ -4,6 +4,8 @@
 
 package sa.com.mobily.xdr
 
+import sa.com.mobily.event.Event
+
 case class CsUser(
     imei: Option[String],
     imsi: Option[String],
@@ -65,3 +67,13 @@ case class CsCause(
     sequenceTerminate: Option[Short])
 
 case class CsStatistic(smsLength: Option[String], dtmfNumberBits: Option[String])
+
+object CsXdr {
+
+  def fillUserEventWithMsisdn(subscribers: Map[String, Long], event: Event): Event = {
+    if (subscribers.isDefinedAt(event.user.imsi))
+      event.copy(user = event.user.copy(msisdn = subscribers(event.user.imsi)))
+    else
+      event
+  }
+}
