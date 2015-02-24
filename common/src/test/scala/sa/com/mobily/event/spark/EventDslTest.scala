@@ -349,7 +349,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
     voiceEvents.voiceToParsedEvent.count should be (3)
   }
 
-  it should "group by user chronologically" in new WithEvents {
+  it should "group events by user chronologically" in new WithEvents {
     val orderedEvents = events.byUserChronologically.collect.toMap
     orderedEvents.size should be (2)
     orderedEvents(User("0134160098258500", "420034120446250", 560917079L)) should be (List(event3, event1))

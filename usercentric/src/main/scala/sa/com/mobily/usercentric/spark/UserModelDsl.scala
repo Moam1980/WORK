@@ -110,6 +110,12 @@ class UserModelSlotFunctions(userSlots: RDD[(User, List[SpatioTemporalSlot])]) {
   }
 }
 
+class DwellFunctions(self: RDD[Dwell]) {
+
+  def byUserChronologically: RDD[(User, List[Dwell])] =
+    self.keyBy(_.user).groupByKey.map(userDwells => (userDwells._1, userDwells._2.toList.sortBy(_.startTime)))
+}
+
 trait UserModelDsl {
 
   implicit def userModelEventFunctions(userEventsWithMatchingCell: RDD[(User, List[Event])]): UserModelEventFunctions =
@@ -136,6 +142,8 @@ trait UserModelDsl {
 
   implicit def journeyViaPointWriter(journeyViaPoints: RDD[JourneyViaPoint]): JourneyViaPointWriter =
     new JourneyViaPointWriter(journeyViaPoints)
+
+  implicit def dwellFunctions(dwells: RDD[Dwell]): DwellFunctions = new DwellFunctions(dwells)
 }
 
 object UserModelDsl extends UserModelDsl with JourneyDsl with EventDsl with CellDsl

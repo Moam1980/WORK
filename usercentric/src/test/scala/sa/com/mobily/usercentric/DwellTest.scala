@@ -116,4 +116,8 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   it should "be discarded when row is wrong" in new WithDwell {
     an[Exception] should be thrownBy fromRow.fromRow(dwellWrongRow)
   }
+
+  it should "compute the dwell duration in minutes" in new WithDwell {
+    dwell.copy(endTime = 3661000).durationInMinutes should be (61)
+  }
 }
