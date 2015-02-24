@@ -11,7 +11,7 @@ import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.cell.spark.CellDsl._
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
 import sa.com.mobily.location.{Footfall, Location}
-import sa.com.mobily.poi.{Home, Work, Poi}
+import sa.com.mobily.poi._
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
@@ -194,6 +194,12 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
         (location1, poi2User2),
         (location2, poi2User1),
         (location2, poi1User3))
+    val poiByLocation1 = LocationPoiMetrics(
+        0.8541666666666666, 0.20623947784607635, 1.0, 0.5625, 2, 3, Map(Seq(Home, Work) -> 1, Seq(Home) -> 1))
+    val poiByLocation2 = LocationPoiMetrics(0.6953125, 0.3046875, 1.0, 0.390625, 2, 2, Map(Seq(Work) -> 2))
+
+    val location1Analysis = (location1, poiByLocation1)
+    val location2Analysis = (location2, poiByLocation2)
   }
 
   "LocationDsl" should "get correctly parsed data" in new WithLocationText {
@@ -243,5 +249,12 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
 
   it should "get PoIs per location" in new WithPoisForMatching {
     locations.matchPoi(pois).collect should contain theSameElementsAs (locIntPois)
+  }
+
+  it should "calculate the poi metrics for each location" in new WithPoisForMatching {
+    val analytics = locations.poiMetrics(pois)
+
+    analytics should contain (location1Analysis)
+    analytics should contain (location2Analysis)
   }
 }
