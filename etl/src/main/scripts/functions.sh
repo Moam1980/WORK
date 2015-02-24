@@ -300,7 +300,7 @@ function testHdfsFolder ()
     fi
     hdfs dfs -test -e $1
     if [ $? == 0 ]; then
-        echo 1>&2 "INFO: $0: Folder $1 already exists." 
+        echo 1>&2 "INFO: $0: Folder $1 exists." 
         return 0
     else
         echo 1>&2 "INFO: $0: Folder $1 doesn't exists." 
@@ -311,17 +311,17 @@ function testHdfsFolder ()
 function testAndDeleteInvalidParquetFolder ()
 {
     # Check that we have all parameter
-    if [ $# -ne 1 ]; then
-        echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 1 and got: $#"
+    if [ $# -le 1 ]; then
+        echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 1 or more and got: $#"
         return 2 
     fi
-
-    destinationDirectory=$1
-
-    testHdfsFolder "${destinationDirectory}/_SUCCESS"
-    if [ $? != 0 ]; then
-        echo "The folder have invalid data. Deleting it: ${destinationDirectory}" 
-        hdfs dfs -rm -r ${destinationDirectory}
-    fi
-    testHdfsFolder "${destinationDirectory}"
+    for destinationDirectory in "$@"
+    do
+        testHdfsFolder "${destinationDirectory}/_SUCCESS"
+        if [ $? != 0 ]; then
+            echo "The folder have invalid data. Deleting it: ${destinationDirectory}" 
+            hdfs dfs -rm -r ${destinationDirectory}
+        fi
+        testHdfsFolder "${destinationDirectory}"
+    done 
 }

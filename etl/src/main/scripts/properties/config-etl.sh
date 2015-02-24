@@ -49,8 +49,12 @@ CS_DATA_SEPARATOR=("" ".")
 CS_FILE_PREFIXES=("ADR_AINT_6-" "TDR-IU-7-")
 CS_FILE_EXTENSIONS=(".gz" ".gz")
 
-SUBSCRIBERS_FILE="/user/tdatuser/subscribers-oracle/0.6/2014/12/01/csv/customer-base-20141201.csv"
-EVENTS_PARQUET_DIR="/user/tdatuser/cs-probes/event"
+# HDFS paths
+HDFS_HOME="/user/tdatuser"
+EVENTS_PARQUET_DIR="${HDFS_HOME}/cs-probes/event"
+CELL_CATALOGUE="${HDFS_HOME}/cell-catalogue/0.5/2015/01/06/csv"
+SUBSCRIBERS_FILE="${HDFS_HOME}/subscribers-oracle/0.6/2014/12/01/csv/customer-base-20141201.csv"
+USER_CENTRIC_DIR="${HDFS_HOME}/user-centric"
 
 SPARK_ARTIFACTS_DIR="/data/local-staging/tdatuser/artifacts"
 
