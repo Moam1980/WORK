@@ -54,6 +54,8 @@ class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
         Subscriber = (s1, s2) => s1): Broadcast[Map[String, Long]] =
     self.sparkContext.broadcast(self.keyBy(s =>
       (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collect.toMap)
+
+  def toSubscriberView: RDD[SubscriberView] = self.map(subscriber => SubscriberView(subscriber))
 }
 
 class SubscriberStatistics(self: RDD[Subscriber]) {
