@@ -17,7 +17,8 @@ import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.location.{Footfall, Location}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
-import sa.com.mobily.poi.Poi
+import sa.com.mobily.poi.{Poi, LocationPoiMetrics}
+import sa.com.mobily.poi.spark.PoiDsl
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.utils.EdmCoreUtils
@@ -34,6 +35,8 @@ class LocationReader(self: RDD[String]) {
 }
 
 class LocationFunctions(self: RDD[Location]) {
+
+  import PoiDsl._
 
   def withTransformedGeom
       (longitudeFirstInCells: Boolean = true)
@@ -80,6 +83,18 @@ class LocationFunctions(self: RDD[Location]) {
         case onlyLocation :: Nil => Seq((onlyLocation, p))
         case severalLocations => Seq((bestMatch(p.geometry, severalLocations), p))
       })
+  }
+
+  def poiMetrics(
+    pois: RDD[Poi],
+    isMatch: (Geometry, Location) => Boolean = Location.isMatch,
+    bestMatch: (Geometry, Seq[Location]) => Location = Location.bestMatch): Map[Location, LocationPoiMetrics] = {
+    val matchedPoisLocations = matchPoi(pois, isMatch, bestMatch)
+    val locations = self.collect.toList
+    locations.map(location => {
+      val pois = matchedPoisLocations.filter(_._1 == location).values
+      (location, pois.locationPoiMetrics(location.geom))
+    }).toMap
   }
 }
 

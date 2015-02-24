@@ -4,8 +4,9 @@
 
 package sa.com.mobily.cell
 
+import sa.com.mobily.cell.spark.CellMerger
 import sa.com.mobily.geometry.{GeomUtils, LatLongCoordinates, UtmCoordinates}
-import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class EgBts(
@@ -26,7 +27,8 @@ case class EgBts(
     indoorCov: Double,
     outdoorCov: Double) {
 
-  lazy val geom = GeomUtils.circle(coords.geometry, outdoorCov)
+  lazy val geom =
+    GeomUtils.circle(coords.geometry, outdoorCov * CellMerger.DefaultCoverageRangeIncrementFactor)
 }
 
 object EgBts {
