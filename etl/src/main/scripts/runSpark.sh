@@ -15,7 +15,7 @@ function usageHelp ()
     echo 1>&2 "Parameters:"
     echo 1>&2 "    -v <edm_version>: EDM core version, is mandatory"
     echo 1>&2 "    -p <properties_file>: Properties file to use, is mandatory"
-    echo 1>&2 "    -o <spark_options>: Spark options to use, is mandatory"
+    echo 1>&2 "    -o <spark_options>: Spark options to run process, is mandatory"
     echo 1>&2 "    -f <scala_file>: File with scala code to run" 
     echo 1>&2 "    ${0} -v \"0.8.0\" -o \"--master yarn-client --executor-memory 1g\"\
         -p \"properties/etl-config.properties\" -f \"/tmp/etl/saveEvents.scala\""
