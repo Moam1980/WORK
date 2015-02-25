@@ -107,7 +107,7 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
     }
 
   it should "have the proper header" in {
-    SpatioTemporalSlot.header should be (
+    SpatioTemporalSlot.Header should be (
       Array("imei", "imsi", "msisdn", "startTime", "endTime", "numEvents", "outMinSpeed", "avgIntraMinSpeed", "cells",
         "firstEventBeginTime", "lastEventEndTime", "geomWkt", "countryIsoCode", "typeEstimate"))
   }

@@ -56,7 +56,7 @@ final case class IuCell(
 
 object IuCell {
 
-  def header: Array[String] = CsCell.header ++
+  val Header: Array[String] = CsCell.Header ++
     Array("mcc", "mnc", "firstRac", "secondRac", "thirdRac", "firstSac", "secondSac", "thirdSac", "targetCellId")
 
   def idHeader: Array[String] = Array("Lac", "SacCellId")

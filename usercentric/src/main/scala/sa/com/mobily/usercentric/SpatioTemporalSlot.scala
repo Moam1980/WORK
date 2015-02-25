@@ -97,8 +97,8 @@ object SpatioTemporalSlot {
       numEvents = 1,
       countryIsoCode = Coordinates.utmSridIsoCode(cellCatalogue.head._2.planarCoords.srid))
 
-  def header: Array[String] =
-    User.header ++
+  val Header: Array[String] =
+    User.Header ++
       Array("startTime", "endTime", "numEvents", "outMinSpeed", "avgIntraMinSpeed", "cells", "firstEventBeginTime",
         "lastEventEndTime", "geomWkt", "countryIsoCode", "typeEstimate")
 

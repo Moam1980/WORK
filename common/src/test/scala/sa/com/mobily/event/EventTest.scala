@@ -134,7 +134,7 @@ class EventTest extends FlatSpec with ShouldMatchers with LocalSparkContext with
   }
 
   it should "return correct header" in new WithEvents {
-    Event.header should be (header)
+    Event.Header should be (eventHeader)
   }
 
   it should "return correct fields" in new WithEvents {

@@ -66,7 +66,7 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   }
 
   "Location" should "return correct header" in new WithLocation {
-    Location.header should be (locationHeader)
+    Location.Header should be (locationHeader)
   }
 
   it should "return correct fields" in new WithLocation {

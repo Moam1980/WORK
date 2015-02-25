@@ -36,11 +36,11 @@ class LocationCellMetricsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "have the same number of fields as in the header" in new WithLocationCellMetrics {
-    cellMetrics.fields.size should be (LocationCellMetrics.header.size)
+    cellMetrics.fields.size should be (LocationCellMetrics.Header.size)
   }
 
   it should "provide header field names" in new WithLocationCellMetrics {
-    LocationCellMetrics.header should
+    LocationCellMetrics.Header should
       be (Array("Cell Identifier", "Area", "Technology", "Type", "Range", "Centroid Distance", "Area Ratio", "WKT"))
   }
 }

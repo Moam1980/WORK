@@ -12,7 +12,7 @@ import org.joda.time.format.DateTimeFormat
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
-import sa.com.mobily.geometry.{Coordinates, GeomUtils}
+import sa.com.mobily.geometry.GeomUtils
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Journey
 import sa.com.mobily.utils.EdmCoreUtils
@@ -25,9 +25,7 @@ class JourneyFunctions(byUserChronologically: RDD[(User, List[Event])]) {
 
   def segmentsAndGeometries(cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[(User, List[String])] = {
     val wkt = Event.geomWkt(cellCatalogue.value) _
-    val geomFactory = cellCatalogue.value.headOption.map(cellTuple =>
-      GeomUtils.geomFactory(cellTuple._2.coverageGeom.getSRID, cellTuple._2.coverageGeom.getPrecisionModel)).getOrElse(
-        GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid))
+    val geomFactory = Cell.geomFactory(cellCatalogue.value)
     byUserChronologically.map { userEvents =>
       val minSpeedJourney = userEvents._2.sliding(2).collect {
         case List(first, second) if first.minSpeedPopulated && second.minSpeedPopulated =>

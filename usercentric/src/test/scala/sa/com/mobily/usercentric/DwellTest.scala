@@ -89,12 +89,12 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   }
 
   it should "return the proper header" in new WithDwell {
-    Dwell.header should be (Array("imei", "imsi", "msisdn", "startTime", "endTime", "geomWkt", "cells",
+    Dwell.Header should be (Array("imei", "imsi", "msisdn", "startTime", "endTime", "geomWkt", "cells",
       "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
   }
 
   it should "have the same number of elements in fields and header" in new WithDwell {
-    dwell.fields.size should be (Dwell.header.size)
+    dwell.fields.size should be (Dwell.Header.size)
   }
 
   it should "be built from CSV" in new WithDwell {

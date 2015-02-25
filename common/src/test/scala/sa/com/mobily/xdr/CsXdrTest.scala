@@ -62,7 +62,7 @@ class CsXdrTest extends FlatSpec with ShouldMatchers {
   }
 
   "CsXdr" should "return correct header for Cell" in new WithCsCells {
-    CsCell.header should be(cellHeader)
+    CsCell.Header should be(cellHeader)
   }
 
   it should "return correct fields for Cell" in new WithCsCells {

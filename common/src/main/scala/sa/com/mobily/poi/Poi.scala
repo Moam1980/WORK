@@ -21,7 +21,7 @@ case class Poi(user: User, poiType: PoiType, geomWkt: String, countryIsoCode: St
 
 object Poi {
 
-  def header: Array[String] = User.header ++ Array("poiType", "geomWkt", "countryIsoCode")
+  val Header: Array[String] = User.Header ++ Array("poiType", "geomWkt", "countryIsoCode")
 
   implicit val fromRow = new RowParser[Poi] {
 

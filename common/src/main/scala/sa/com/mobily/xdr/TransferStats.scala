@@ -28,7 +28,7 @@ case class TransferStats(
 
 object TransferStats {
 
-  def header: Array[String] =
+  val Header: Array[String] =
     Array(
       "l4UlThroughput",
       "l4DwThroughput",

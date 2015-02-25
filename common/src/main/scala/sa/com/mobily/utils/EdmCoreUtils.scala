@@ -101,7 +101,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   def floatOrZero(a: Any): Float = a match {
     case a: Float => a
-    case _ => 0L
+    case _ => 0F
   }
 
   def longOrZero(a: Any): Long = a match {

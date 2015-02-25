@@ -33,7 +33,7 @@ class ImsNeighboringCellTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return correct header" in new WithImsNeighboringCell {
-    ImsNeighboringCell.header should be (header)
+    ImsNeighboringCell.Header should be (header)
   }
 
   it should "return correct fields" in new WithImsNeighboringCell {

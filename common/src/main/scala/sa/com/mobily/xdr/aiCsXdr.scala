@@ -79,11 +79,11 @@ final case class  AiCell(
 
 object AiCell {
 
-  def header: Array[String] =
-    CsCell.header ++ Array("cic", "firstCellId", "secondCellId", "thirdCellId", "servingLac", "servingCellId") ++
+  val Header: Array[String] =
+    CsCell.Header ++ Array("cic", "firstCellId", "secondCellId", "thirdCellId", "servingLac", "servingCellId") ++
       Array( "oldMcc", "oldMnc")
 
-  def idHeader: Array[String] = Array("firstLac", "firstCellId")
+  val IdHeader: Array[String] = Array("firstLac", "firstCellId")
 }
 
 final case class  AiTime(

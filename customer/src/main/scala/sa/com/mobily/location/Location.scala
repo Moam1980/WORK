@@ -23,7 +23,7 @@ case class Location(
 
 object Location {
 
-  def header: Array[String] = Array("name", "client", "epsg", "geomWkt")
+  val Header: Array[String] = Array("name", "client", "epsg", "geomWkt")
 
   final val lineCsvParserObject = new OpenCsvParser
 

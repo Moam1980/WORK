@@ -86,6 +86,6 @@ class TransferStatsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return header as String" in new WithTransferStats {
-    TransferStats.header should be (header)
+    TransferStats.Header should be (header)
   }
 }

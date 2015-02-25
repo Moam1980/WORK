@@ -24,8 +24,8 @@ class ImsCellTest extends FlatSpec with ShouldMatchers {
 
     val imsCellIdentifierHeader = Array("cellId", "lac", "sac", "rac", "tac", "mcc", "mnc")
     val imsCellHeader =
-      ImsBts.header ++
-        ImsCellIdentifier.header ++
+      ImsBts.Header ++
+        ImsCellIdentifier.Header ++
         Array("cellName", "cellType", "cSysType", "sector", "sectorBranch", "antennaType", "bcchFrequency",
           "maxTxPower", "altitude", "minAltitude", "envChar", "height", "talim", "azimuth", "tilt", "beamWith",
           "accMin", "primarySchPower", "qRxLevMin")
@@ -113,11 +113,11 @@ class ImsCellTest extends FlatSpec with ShouldMatchers {
   }
 
   "ImsCell" should "return correct header for cell identifier" in new WithImsCell {
-    ImsCellIdentifier.header should be (imsCellIdentifierHeader)
+    ImsCellIdentifier.Header should be (imsCellIdentifierHeader)
   }
 
   it should "return correct header for cell" in new WithImsCell {
-    ImsCell.header should be (imsCellHeader)
+    ImsCell.Header should be (imsCellHeader)
   }
 
   it should "return correct fields for cell identifier" in new WithImsCell {

@@ -64,7 +64,7 @@ object SubscriberView {
       subscriber.calculatedSegment,
       subscriber.revenues)
 
-  def header: Array[String] = Array("imsi", "age", "gender", "nationality-declared", "nationality-inferred", "paytype",
+  val Header: Array[String] = Array("imsi", "age", "gender", "nationality-declared", "nationality-inferred", "paytype",
     "handsetType", "packages-data", "packages-corp", "activation-date", "last-activity-date", "last-recharge-date",
     "active-status", "currentBalance", "calculated-segment", "revenues-m1", "revenues-m2", "revenues-m3", "revenues-m4",
     "revenues-m5", "revenues-m6")

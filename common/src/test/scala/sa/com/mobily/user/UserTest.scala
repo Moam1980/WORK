@@ -55,11 +55,11 @@ class UserTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "generate header" in new WithUser {
-    User.header should be (header)
+    User.Header should be (header)
   }
 
   it should "return the same number of fields for header and fields method" in new WithUser {
-    User.header.length == user.fields.length should be(true)
+    User.Header.length == user.fields.length should be (true)
   }
 
   it should "throw an Exception when it does not receive neither msisdn nor imsi nor imei" in {
@@ -67,27 +67,27 @@ class UserTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "compare to true two users with the same imei" in new WithEqualityUsers {
-    firstUserImei == secondUserImei should be(true)
-    firstUserImei.equals(secondUserImei) should be(true)
+    firstUserImei == secondUserImei should be (true)
+    firstUserImei.equals(secondUserImei) should be (true)
   }
 
   it should "compare to true two users with the same imsi" in new WithEqualityUsers {
-    firstUserImsi == secondUserImsi should be(true)
-    firstUserImsi.equals(secondUserImsi) should be(true)
+    firstUserImsi == secondUserImsi should be (true)
+    firstUserImsi.equals(secondUserImsi) should be (true)
   }
 
   it should "compare to true two users with the same msisdn" in new WithEqualityUsers {
-    firstUserMsisdn == secondUserMsisdn should be(true)
-    firstUserMsisdn.equals(secondUserMsisdn) should be(true)
+    firstUserMsisdn == secondUserMsisdn should be (true)
+    firstUserMsisdn.equals(secondUserMsisdn) should be (true)
   }
 
   it should "compare to false two users with different fields" in new WithEqualityUsers {
-    firstUserImei == secondUserImsi should be(false)
-    firstUserImei.equals(secondUserImsi) should be(false)
+    firstUserImei == secondUserImsi should be (false)
+    firstUserImei.equals(secondUserImsi) should be (false)
   }
 
   it should "compare to false a user with a different class" in new WithEqualityUsers {
-    firstUserImei == userAnotherClass should be(false)
-    firstUserImei.equals(userAnotherClass) should be(false)
+    firstUserImei == userAnotherClass should be (false)
+    firstUserImei.equals(userAnotherClass) should be (false)
   }
 }
