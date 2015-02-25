@@ -311,7 +311,7 @@ function testHdfsFolder ()
 function testAndDeleteInvalidParquetFolder ()
 {
     # Check that we have all parameter
-    if [ $# -le 1 ]; then
+    if [ $# -lt 1 ]; then
         echo 1>&2 "ERROR: $0: Number of parameters incorrect, expected 1 or more and got: $#"
         return 2 
     fi
