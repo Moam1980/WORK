@@ -33,7 +33,7 @@ addCommandAlias("scoverage-all", ";scoverage-common ;scoverage-usercentric ;scov
 addCommandAlias("sanity", ";clean ;compile ;scalastyle ;scoverage-all ;assembly")
 
 libraryDependencies in ThisBuild ++= Seq(
-  "com.github.nscala-time" %% "nscala-time" % "1.4.0",
+  "com.github.nscala-time" %% "nscala-time" % "1.8.0",
   "org.apache.spark" %% "spark-core" % "1.1.1" % "compile,test,it,provided",
   "org.apache.spark" %% "spark-sql" % "1.1.1" % "compile,test,it,provided",
   "org.apache.spark" %% "spark-mllib" % "1.1.1" % "compile,test,it,provided",
