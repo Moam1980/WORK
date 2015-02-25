@@ -1,6 +1,6 @@
 name := "edm-core"
 
-version in ThisBuild := "0.7.0"
+version in ThisBuild := "0.8.0"
 
 organization in ThisBuild := "sa.com.mobily"
 
