@@ -106,12 +106,12 @@ echo 1>&2 "    overrideFlag: ${overrideFlag}"
 . ${BASE_DIR}/functions.sh
 
 # Run remote script from master server
-ssh ${user}@${server} "${command} -s \"${startDate}\" -e \"${endDate}\" -p  \"${propertiesFile}\" -v \"${edmVersion}\"\
-     -o \"${sparkOptions}\" -f \"${overrideFlag}\"" 
+ssh ${user}@${server} ". ~/.bash_profile; ./etl-script-${edmVersion}/runSparkDaily.sh -c \"${command}\"\
+    -s \"${startDate}\" -e \"${endDate}\" -p  \"${propertiesFile}\" -v \"${edmVersion}\" -o \"${sparkOptions}\"\
+    -f \"${overrideFlag}\"" 
 
 # End time stamp
 endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
 
 # Write summary of execution
 echo 1<&2 "INFO: ${0}: Finished process started at: ${startTimestampUtc}, finished at: ${endTimestampUtc}"
-

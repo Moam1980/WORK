@@ -48,4 +48,3 @@ def load(path: String)(implicit bcSubscribersCatalogue: Broadcast[Map[String, Lo
 val sources = List(${sources})
 implicit val bcSubscribersCatalogue = sc.textFile("${subscribers}").toSubscriber.toBroadcastMsisdnByImsi()
 load(sources(0)).union(load(sources(1))).saveAsParquetFile("${destination_dir}")
-

@@ -58,4 +58,3 @@ USER_CENTRIC_DIR="${HDFS_HOME}/user-centric"
 HDFS_FILES_METRICS_PATH="${HDFS_HOME}/metrics/hadoop-files/csv"
 
 SPARK_ARTIFACTS_DIR="/data/local-staging/tdatuser/artifacts"
-

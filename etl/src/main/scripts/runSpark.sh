@@ -84,4 +84,3 @@ endTimestampUtc=`date -u  "+%Y%m%d %H:%M:%S"`
 
 # Write summary of execution
 echo 1<&2 "INFO: ${0}: Finished Spark process, started at: ${startDate}, finished at: ${endDate}"
-
