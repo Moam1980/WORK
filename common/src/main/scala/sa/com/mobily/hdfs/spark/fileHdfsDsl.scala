@@ -36,12 +36,6 @@ class FileHdfsWriter(self: RDD[FileHdfs]) {
   def saveAsParquetFile(path: String): Unit = SparkWriter.saveAsParquetFile[FileHdfs](self, path)
 }
 
-class FileHdfsFunctions {
-
-  def toFilesHdfs(path: String): Array[FileHdfs] =
-    FileHdfs.parseFilesHdfs(path, FileSystem.get(new Configuration()).listFiles(new Path(path), true))
-}
-
 trait FileHdfsDsl {
 
   implicit def fileHdfsReader(csv: RDD[String]): FileHdfsReader = new FileHdfsReader(csv)
@@ -49,8 +43,10 @@ trait FileHdfsDsl {
   implicit def fileHdfsRowReader(self: RDD[Row]): FileHdfsRowReader = new FileHdfsRowReader(self)
 
   implicit def fileHdfsWriter(filesHdfs: RDD[FileHdfs]): FileHdfsWriter = new FileHdfsWriter(filesHdfs)
-
-  implicit def fileHdfsFunctions(filesHdfs: RDD[FileHdfs]): FileHdfsFunctions = new FileHdfsFunctions
 }
 
-object FileHdfsDsl extends FileHdfsDsl with ParsedItemsDsl
+object FileHdfsDsl extends FileHdfsDsl with ParsedItemsDsl {
+
+  def toFilesHdfs(path: String): Array[FileHdfs] =
+    FileHdfs.parseFilesHdfs(path, FileSystem.get(new Configuration()).listFiles(new Path(path), true))
+}

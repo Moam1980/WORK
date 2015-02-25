@@ -17,6 +17,7 @@ function usageHelp ()
     echo 1>&2 "    -s <startDate>: Start date for the command, is mandatory"
     echo 1>&2 "    -e <endDate>: End date for the command, is mandatory"
     echo 1>&2 "    -v <edmVersion>: Version of EDM core to use, is mandatory"
+    echo 1>&2 "    -o <spark_options>: Spark options to run process, is mandatory"
     echo 1>&2 "    -p <properties_file>: Properties file to use, is mandatory"
     echo 1>&2 "    -f <override_flag>: Flag to override folder if exists, is mandatory"
     echo 1>&2 "Examples:"

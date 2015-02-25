@@ -96,6 +96,6 @@ class FileHdfsDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCon
   }
 
   it should "throw a exception if path doesn't exists" in new WithFileHdfs {
-    an[Exception] should be thrownBy filesHdfs.toFilesHdfs("NotAPath")
+    an[Exception] should be thrownBy FileHdfsDsl.toFilesHdfs("NotAPath")
   }
 }
