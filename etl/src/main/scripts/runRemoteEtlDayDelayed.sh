@@ -16,7 +16,7 @@ function usageHelp ()
     echo 1>&2 "    -d \<delayDays\>: Delay in days from today to run the command, is mandatory"
     echo 1>&2 "    -p \<properties_file\>: Properties file to use, is optional"
     echo 1>&2 "Examples:"
-    echo 1>&2 "    ${0} -u edm -l 10.64.246.168 -c "./etl-script-0.6.0/pullDataSftpCsCatchup.sh" -d 1
+    echo 1>&2 "    ${0} -u edm -l 10.64.246.168 -c "./${BASE_DIR}/pullDataSftpCsCatchup.sh" -d 1
       -- Download all CS files for yesterday as delay is 1 day using 10.64.246.168 as landing server"
 }
 
@@ -61,5 +61,5 @@ else
     dayCalculated=`date -d@$dateEpoc +%Y%m%d`
 fi
 
-# Execute remote command "cd;./etl-script-0.6.0/pullDataSftpCsCatchup.sh"
+# Execute remote command
 ${BASE_DIR}/runRemoteEtl.sh -u "${user}" -l "${server}" -c "${command}" -s "${dayCalculated}" -e "${dayCalculated}" -p "${propertiesFile}"
