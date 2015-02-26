@@ -20,7 +20,7 @@ function usageHelp ()
     echo 1>&2 "    -e \<endDate\>: End date for the command, is mandatory"
     echo 1>&2 "    -p \<properties_file\>: Properties file to use, is optional"
     echo 1>&2 "Examples:"
-    echo 1>&2 "    ${0} -u edm -l 10.64.246.168 -c "./etl-script-0.6.0/pullDataSftpCsCatchup.sh" -s 20141004 -e 20141205
+    echo 1>&2 "    ${0} -u edm -l 10.64.246.168 -c "./${BASE_DIR}/pullDataSftpCsCatchup.sh" -s 20141004 -e 20141205
       -- Download all CS files from 20141004 to 20141205 using 10.64.246.168 as landing server"
 }
 
