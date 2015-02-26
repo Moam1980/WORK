@@ -114,7 +114,7 @@ echo 1>&2 "    sparkOptions: ${sparkOptions}"
 echo 1>&2 "    overrideFlag: ${overrideFlag}"
 
 # This script should run from startDate to endDate
-# convert in seconds sinch the epoch:
+# convert in seconds since the epoch:
 start=$(date -d"$startDate" +%s)
 end=$(date -d"$endDate" +%s)
 cur=$start
