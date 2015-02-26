@@ -319,7 +319,7 @@ function testAndDeleteInvalidParquetFolder ()
     do
         testHdfsFolder "${destinationDirectory}/_SUCCESS"
         if [ $? != 0 ]; then
-            echo "The folder have invalid data. Deleting it: ${destinationDirectory}" 
+            echo 1<&2 "INFO: ${0}: The folder have invalid data. Deleting it: ${destinationDirectory}" 
             hdfs dfs -rm -r ${destinationDirectory}
         fi
         testHdfsFolder "${destinationDirectory}"

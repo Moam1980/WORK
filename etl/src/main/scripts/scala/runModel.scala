@@ -12,8 +12,7 @@ import sa.com.mobily.xdr.spark.UfdrPsXdrDsl._
 
 implicit val cellCatalogue = sc.textFile("${CELL_CATALOGUE}").toCell.toBroadcastMap
 val events = new SQLContext(sc).parquetFile("${source}").toEvent
-val model = events.withMatchingCell.byUserChronologically.withMinSpeeds.aggTemporalOverlapAndSameCell.toUserCentric
-  .persist(StorageLevel.MEMORY_AND_DISK)
+val model = events.withMatchingCell.byUserChronologically.withMinSpeeds.aggTemporalOverlapAndSameCell.toUserCentric.persist(StorageLevel.MEMORY_AND_DISK)
 events.unpersist()
 cellCatalogue.unpersist()
 model.flatMap(userModel => userModel._2._1).saveAsParquetFile("${dwell}")

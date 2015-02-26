@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "${dayToProces}" && -z "${monthToProcess}" && -z "${yearToProcess}" ]; then
+if [ -z "${dayToProcess}" ] || [ -z "${monthToProcess}" ] || [ -z "${yearToProcess}" ]; then
     echo 1>&2 "ERROR: ${0}: Year, month and day parameters are mandatories."
     exit 8 
 fi
@@ -22,7 +22,7 @@ do
     # Increment one the counter
 done
 DEST_PATH="${EVENTS_PARQUET_DIR}/${HADOOP_CS_PROBES_VERSION}/${datePath}/${HADOOP_CS_PROBES_PARQUET_FORMAT}"
-#Get a timestamp to generate SQL file
+#Get a timestamp to generate temporal file
 TIMESTAMP=`date +%s`
 TMP_FILE="saveAsParquetFromEvent.tmp_${TIMESTAMP}.scala"
 echo 1<&2 "INFO: ${0}: Testing if destination directory exists: "

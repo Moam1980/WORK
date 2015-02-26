@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "${dayToProces}" && -z "${monthToProcess}" && -z "${yearToProcess}" ]; then
+if [ -z "${dayToProcess}" ] || [ -z "${monthToProcess}" ] || [ -z "${yearToProcess}" ]; then
     echo 1>&2 "ERROR: ${0}: Year, month and day parameters are mandatories."
     exit 8 
 fi
@@ -19,7 +19,7 @@ do
     destinationDirectory="${basePath}/${HADOOP_CS_PROBES_PARQUET_FORMAT}"
     testHdfsFolder "${sourceDirectory}"
     if [ $? == 0 ]; then
-        #Get a timestamp to generate SQL file
+        #Get a timestamp to generate temporal file
         TIMESTAMP=`date +%s`
         TMP_FILE="saveAsParquetFromXdr.tmp_${TIMESTAMP}.scala"
         echo 1<&2 "INFO: ${0}: Testing if destination directory exists: "

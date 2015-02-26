@@ -1,14 +1,14 @@
 #!/bin/bash
 
-if [ -z "${dayToProces}" && -z "${monthToProcess}" && -z "${yearToProcess}" ]; then
+if [ -z "${dayToProcess}" ] || [ -z "${monthToProcess}" ] || [ -z "${yearToProcess}" ]; then
     echo 1>&2 "ERROR: ${0}: Year, month and day parameters are mandatories."
     exit 8 
 fi
 
 FILE="runModel.scala"
 datePath="${yearToProcess}/${monthToProcess}/${dayToProcess}"
-datePartialPath="${HADOOP_CS_PROBES_VERSION}/${datePath}/${HADOOP_CS_PROBES_PARQUET_FORMAT}"
-sourcePath="${EVENTS_PARQUET_DIR}/${datePartialPath}"
+datePartialPath="${edmVersion%.[0-9]}/${datePath}/${HADOOP_CS_PROBES_PARQUET_FORMAT}"
+sourcePath="${EVENTS_PARQUET_DIR}/${HADOOP_CS_PROBES_VERSION}/${datePath}/${HADOOP_CS_PROBES_PARQUET_FORMAT}"
 dwell="${USER_CENTRIC_DIR}/dwell/${datePartialPath}"
 journey="${USER_CENTRIC_DIR}/journey/${datePartialPath}"
 jvp="${USER_CENTRIC_DIR}/jvp/${datePartialPath}"
@@ -26,7 +26,6 @@ if [ $? != 0 ]; then
 fi
 testAndDeleteInvalidParquetFolder ${dwell} ${journey} ${jvp}
 if [ $? == 0 ]; then
-    echo 1<&2 "INFO: The sourceDirectory already exists."
     if [ ${overrideFlag} == "true" ]; then
         echo 1<&2 "INFO: Override flag is set to true. Deleting directores:"
         echo 1<&2 " ${dwell}"
