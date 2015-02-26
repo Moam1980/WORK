@@ -6,6 +6,7 @@ package sa.com.mobily.usercentric
 
 import scala.language.existentials
 
+import com.github.nscala_time.time.Imports._
 import org.apache.spark.sql.Row
 
 import sa.com.mobily.cell.Cell
@@ -37,6 +38,8 @@ case class Dwell(
         EdmCoreUtils.Fmt.print(lastEventEndTime),
         numEvents.toString,
         countryIsoCode)
+
+  def durationInMinutes: Long = new Duration(startTime, endTime).getStandardMinutes
 }
 
 object Dwell {

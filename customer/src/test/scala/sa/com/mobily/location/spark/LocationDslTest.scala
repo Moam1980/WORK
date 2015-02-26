@@ -8,18 +8,19 @@ import com.github.nscala_time.time.Imports._
 import org.scalatest._
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
-import sa.com.mobily.cell.spark.CellDsl._
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
-import sa.com.mobily.location.{Footfall, Location}
+import sa.com.mobily.location.{Footfall, Location, MobilityMatrixItem}
 import sa.com.mobily.poi._
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
-import sa.com.mobily.utils.{EdmCustomMatchers, LocalSparkContext}
+import sa.com.mobily.usercentric.spark.UserModelDsl
+import sa.com.mobily.utils.{EdmCoreUtils, EdmCustomMatchers, LocalSparkContext}
 
 class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext with EdmCustomMatchers {
 
   import LocationDsl._
+  import UserModelDsl._
 
   trait WithLocationText {
 
@@ -138,7 +139,7 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val dwell5 = dwell3.copy(startTime = 133000, endTime = 145000,
       geomWkt = "POLYGON ((30 30, 30 40, 40 40, 40 30, 30 30))")
     val dwells = sc.parallelize(Array(dwell1, dwell2, dwell3, dwell4, dwell5))
-    val intervals = Location.intervals(new DateTime(0), new DateTime(180000), 1)
+    val intervals = EdmCoreUtils.intervals(new DateTime(0), new DateTime(180000), 1)
 
     val footfallLoc1Time1 = Footfall(users = Set(user1, user3), numDwells = 3, avgPrecision = 44)
     val footfallLoc2Time1 = Footfall(users = Set(user2), numDwells = 1, avgPrecision = 64)
@@ -202,6 +203,39 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val location2Analysis = (location2, poiByLocation2)
   }
 
+  trait WithItemsForMobilityMatrix {
+
+    val startDate = EdmCoreUtils.Fmt.parseDateTime("2014/11/02 00:00:00")
+    val endDate = startDate.plusHours(3)
+    val intervals = EdmCoreUtils.intervals(startDate, endDate, 60)
+
+    val itemDwell1And2 = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", 0, User("", "4200301", 0), 1)
+
+    val dwell1 = Dwell(
+      user = User("", "4200301", 0),
+      startTime = 1414875600000L,
+      endTime = 1414876800000L,
+      geomWkt = "POLYGON ((2 6, 2 7, 3 7, 3 6, 2 6))",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 9,
+      numEvents = 2)
+    val dwell2 = dwell1.copy(
+      startTime = 1414879260000L,
+      endTime = 1414880460000L,
+      geomWkt = "POLYGON ((6 6, 6 7, 7 7, 7 6, 6 6))")
+    val dwells = sc.parallelize(Array(dwell1, dwell2)).byUserChronologically
+
+    val l1 = Location(name = "l1", client = "client", epsg = Coordinates.SaudiArabiaUtmEpsg,
+      geomWkt = "POLYGON ((1 5, 1 8, 4 8, 4 5, 1 5))")
+    val l2 = l1.copy(name = "l2", geomWkt = "POLYGON ((5 5, 5 8, 8 8, 8 5, 5 5))")
+    val l3 = l1.copy(name = "l3", geomWkt = "POLYGON ((0 1, 1 1, 2 1, 2 0, 0 1))")
+    val l4 = l1.copy(name = "l4", geomWkt = "POLYGON ((1 2, 1 3, 2 3, 2 2, 1 2))")
+    val l5 = l1.copy(name = "l5", geomWkt = "POLYGON ((3 0, 3 1, 4 1, 4 0, 3 0))")
+    val l6 = l1.copy(name = "l6", geomWkt = "POLYGON ((3 2, 3 3, 4 3, 4 2, 3 2))")
+    val locations = sc.parallelize(Array(l1, l2, l3, l4, l5, l6))
+  }
+
   "LocationDsl" should "get correctly parsed data" in new WithLocationText {
     locationsText.toLocation.count should be (3)
   }
@@ -256,5 +290,9 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
 
     analytics should contain (location1Analysis)
     analytics should contain (location2Analysis)
+  }
+
+  it should "compute the mobility matrix" in new WithItemsForMobilityMatrix {
+    locations.toMobilityMatrix(dwells, intervals, 15).collect should contain theSameElementsAs (List(itemDwell1And2))
   }
 }

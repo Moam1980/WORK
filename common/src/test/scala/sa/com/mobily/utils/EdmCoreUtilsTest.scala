@@ -4,6 +4,7 @@
 
 package sa.com.mobily.utils
 
+import com.github.nscala_time.time.Imports._
 import org.joda.time.format.DateTimeFormat
 import org.scalatest._
 
@@ -51,6 +52,29 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     val britishCode = 44
     val britishRegionCodesList = List("GB", "GG", "IM", "JE")
     val britishRegionCodes = "GB:GG:IM:JE"
+  }
+
+  trait WithIntervals {
+
+    val interval1 = new Interval(0, 3600000)
+    val interval2 = new Interval(3600000, 7200000)
+    val interval3 = new Interval(7200000, 10800000)
+    val intervals = List(interval1, interval2, interval3)
+
+    val extendedInterval21 = new Interval(86400000, 90000000)
+    val extendedInterval22 = new Interval(90000000, 93600000)
+    val extendedInterval23 = new Interval(93600000, 97200000)
+    val extendedInterval31 = new Interval(172800000, 176400000)
+    val extendedInterval32 = new Interval(176400000, 180000000)
+    val extendedInterval33 = new Interval(180000000, 183600000)
+
+    val extendedIntervals = List(
+      interval1, interval2, interval3,
+      extendedInterval21, extendedInterval22, extendedInterval23,
+      extendedInterval31, extendedInterval32, extendedInterval33)
+
+    val intervalsWholeDay = intervals :+ new Interval(10800000, 86400000)
+    val intervalsTwoWeeks = EdmCoreUtils.extendIntervals(intervalsWholeDay, 14)
   }
 
   "EdmCoreUtils" should "round numbers down with one decimal" in new WithManyDecimalNumbers {
@@ -409,5 +433,29 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "get the proper time zone from country iso code" in {
     EdmCoreUtils.timeZone(CountryCode.SaudiArabiaIsoCode) should be (EdmCoreUtils.TimeZoneSaudiArabia)
+  }
+
+  it should "create intervals from start/end and interval period in minutes" in new WithIntervals {
+    EdmCoreUtils.intervals(new DateTime(0), new DateTime(10800000), 60) should be (intervals)
+  }
+
+  it should "extend intervals for several days" in new WithIntervals {
+    EdmCoreUtils.extendIntervals(intervals, 3) should be (extendedIntervals)
+  }
+
+  it should "keep intervals when extending for one day" in new WithIntervals {
+    EdmCoreUtils.extendIntervals(intervals, 1) should be (intervals)
+  }
+
+  it should "require at least 1 day when extending intervals" in new WithIntervals {
+    an[Exception] should be thrownBy (EdmCoreUtils.extendIntervals(intervals, 0))
+  }
+
+  it should "compute the floor number of weeks for several intervals within the same week" in new WithIntervals {
+    EdmCoreUtils.floorNumWeeks(intervals) should be (0)
+  }
+
+  it should "compute the floor number of weeks for intervals within several weeks" in new WithIntervals {
+    EdmCoreUtils.floorNumWeeks(intervalsTwoWeeks) should be (2)
   }
 }

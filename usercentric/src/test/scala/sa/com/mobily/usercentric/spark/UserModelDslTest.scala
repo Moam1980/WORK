@@ -350,6 +350,23 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val journeyViaPoints = sc.parallelize(List(journeyVp1, journeyVp2))
   }
 
+  trait WithDwells {
+
+    val dwell1 = Dwell(
+      user = User("", "4200301", 0),
+      startTime = 3600000,
+      endTime = 7200000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 9,
+      numEvents = 2)
+    val dwell2 = dwell1.copy(startTime = 7400000, endTime = 8100000)
+    val dwell3 = dwell1.copy(user = User("", "4200302", 0))
+
+    val dwells = sc.parallelize(Array(dwell3, dwell2, dwell1))
+  }
+
   "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell " +
     "(or overlapping in time)" in new WithSpatioTemporalSlots with WithCellCatalogue {
       events.byUserChronologically.aggTemporalOverlapAndSameCell.first._2.size should be (4)
@@ -457,5 +474,12 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     journeyViaPoints.saveAsParquetFile(path)
     sqc.parquetFile(path).toJourneyViaPoint.collect.sameElements(journeyViaPoints.collect) should be (true)
     File(path).deleteRecursively
+  }
+
+  it should "group dwells by user chronologically" in new WithDwells {
+    val perUser = dwells.byUserChronologically.collect.toMap
+    perUser.size should be (2)
+    perUser(User("", "4200301", 0)) should be (List(dwell1, dwell2))
+    perUser(User("", "4200302", 0)) should be (List(dwell3))
   }
 }

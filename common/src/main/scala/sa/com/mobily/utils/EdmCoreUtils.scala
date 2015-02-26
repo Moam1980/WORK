@@ -4,12 +4,12 @@
 
 package sa.com.mobily.utils
 
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.util.Try
 
+import com.github.nscala_time.time.Imports._
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.{DateTime, DateTimeZone}
 
 import sa.com.mobily.roaming.CountryCallingCode
 
@@ -21,6 +21,8 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   val outputDateTimeFormat = "yyyy/MM/dd HH:mm:ss"
   final val TimeZoneSaudiArabia = DateTimeZone.forID("Asia/Riyadh")
   final val Fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+  val ViewDateFormatter = "yyyy-MM-dd HH:mm:ss"
+  final val ViewFmt = DateTimeFormat.forPattern(ViewDateFormatter)
   final val phoneNumberUtil = PhoneNumberUtil.getInstance
   val BaseForHexadecimal: Int = 16
   val MillisInSecond = 1000
@@ -29,6 +31,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   val IntraSequenceSeparator = ";"
   private val FirstDayOfWeekIndex = 1
   private val LastDayOfWeekIndex = 7
+  private val NumDaysPerWeek = 7
 
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
@@ -170,5 +173,35 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   def timeZone(countryIsoCode: String): DateTimeZone = countryIsoCode match {
     case _ => TimeZoneSaudiArabia
+  }
+
+  @tailrec
+  def intervals(start: DateTime, end: DateTime, minutes: Int, result: List[Interval] = List()): List[Interval] =
+    if (start.plusMinutes(minutes) >= end) result :+ new Interval(start, end)
+    else intervals(start.plusMinutes(minutes), end, minutes, result :+ new Interval(start, start.plusMinutes(minutes)))
+
+  @tailrec
+  def extendIntervals(
+      firstDayIntervals: List[Interval],
+      numDaysIncludingFirst: Int,
+      result: List[Interval] = List(),
+      daysShift: Int = 0): List[Interval] = {
+    require(numDaysIncludingFirst > 0)
+    if (daysShift == numDaysIncludingFirst) result
+    else {
+      val nextDayIntervals =
+        firstDayIntervals.map(i => new Interval(i.getStart.plusDays(daysShift), i.getEnd.plusDays(daysShift)))
+      extendIntervals(
+        firstDayIntervals = firstDayIntervals,
+        numDaysIncludingFirst = numDaysIncludingFirst,
+        result = result ++ nextDayIntervals,
+        daysShift = daysShift + 1)
+    }
+  }
+
+  def floorNumWeeks(intervals: List[Interval]): Long = {
+    val startTime = intervals.map(_.start).min
+    val endTime = intervals.map(_.end).max
+    new Duration(startTime, endTime).getStandardDays / NumDaysPerWeek
   }
 }

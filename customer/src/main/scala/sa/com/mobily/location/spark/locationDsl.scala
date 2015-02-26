@@ -14,7 +14,7 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
-import sa.com.mobily.location.{Footfall, Location}
+import sa.com.mobily.location.{Footfall, Location, MobilityMatrixItem}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.poi.{Poi, LocationPoiMetrics}
@@ -95,6 +95,21 @@ class LocationFunctions(self: RDD[Location]) {
       val pois = matchedPoisLocations.filter(_._1 == location).values
       (location, pois.locationPoiMetrics(location.geom))
     }).toMap
+  }
+
+  def toMobilityMatrix(
+      userDwells: RDD[(User, List[Dwell])],
+      timeIntervals: List[Interval],
+      minMinutesInDwell: Int): RDD[MobilityMatrixItem] = {
+    val bcLocations = self.context.broadcast(self.collect.toList)
+    val numWeeks = EdmCoreUtils.floorNumWeeks(timeIntervals)
+    userDwells.flatMap(dwells =>
+      MobilityMatrixItem.perIntervalAndLocation(
+        dwells = dwells._2,
+        timeIntervals = timeIntervals,
+        locations = bcLocations.value,
+        minMinutesInDwell = minMinutesInDwell,
+        numWeeks = numWeeks))
   }
 }
 

@@ -4,7 +4,6 @@
 
 package sa.com.mobily.location
 
-import com.github.nscala_time.time.Imports._
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
@@ -66,14 +65,6 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
     val pointLocations = List(locationPoint1, locationPoint2)
   }
 
-  trait WithIntervals {
-
-    val interval1 = new Interval(0, 3600000)
-    val interval2 = new Interval(3600000, 7200000)
-    val interval3 = new Interval(7200000, 10800000)
-    val intervals = List(interval1, interval2, interval3)
-  }
-
   "Location" should "return correct header" in new WithLocation {
     Location.header should be (locationHeader)
   }
@@ -121,8 +112,4 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
     new WithMatchingLocations {
       Location.bestMatch(singlePolygonGeom, pointLocations) should be (locationPoint2)
     }
-
-  it should "create intervals from start/end and interval period in minutes" in new WithIntervals {
-    Location.intervals(new DateTime(0), new DateTime(10800000), 60) should be (intervals)
-  }
 }
