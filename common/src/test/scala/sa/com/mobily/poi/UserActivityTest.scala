@@ -4,7 +4,7 @@
 
 package sa.com.mobily.poi
 
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.Vectors
 import org.scalatest._
 
 import sa.com.mobily.user.User
@@ -21,6 +21,7 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
   }
 
   trait WithAverageActivity extends WithUsersBtsRegionId {
+
     val user1ActivityVectorWeek = Map((0, 3.0), (2, 1.0), (5, 2.0))
     val set = Set((2014.toShort, 1.toShort), (2014.toShort, 2.toShort), (2014.toShort, 3.toShort))
     val expectedKey = (user1, siteId, regionId)
@@ -32,7 +33,7 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
         (2, 0.3333333333333333),
         (5, 0.6666666666666666)))
   }
-  
+
   trait WithSameWeek extends WithUsersBtsRegionId {
 
     val user1ActivityVectorWeek1 = Map((0, 0.5), (2, 0.5), (4, 0.5))
@@ -75,6 +76,7 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
   }
 
   trait WithAverageCalculation extends WithUsersBtsRegionId {
+
     val user1ActivityVectorWeek1 = Map((0, 1.0), (2, 1.0), (4, 1.0))
     val user1ActivityVectorWeek2 = Map((3, 1.0), (4, 1.0), (5, 1.0))
     val user1ActivityVectorWeek3 = Map((3, 1.0), (5, 1.0), (6, 1.0))
@@ -87,6 +89,7 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
   }
 
   trait WithClusterCentersVectors {
+
     val vector0 = Vectors.zeros(0)
     val emptyKmeansArrayVectors = Array(vector0)
     val vector1 = Vectors.zeros(3)
@@ -96,6 +99,11 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
       Array("Type0", "1970-01-04 00:00:00", "0.0"), Array("Type0", "1970-01-04 01:00:00", "0.0"),
       Array("Type0", "1970-01-04 02:00:00", "0.0"), Array("Type1", "1970-01-04 00:00:00", "0.0"),
       Array("Type1", "1970-01-04 01:00:00", "0.0"), Array("Type1", "1970-01-04 02:00:00", "0.0")).map(_.mkString(","))
+  }
+
+  trait WithUserActivityParquet extends WithAverageActivity {
+
+    val userActivityParquet1 = UserActivityParquet(user1, siteId, regionId, user1ActivityVectorWeek, set.toSeq)
   }
 
   "UserActivity" should "return the proper key" in new WithAverageActivity {
@@ -141,7 +149,7 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
   }
 
   it should "calculate the same average A.avg(B).avg(C) than C.avg(B).avg(A)" in new WithAverageCalculation {
-    val activityVector1 = 
+    val activityVector1 =
       userActivityWeek1.aggregate(userActivityWeek2).aggregate(userActivityWeek3).activityVector
     val activityVector2 =
       userActivityWeek3.aggregate(userActivityWeek2).aggregate(userActivityWeek1).activityVector
@@ -154,5 +162,9 @@ class UserActivityTest extends FlatSpec with ShouldMatchers with LocalSparkConte
 
   it should "create an empty array of formatted strings of cluster centers vectors" in new WithClusterCentersVectors {
     UserActivity.getRowsOfCentroids(emptyKmeansArrayVectors).map(_.mkString(",")) should be (Seq())
+  }
+
+  it should "create an UserActivityParquet from UserActivity" in new WithUserActivityParquet {
+    UserActivity(userActivityParquet1) should be (userActivity1)
   }
 }

@@ -1,13 +1,15 @@
 package sa.com.mobily.poi.spark
 
+import scala.reflect.io.File
+
 import org.apache.spark.rdd.RDD
 import org.scalatest._
 
 import sa.com.mobily.poi.UserActivity
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.LocalSparkContext
+import sa.com.mobily.utils.LocalSparkSqlContext
 
-class UserActivityDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class UserActivityDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
   import UserActivityDsl._
 
@@ -54,5 +56,12 @@ class UserActivityDslTest extends FlatSpec with ShouldMatchers with LocalSparkCo
 
   it should "group activities by weekYear" in new WithUserActivity {
     userActivities.byYearWeek.collect.length should be (3)
+  }
+
+  it should "save UserActivity in parquet" in new WithUserActivity {
+    val path = File.makeTemp().name
+    userActivities.saveAsParquetFile(path)
+    sqc.parquetFile(path).toUserActivity.collect.sameElements(userActivities.collect) should be (true)
+    File(path).deleteRecursively
   }
 }

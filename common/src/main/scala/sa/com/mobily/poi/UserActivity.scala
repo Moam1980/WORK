@@ -8,7 +8,6 @@ import com.vividsolutions.jts.geom.Geometry
 import org.apache.spark.mllib.linalg.{Vectors, Vector}
 
 import sa.com.mobily.cell.EgBts
-
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
 
@@ -66,4 +65,7 @@ object UserActivity {
       case _ => Seq()
     })
   }
+
+  def apply(ua: UserActivityParquet): UserActivity =
+    UserActivity(ua.user, ua.siteId, ua.regionId, ua.weekHoursWithActivity, ua.weekYear.toSet)
 }
