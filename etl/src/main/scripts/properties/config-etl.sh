@@ -56,5 +56,6 @@ CELL_CATALOGUE="${HDFS_HOME}/cell-catalogue/0.5/2015/01/06/csv"
 SUBSCRIBERS_FILE="${HDFS_HOME}/subscribers-oracle/0.6/2014/12/01/csv/customer-base-20141201.csv"
 USER_CENTRIC_DIR="${HDFS_HOME}/user-centric"
 HDFS_FILES_METRICS_PATH="${HDFS_HOME}/metrics/hadoop-files/csv"
+USER_ACTIVITY_DIR="${HDFS_HOME}/user-activity"
 
 SPARK_ARTIFACTS_DIR="/data/local-staging/tdatuser/artifacts"
