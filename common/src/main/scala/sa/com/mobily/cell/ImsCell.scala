@@ -42,7 +42,7 @@ case class ImsCellIdentifier(
 
 object ImsCellIdentifier {
 
-  def header: Array[String] = Array("cellId", "lac", "sac", "rac", "tac", "mcc", "mnc")
+  val Header: Array[String] = Array("cellId", "lac", "sac", "rac", "tac", "mcc", "mnc")
 }
 
 case class ImsCell(
@@ -95,8 +95,8 @@ case class ImsCell(
 
 object ImsCell {
 
-  def header: Array[String] =
-    ImsBts.header ++ ImsCellIdentifier.header ++
+  val Header: Array[String] =
+    ImsBts.Header ++ ImsCellIdentifier.Header ++
     Array("cellName", "cellType", "cSysType", "sector", "sectorBranch", "antennaType", "bcchFrequency", "maxTxPower",
       "altitude", "minAltitude", "envChar", "height", "talim", "azimuth",  "tilt", "beamWith", "accMin",
       "primarySchPower", "qRxLevMin")

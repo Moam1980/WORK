@@ -28,7 +28,7 @@ case class CsCell(
 
 object CsCell {
 
-  def header: Array[String] = Array("firstLac", "secondLac", "thirdLac", "oldLac", "newLac")
+  val Header: Array[String] = Array("firstLac", "secondLac", "thirdLac", "oldLac", "newLac")
 }
 
 case class CsCall(callType: Option[Short], calledSsn: Option[Short])

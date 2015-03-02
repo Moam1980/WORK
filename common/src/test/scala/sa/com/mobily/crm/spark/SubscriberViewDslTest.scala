@@ -29,7 +29,7 @@ class SubscriberViewDslTest extends FlatSpec with ShouldMatchers with LocalSpark
       "Customer|1367355600000|1406840400000|1406840400000|Active|100.05|S50|99.04|68.57|133.77|109.99|106.36|125.23"
     val subscriberView4 = s"$subscriber4Imsi|39.75|M|SAUDI ARABIA|KSA|Pre-Paid|SamsungI930000|Voice|Retail " +
       "Customer|1367355600000|1406840400000|1406840400000|Active|100.05|S50|A|68.57|133.77|109.99|106.36|125.23"
-    val subscriber = sc.parallelize(List(subscriberView1, subscriberView2, subscriberView3, subscriberView4))
+    val subscribers = sc.parallelize(List(subscriberView1, subscriberView2, subscriberView3, subscriberView4))
   }
 
   trait WithSubscriberRows {
@@ -43,22 +43,22 @@ class SubscriberViewDslTest extends FlatSpec with ShouldMatchers with LocalSpark
   }
 
   "SubscriberViewDsl" should "get correctly parsed data" in new WithSubscriberText {
-    subscriber.toSubscriberView.count should be (3)
+    subscribers.toSubscriberView.count should be (3)
   }
 
   it should "get errors when parsing data" in new WithSubscriberText {
-    subscriber.toSubscriberViewErrors.count should be (1)
+    subscribers.toSubscriberViewErrors.count should be (1)
   }
 
   it should "get both correctly and wrongly parsed data" in new WithSubscriberText {
-    subscriber.toParsedSubscriberView.count should be (4)
+    subscribers.toParsedSubscriberView.count should be (4)
   }
 
   it should "save view subscribers in parquet" in new WithSubscriberText {
     val path = File.makeTemp().name
-    val subscribers = subscriber.toSubscriberView
-    subscribers.saveAsParquetFile(path)
-    sqc.parquetFile(path).toSubscriberView.collect.sameElements(subscribers.collect) should be (true)
+    subscribers.toSubscriberView.saveAsParquetFile(path)
+    sqc.parquetFile(path).toSubscriberView.collect should contain
+      theSameElementsAs(subscribers.toSubscriberView.collect())
     File(path).deleteRecursively
   }
 

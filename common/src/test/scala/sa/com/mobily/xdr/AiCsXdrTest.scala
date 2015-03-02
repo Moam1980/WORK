@@ -279,11 +279,11 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   }
 
   "AiCell" should "return correct header" in new WithAiCell {
-    AiCell.header should be(cellHeader)
+    AiCell.Header should be(cellHeader)
   }
 
   "AiCell" should "return correct header for id" in new WithAiCell {
-    AiCell.idHeader should be(cellIdHeader)
+    AiCell.IdHeader should be(cellIdHeader)
   }
 
   "AiCell" should "return correct fields" in new WithAiCell {

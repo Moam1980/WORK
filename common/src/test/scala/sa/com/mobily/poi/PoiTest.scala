@@ -32,7 +32,7 @@ class PoiTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
     val isoCode = "es"
     val poi = Poi(user = user, poiType = Work, geomWkt = polygonWkt, countryIsoCode = isoCode)
     val poiFields = user.fields ++ Array("Work", polygonWkt, isoCode)
-    val header = User.header ++ Array("poiType", "geomWkt", "countryIsoCode")
+    val header = User.Header ++ Array("poiType", "geomWkt", "countryIsoCode")
 
     val row = Row(Row("866173010386736", "420034122616618", 560917079L), Row("Work"), polygonWkt, isoCode)
     val wrongRow = Row(Row(866173010386L, "420034122616618", 560917079L), Work)
@@ -43,11 +43,11 @@ class PoiTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   }
 
   it should "generate header" in new WithPoi {
-    Poi.header should be (header)
+    Poi.Header should be (header)
   }
 
   it should "return the same number of fields for header and fields method" in new WithPoi {
-    Poi.header.length == poi.fields.length should be(true)
+    Poi.Header.length == poi.fields.length should be (true)
   }
 
   it should "parse a geometry properly" in new WithPoi {

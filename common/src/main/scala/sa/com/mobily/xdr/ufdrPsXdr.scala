@@ -73,7 +73,7 @@ object UfdrPSXdrCell {
 
   final val NonDefined: Int = -1
 
-  def header: Array[String] = Array("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
+  val Header: Array[String] = Array("rat", "lac", "rac", "sac", "ci", "tac", "eci", "mcc", "mnc")
 
   def idHeader: Array[String] = Array("LacTac", "SacEci")
 }
@@ -127,8 +127,8 @@ case class UfdrPsXdrHierarchy(
 
 object UfdrPsXdrHierarchy {
 
-  def header: Array[String] =
-    Array("Date Hour") ++ UfdrPSXdrCell.idHeader ++ User.header ++ Array("category id", "protocol id")
+  val Header: Array[String] =
+    Array("Date Hour") ++ UfdrPSXdrCell.idHeader ++ User.Header ++ Array("category id", "protocol id")
 }
 
 case class UfdrPsXdrHierarchyAgg(
@@ -140,7 +140,7 @@ case class UfdrPsXdrHierarchyAgg(
 
 object UfdrPsXdrHierarchyAgg {
 
-  def header: Array[String] = UfdrPsXdrHierarchy.header ++ TransferStats.header
+  val Header: Array[String] = UfdrPsXdrHierarchy.Header ++ TransferStats.Header
 }
 
 

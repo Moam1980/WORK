@@ -26,5 +26,5 @@ object Footfall {
       avgPrecision =
         (ff1.avgPrecision * ff1.numDwells + ff2.avgPrecision * ff2.numDwells) / (ff1.numDwells + ff2.numDwells))
 
-  def header: Array[String] = Array("footfall", "numDwells", "avgPrecision")
+  val Header: Array[String] = Array("footfall", "numDwells", "avgPrecision")
 }

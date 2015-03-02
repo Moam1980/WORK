@@ -93,7 +93,7 @@ class FileHdfsTest extends FlatSpec with ShouldMatchers with LocalSparkContext w
   }
 
   "FileHdfs" should "return correct header" in new WithFilesHdfs {
-    FileHdfs.header should be (fileHdfsHeader)
+    FileHdfs.Header should be (fileHdfsHeader)
   }
 
   it should "return correct fields" in new WithFilesHdfs {

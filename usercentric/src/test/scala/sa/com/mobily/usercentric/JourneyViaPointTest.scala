@@ -91,12 +91,12 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
   }
 
   it should "return the proper header" in new WithJourneyViaPoint {
-    JourneyViaPoint.header should be (Array("imei", "imsi", "msisdn", "journeyId", "startTime", "endTime", "geomWkt",
+    JourneyViaPoint.Header should be (Array("imei", "imsi", "msisdn", "journeyId", "startTime", "endTime", "geomWkt",
       "cells", "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
   }
 
   it should "have the same number of elements in fields and header" in new WithJourneyViaPoint {
-    journeyVp.fields.size should be (JourneyViaPoint.header.size)
+    journeyVp.fields.size should be (JourneyViaPoint.Header.size)
   }
 
   it should "be built from CSV" in new WithJourneyViaPoint {

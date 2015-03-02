@@ -41,7 +41,7 @@ object MobilityMatrixItem {
       "StartLocation",
       "EndLocation",
       "NumWeeks") ++
-      User.header :+
+      User.Header :+
       "Weight"
 
   // scalastyle:off method.length

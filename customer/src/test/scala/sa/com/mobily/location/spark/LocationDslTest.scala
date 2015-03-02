@@ -295,4 +295,8 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
   it should "compute the mobility matrix" in new WithItemsForMobilityMatrix {
     locations.toMobilityMatrix(dwells, intervals, 15).collect should contain theSameElementsAs (List(itemDwell1And2))
   }
+
+  it should "parse to LocationPoiView" in new WithPoisForMatching {
+    locations.toLocationPoiView(pois).count should be (5)
+  }
 }

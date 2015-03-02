@@ -381,7 +381,7 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "generate header for cell" in new WithUfdrPsXdr {
-    UfdrPSXdrCell.header should be (cellHeader)
+    UfdrPSXdrCell.Header should be (cellHeader)
   }
 
   it should "generate header for cell identifier" in new WithUfdrPsXdr {
@@ -397,11 +397,11 @@ class UfdrPsXdrTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "generate header for hierarchy" in new WithUfdrPsXdr {
-    UfdrPsXdrHierarchy.header should be (hierarchyHeader)
+    UfdrPsXdrHierarchy.Header should be (hierarchyHeader)
   }
 
   it should "generate header for hierarchy aggregation" in new WithUfdrPsXdr {
-    UfdrPsXdrHierarchyAgg.header should be (hierarchyAggHeader)
+    UfdrPsXdrHierarchyAgg.Header should be (hierarchyAggHeader)
   }
 
   it should "generate string array for hierarchy" in new WithUfdrPsXdr {

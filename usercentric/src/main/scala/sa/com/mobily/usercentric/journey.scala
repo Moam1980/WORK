@@ -13,7 +13,7 @@ import org.apache.spark.sql._
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.event.Event
-import sa.com.mobily.geometry.{Coordinates, GeomUtils}
+import sa.com.mobily.geometry.GeomUtils
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
@@ -80,17 +80,15 @@ object Journey {
         viaPoints.map(_.geom.getCentroid.getCoordinate) :+
         dest.geom.getCentroid.getCoordinate))
 
-  def header: Array[String] =
-    User.header ++
+  val Header: Array[String] =
+    User.Header ++
       Array("id", "startTime", "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime",
         "numEvents", "countryIsoCode")
 
   // scalastyle:off method.length
   def computeMinSpeed(events: List[Event], cells: Map[(Int, Int), Cell]): List[Event] = {
     val geom = Event.geom(cells) _
-    val geomFactory = cells.headOption.map(cellTuple =>
-      GeomUtils.geomFactory(cellTuple._2.coverageGeom.getSRID, cellTuple._2.coverageGeom.getPrecisionModel)).getOrElse(
-        GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid))
+    val geomFactory = Cell.geomFactory(cells)
 
     @tailrec
     def fillMinSpeed(

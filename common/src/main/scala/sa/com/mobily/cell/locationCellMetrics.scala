@@ -28,7 +28,7 @@ case class LocationCellMetrics(
 
 object LocationCellMetrics {
 
-  def header: Array[String] =
+  val Header: Array[String] =
     Array("Cell Identifier", "Area", "Technology", "Type", "Range", "Centroid Distance", "Area Ratio", "WKT")
 }
 

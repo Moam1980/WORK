@@ -59,8 +59,8 @@ object JourneyViaPoint {
       countryIsoCode = slot.countryIsoCode)
   }
 
-  def header: Array[String] =
-    User.header ++
+  val Header: Array[String] =
+    User.Header ++
       Array("journeyId", "startTime", "endTime", "geomWkt", "cells", "firstEventBeginTime", "lastEventEndTime",
         "numEvents", "countryIsoCode")
 

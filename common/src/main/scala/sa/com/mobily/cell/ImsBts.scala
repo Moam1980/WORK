@@ -24,7 +24,7 @@ object ImsBts {
 
   private val CompositeNode = "_G12-TG-"
 
-  def header: Array[String] =
+  val Header: Array[String] =
     Array("vendor", "technology", "id", "node", "parentBsc", "longitude", "latitude", "ipAddress", "netmask")
 
   def parseIdFromNode(nodeText: String): String =

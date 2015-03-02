@@ -201,16 +201,28 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.intOrZero(None) should be (0)
   }
 
-  it should "convert Any to long when intOrZero" in {
+  it should "convert Any to long when longOrZero" in {
     EdmCoreUtils.longOrZero(139482L) should be (139482L)
   }
 
-  it should "not convert decimal numerals to long when intOrZero returning zero" in {
+  it should "not convert decimal numerals to long when longOrZero returning zero" in {
     EdmCoreUtils.longOrZero(3.14) should be (0L)
   }
 
-  it should "return zero intOrZero when is none" in {
+  it should "return zero longOrZero when is none" in {
     EdmCoreUtils.longOrZero(None) should be (0L)
+  }
+
+  it should "convert Any to float when floatOrZero" in {
+    EdmCoreUtils.floatOrZero(139482F) should be (139482F)
+  }
+
+  it should "not convert decimal numerals to float when floatOrZero returning zero" in {
+    EdmCoreUtils.floatOrZero(3.14) should be (0F)
+  }
+
+  it should "return zero floatOrZero when is none" in {
+    EdmCoreUtils.floatOrZero(None) should be (0F)
   }
 
   it should "validate MSISDN is zero" in {

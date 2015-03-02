@@ -53,7 +53,7 @@ object User {
   val UnknownMcc = "Unknown"
   val UnknownMnc = "Unknown"
 
-  def header: Array[String] = Array("imei", "imsi", "msisdn")
+  val Header: Array[String] = Array("imei", "imsi", "msisdn")
 
   implicit val fromRow = new RowParser[User] {
 

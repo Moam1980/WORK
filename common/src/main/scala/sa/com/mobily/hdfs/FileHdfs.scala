@@ -41,7 +41,7 @@ object FileHdfs {
   final val CompleteFormatWithoutDay = """(.*?)/(\d\d\d\d)/(\d\d)/(.*?)/(.*?)""".r
   final val FormatWithoutFileFormatAndDay = """(.*?)/(\d\d\d\d)/(\d\d)/(.*?)""".r
 
-  def header: Array[String] =
+  val Header: Array[String] =
     Array("sourceName", "format", "name", "date", "modificationDate", "accessTime", "volumeBytes")
 
   final val lineCsvParserObject = new OpenCsvParser

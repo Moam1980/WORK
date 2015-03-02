@@ -30,7 +30,7 @@ class ImsBtsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return correct header" in new WithImsBts {
-    ImsBts.header should be (header)
+    ImsBts.Header should be (header)
   }
 
   it should "return correct fields" in new WithImsBts {

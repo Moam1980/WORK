@@ -4,6 +4,7 @@
 
 package sa.com.mobily.cell
 
+import com.vividsolutions.jts.geom.GeometryFactory
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
@@ -113,6 +114,72 @@ class CellTest extends FlatSpec with ShouldMatchers {
     val cell3 = cell1.copy(
       planarCoords = UtmCoordinates(1, 1, "EPSG:32638"),
       coverageWkt = "POLYGON ((10 10, 10 30, 30 30, 30 10, 10 10))")
+  }
+
+  trait WithCellCatalogue {
+
+    val cell1 = Cell(1, 1, UtmCoordinates(1, 4), FourGFdd, Micro, 20, 180, 45, 4, "1",
+      "POLYGON (( 0 0, 0 4, 2 4, 2 0, 0 0 ))")
+    val cell1Centroid = "POINT (1 2)"
+    val cell20 = cell1.copy(cellId = 20, planarCoords = UtmCoordinates(7, 4),
+      coverageWkt = "POLYGON (( 3 4, 7 4, 7 0, 3 4 ))")
+    val cell21 = cell1.copy(cellId = 21, planarCoords = UtmCoordinates(7, 4),
+      coverageWkt = "POLYGON (( 3 4, 7 4, 7 0, 5 0, 3 4 ))")
+    val cell22 = cell1.copy(cellId = 22, planarCoords = UtmCoordinates(7, 4),
+      coverageWkt = "POLYGON (( 3 4, 7 4, 7 0, 4 0, 4 2, 3 2, 3 4 ))")
+    val cell3 = cell1.copy(cellId = 3, planarCoords = UtmCoordinates(1, 5),
+      coverageWkt = "POLYGON (( 0 5, 0 7, 2 7, 2 5, 0 5 ))")
+    val cell101 = cell1.copy(cellId = 101, planarCoords = UtmCoordinates(1, 5),
+      coverageWkt = "POLYGON (( 1 0, 1 2, 3 2, 3 0, 1 0 ))")
+    val cell120 = cell1.copy(cellId = 120, planarCoords = UtmCoordinates(1, 5),
+      coverageWkt = "POLYGON (( 2 3, 2 5, 4 5, 4 3, 2 3 ))")
+    val cell130 = cell1.copy(cellId = 130, planarCoords = UtmCoordinates(1, 5),
+      coverageWkt = "POLYGON (( 0 6, 0 7, 2 7, 2 6, 0 6 ))")
+
+    val cellIntersect1 = cell1.copy(cellId = 1001, planarCoords = UtmCoordinates(0, 0),
+      coverageWkt = "POLYGON (( 0 0, 0 3, 3 3, 3 0, 0 0 ))")
+    val cellIntersect2 = cell1.copy(cellId = 1002, planarCoords = UtmCoordinates(4, 0),
+      coverageWkt = "POLYGON (( 4 0, 4 3, 7 3, 7 0, 4 0 ))")
+    val cellIntersect3 = cell1.copy(cellId = 1003, planarCoords = UtmCoordinates(8, 0),
+      coverageWkt = "POLYGON (( 8 0, 8 3, 11 3, 11 0, 8 0 ))")
+    val cellIntersectWith1And2 = cell1.copy(cellId = 1004, planarCoords = UtmCoordinates(2, 0),
+      coverageWkt = "POLYGON (( 2 0, 2 3, 5 3, 5 0, 2 0 ))")
+    val cellIntersectWith2And3 = cell1.copy(cellId = 1005, planarCoords = UtmCoordinates(6, 0),
+      coverageWkt = "POLYGON (( 6 0, 6 3, 9 3, 9 0, 6 0 ))")
+    val cellContainInitPoint1 = cell1.copy(cellId = 1006, planarCoords = UtmCoordinates(1, 0),
+      coverageWkt = "POLYGON (( 1 0, 1 3, 4 3, 4 0, 1 0 ))")
+
+    val cell50 = cell1.copy(cellId = 50, planarCoords = UtmCoordinates(0, 0),
+      coverageWkt = "POLYGON (( 0 0, 0 40, 20 40, 20 0, 0 0 ))")
+    val cell51 = cell1.copy(cellId = 51, planarCoords = UtmCoordinates(30, 40),
+      coverageWkt = "POLYGON (( 30 40, 70 40, 70 0, 30 0, 30 40 ))")
+    val cell52 = cell1.copy(cellId = 52, planarCoords = UtmCoordinates(20, 30),
+      coverageWkt = "POLYGON (( 20 30, 20 50, 40 50, 40 30, 20 30 ))")
+    val cell53 = cell1.copy(cellId = 53, planarCoords = UtmCoordinates(50, 50),
+      coverageWkt = "POLYGON (( 0 60, 0 70, 20 70, 20 60, 0 60 ))")
+
+    implicit val cells =
+      Map(
+        (1, 1) -> cell1,
+        (1, 20) -> cell20,
+        (1, 21) -> cell21,
+        (1, 22) -> cell22,
+        (1, 3) -> cell3,
+        (1, 101) -> cell101,
+        (1, 120) -> cell120,
+        (1, 130) -> cell130,
+        (1, 1001) -> cellIntersect1,
+        (1, 1002) -> cellIntersect2,
+        (1, 1003) -> cellIntersect3,
+        (1, 1004) -> cellIntersectWith1And2,
+        (1, 1005) -> cellIntersectWith2And3,
+        (1, 1006) -> cellContainInitPoint1,
+        (1, 50) -> cell50,
+        (1, 51) -> cell51,
+        (1, 52) -> cell52,
+        (1, 53) -> cell53)
+
+    val defaultGeometryFactory = GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid)
   }
 
   "Cell" should "be built from CSV" in new WithCell {
@@ -226,5 +293,15 @@ class CellTest extends FlatSpec with ShouldMatchers {
 
   it should "fail with exception when format is wrong" in {
     an [Exception] should be thrownBy Cell.parseCellTuples("(13);(4,5)")
+  }
+
+  it should "return a GeometryFactory from cell catalogue" in new WithCellCatalogue {
+    Cell.geomFactory(cells).isInstanceOf[GeometryFactory] should be (true)
+  }
+
+  it should "return a default GeometryFactory" in new WithCellCatalogue {
+    val geomFactory = Cell.geomFactory(Map())
+    geomFactory.getSRID should be (defaultGeometryFactory.getSRID)
+    geomFactory.getPrecisionModel should be (defaultGeometryFactory.getPrecisionModel)
   }
 }

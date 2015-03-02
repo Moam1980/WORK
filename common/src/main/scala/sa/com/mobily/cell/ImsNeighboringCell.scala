@@ -20,7 +20,7 @@ case class ImsNeighboringCell(
 
 object ImsNeighboringCell {
 
-  def header: Array[String] = Array("vendor", "technology", "cellName", "neighboringCellName", "qrxLevMin")
+  val Header: Array[String] = Array("vendor", "technology", "cellName", "neighboringCellName", "qrxLevMin")
 
   final val lineCsvParserObject = new OpenCsvParser(quote = '"')
 

@@ -95,8 +95,8 @@ object Event {
 
   def geomWkt(cells: Map[(Int, Int), Cell])(event: Event): String = cells((event.lacTac, event.cellId)).coverageWkt
 
-  def header: Array[String] =
-    User.header ++ Array("beginTime", "endTime", "lacTac", "cellId", "source", "eventType",
+  val Header: Array[String] =
+    User.Header ++ Array("beginTime", "endTime", "lacTac", "cellId", "source", "eventType",
       "subsequentLacTac", "subsequentCellId", "inSpeed", "outSpeed", "minSpeedPointWkt")
 
   def parseEventSource(sourceText: String): EventSource = sourceText match {

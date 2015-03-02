@@ -28,21 +28,6 @@ class SubscriberCsvReader(self: RDD[String]) {
   def toSubscriberErrors: RDD[ParsingError] = toParsedSubscriber.errors
 }
 
-trait SubscriberDsl {
-
-  implicit def subscriberCsvReader(csv: RDD[String]): SubscriberCsvReader = new SubscriberCsvReader(csv)
-
-  implicit def customerSubscriberStatistics(subscribers: RDD[Subscriber]): SubscriberStatistics =
-    new SubscriberStatistics(subscribers)
-
-  implicit def customerSubscriberFunctions(subscribers: RDD[Subscriber]): SubscriberFunctions =
-    new SubscriberFunctions(subscribers)
-
-  implicit def subscriberWriter(self: RDD[Subscriber]): SubscriberWriter = new SubscriberWriter(self)
-
-  implicit def subscriberRowReader(self: RDD[Row]): SubscriberRowReader = new SubscriberRowReader(self)
-}
-
 class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
 
   def toBroadcastImsiByMsisdn(chooseSubscriber: (Subscriber, Subscriber) =>
@@ -106,6 +91,21 @@ class SubscriberWriter(self: RDD[Subscriber]) {
 class SubscriberRowReader(self: RDD[Row]) {
 
   def toSubscriber: RDD[Subscriber] = SparkParser.fromRow[Subscriber](self)
+}
+
+trait SubscriberDsl {
+
+  implicit def subscriberCsvReader(csv: RDD[String]): SubscriberCsvReader = new SubscriberCsvReader(csv)
+
+  implicit def customerSubscriberStatistics(subscribers: RDD[Subscriber]): SubscriberStatistics =
+    new SubscriberStatistics(subscribers)
+
+  implicit def customerSubscriberFunctions(subscribers: RDD[Subscriber]): SubscriberFunctions =
+    new SubscriberFunctions(subscribers)
+
+  implicit def subscriberWriter(self: RDD[Subscriber]): SubscriberWriter = new SubscriberWriter(self)
+
+  implicit def subscriberRowReader(self: RDD[Row]): SubscriberRowReader = new SubscriberRowReader(self)
 }
 
 object SubscriberDsl extends SubscriberDsl with ParsedItemsDsl

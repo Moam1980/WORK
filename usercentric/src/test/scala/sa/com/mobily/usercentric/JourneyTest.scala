@@ -343,12 +343,12 @@ class JourneyTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   }
 
   it should "return the proper header" in new WithJourneys {
-    Journey.header should be (Array("imei", "imsi", "msisdn", "id", "startTime", "endTime", "geomWkt", "cells",
+    Journey.Header should be (Array("imei", "imsi", "msisdn", "id", "startTime", "endTime", "geomWkt", "cells",
       "firstEventBeginTime", "lastEventEndTime", "numEvents", "countryIsoCode"))
   }
 
   it should "have the same number of elements in fields and header" in new WithJourneys {
-    journey.fields.size should be (Journey.header.size)
+    journey.fields.size should be (Journey.Header.size)
   }
 
   it should "be built from CSV" in new WithJourneys {

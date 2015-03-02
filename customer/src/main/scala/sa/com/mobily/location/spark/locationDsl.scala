@@ -14,7 +14,7 @@ import org.apache.spark.rdd.RDD
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
-import sa.com.mobily.location.{Footfall, Location, MobilityMatrixItem}
+import sa.com.mobily.location._
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.poi.{Poi, LocationPoiMetrics}
@@ -41,8 +41,7 @@ class LocationFunctions(self: RDD[Location]) {
   def withTransformedGeom
       (longitudeFirstInCells: Boolean = true)
       (implicit cellCatalogue: Broadcast[Map[(Int, Int), Cell]]): RDD[Location] = {
-    val geomFactory = cellCatalogue.value.headOption.map(cellTuple => cellTuple._2.coverageGeom.getFactory).getOrElse(
-      GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid))
+    val geomFactory = Cell.geomFactory(cellCatalogue.value)
     self.map(location =>
       location.copy(
         epsg = Coordinates.epsg(geomFactory.getSRID),
@@ -111,6 +110,9 @@ class LocationFunctions(self: RDD[Location]) {
         minMinutesInDwell = minMinutesInDwell,
         numWeeks = numWeeks))
   }
+
+  def toLocationPoiView(pois: RDD[Poi]): RDD[LocationPoiView] =
+    matchPoi(pois).map(locationPoi => LocationPoiView(locationPoi._1, locationPoi._2))
 }
 
 class LocationTimeDwellFunctions(self: RDD[((Location, Interval), Dwell)]) {

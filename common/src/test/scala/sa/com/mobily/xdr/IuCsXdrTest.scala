@@ -296,7 +296,7 @@ class IuCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
   }
 
   "IuCell" should "return correct header" in new WithIuCell {
-    IuCell.header should be (cellHeader)
+    IuCell.Header should be (cellHeader)
   }
 
   it should "return correct header for id" in new WithIuCell {

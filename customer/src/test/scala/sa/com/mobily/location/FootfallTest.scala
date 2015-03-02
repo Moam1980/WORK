@@ -37,7 +37,7 @@ class FootfallTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return header" in new WithFootfalls {
-    Footfall.header should be (Array("footfall", "numDwells", "avgPrecision"))
+    Footfall.Header should be (Array("footfall", "numDwells", "avgPrecision"))
   }
 
   it should "return fields" in new WithFootfalls {
@@ -45,7 +45,7 @@ class FootfallTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "have the same number of fields in header and fields returned" in new WithFootfalls {
-    footfall.fields.size should be (Footfall.header.size)
+    footfall.fields.size should be (Footfall.Header.size)
   }
 
   it should "build from Dwell" in new WithFootfalls {

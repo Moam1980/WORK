@@ -4,7 +4,7 @@
 
 package sa.com.mobily.cell
 
-import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.geom.{Geometry, GeometryFactory}
 
 import sa.com.mobily.geometry._
 import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
@@ -156,4 +156,8 @@ object Cell {
         require(lacCellId.size == 2)
         (lacCellId.head, lacCellId.last)
       })
+
+  def geomFactory(cellCatalogue: Map[(Int, Int), Cell]): GeometryFactory =
+    cellCatalogue.headOption.map(cellTuple => cellTuple._2.coverageGeom.getFactory).getOrElse(
+      GeomUtils.geomFactory(Coordinates.SaudiArabiaUtmSrid))
 }

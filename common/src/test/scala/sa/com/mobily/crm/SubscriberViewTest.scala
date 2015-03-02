@@ -46,7 +46,7 @@ class SubscriberViewTest extends FlatSpec with ShouldMatchers {
         m5 = 106.36f,
         m6 = 125.23f)
     )
-    val resultCsv = SubscriberView.header ++ fields.mkString(EdmCoreUtils.Separator)
+    val resultCsv = SubscriberView.Header ++ fields.mkString(EdmCoreUtils.Separator)
   }
 
   "SubscriberView" should "be built from CSV" in new WithSubscriberView {
@@ -62,10 +62,10 @@ class SubscriberViewTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return correct header" in new WithSubscriberView {
-    SubscriberView.header should be (header)
+    SubscriberView.Header should be (header)
   }
 
   it should "field and header have same size" in new WithSubscriberView {
-    subscriberView.fields.size should be (SubscriberView.header.size)
+    subscriberView.fields.size should be (SubscriberView.Header.size)
   }
 }
