@@ -6,7 +6,9 @@ package sa.com.mobily.ia
 
 import scala.util.Try
 
-import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
+import org.apache.spark.sql._
+
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.utils.EdmCoreUtils
 
 case class SubscriberIa(
@@ -25,9 +27,33 @@ case class SubscriberIa(
     uaTerminalModel: String,
     uaBrowserName: String,
     vipNumber: String,
-    maritalStatusCd: String)
+    maritalStatusCd: String) {
+
+  def fields: Array[String] =
+    Array(subscriberId,
+      msisdn.toString,
+      genderTypeCd,
+      prmPartyBirthDt.map(date => SubscriberIa.Fmt.print(date)).getOrElse(""),
+      ethtyTypeCd,
+      nationalityCd,
+      occupationCd,
+      langCd,
+      age.toString,
+      address,
+      postalCd,
+      uaTerminalOs,
+      uaTerminalModel,
+      uaBrowserName,
+      vipNumber,
+      maritalStatusCd)
+}
 
 object SubscriberIa extends IaParser {
+
+  val Header: Array[String] =
+    Array("subscriberId", "msisdn", "genderTypeCd", "prmPartyBirthDt", "ethtyTypeCd", "nationalityCd", "occupationCd",
+      "langCd", "age", "address", "postalCd", "uaTerminalOs", "uaTerminalModel", "uaBrowserName", "vipNumber",
+      "maritalStatusCd")
 
   implicit val fromCsv = new CsvParser[SubscriberIa] {
 
@@ -58,5 +84,46 @@ object SubscriberIa extends IaParser {
     }
   }
 
-  def parseDate(s: String): Option[Long] = Try { fmt.parseDateTime(s).getMillis }.toOption
+  def parseDate(s: String): Option[Long] = Try { Fmt.parseDateTime(s).getMillis }.toOption
+
+  implicit val fromRow = new RowParser[SubscriberIa] {
+
+    override def fromRow(row: Row): SubscriberIa = {
+      val Row(
+        subscriberId,
+        msisdn,
+        genderTypeCd,
+        prmPartyBirthDt,
+        ethtyTypeCd,
+        nationalityCd,
+        occupationCd,
+        langCd,
+        age,
+        address,
+        postalCd,
+        uaTerminalOs,
+        uaTerminalModel,
+        uaBrowserName,
+        vipNumber,
+        maritalStatusCd) = row
+
+      SubscriberIa(
+        subscriberId = subscriberId.asInstanceOf[String],
+        msisdn = msisdn.asInstanceOf[Long],
+        genderTypeCd = genderTypeCd.asInstanceOf[String],
+        prmPartyBirthDt = EdmCoreUtils.longOption(prmPartyBirthDt),
+        ethtyTypeCd = ethtyTypeCd.asInstanceOf[String],
+        nationalityCd = nationalityCd.asInstanceOf[String],
+        occupationCd = occupationCd.asInstanceOf[String],
+        langCd = langCd.asInstanceOf[String],
+        age = age.asInstanceOf[Int],
+        address = address.asInstanceOf[String],
+        postalCd = postalCd.asInstanceOf[String],
+        uaTerminalOs = uaTerminalOs.asInstanceOf[String],
+        uaTerminalModel = uaTerminalModel.asInstanceOf[String],
+        uaBrowserName = uaBrowserName.asInstanceOf[String],
+        vipNumber = vipNumber.asInstanceOf[String],
+        maritalStatusCd = maritalStatusCd.asInstanceOf[String])
+    }
+  }
 }

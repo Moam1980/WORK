@@ -4,7 +4,9 @@
 
 package sa.com.mobily.ia
 
-import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
+import org.apache.spark.sql._
+
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 
 case class Category(
     categoryId: String,
@@ -15,9 +17,25 @@ case class Category(
     detlFlag: Int,
     sysFlag: Int,
     imagePath: String,
-    categoryDescription: String)
+    categoryDescription: String) {
+
+  def fields: Array[String] =
+    Array(categoryId,
+      categoryCd,
+      categoryFullCs,
+      parentCategoryId,
+      bysName,
+      detlFlag.toString,
+      sysFlag.toString,
+      imagePath,
+      categoryDescription)
+}
 
 object Category extends IaParser {
+
+  val Header: Array[String] =
+    Array("categoryId", "categoryCd", "categoryFullCs", "parentCategoryId", "bysName", "detlFlag", "sysFlag",
+      "imagePath", "categoryDescription")
 
   implicit val fromCsv = new CsvParser[Category] {
 
@@ -37,6 +55,33 @@ object Category extends IaParser {
         sysFlag = sysFlagText.toInt,
         imagePath = imagePathText,
         categoryDescription = categoryDescriptionText)
+    }
+  }
+
+  implicit val fromRow = new RowParser[Category] {
+
+    override def fromRow(row: Row): Category = {
+      val Row(
+        categoryId,
+        categoryCd,
+        categoryFullCs,
+        parentCategoryId,
+        bysName,
+        detlFlag,
+        sysFlag,
+        imagePath,
+        categoryDescription) = row
+
+      Category(
+        categoryId = categoryId.asInstanceOf[String],
+        categoryCd = categoryCd.asInstanceOf[String],
+        categoryFullCs = categoryFullCs.asInstanceOf[String],
+        parentCategoryId = parentCategoryId.asInstanceOf[String],
+        bysName = bysName.asInstanceOf[String],
+        detlFlag = detlFlag.asInstanceOf[Int],
+        sysFlag = sysFlag.asInstanceOf[Int],
+        imagePath = imagePath.asInstanceOf[String],
+        categoryDescription = categoryDescription.asInstanceOf[String])
     }
   }
 }

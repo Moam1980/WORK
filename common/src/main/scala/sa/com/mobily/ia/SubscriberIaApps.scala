@@ -4,7 +4,9 @@
 
 package sa.com.mobily.ia
 
-import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
+import org.apache.spark.sql._
+
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 
 case class SubscriberIaApps(
     timestamp: Long,
@@ -12,9 +14,20 @@ case class SubscriberIaApps(
     appType: String,
     trafficInfo: TrafficInfo,
     locationId: String,
-    businessEntityId: String)
+    businessEntityId: String) {
+
+  def fields: Array[String] =
+    Array(AggregatedData.Fmt.print(timestamp), subscriberId, appType) ++
+      trafficInfo.fields ++
+      Array(locationId, businessEntityId)
+}
 
 object SubscriberIaApps extends IaParser {
+
+  val Header: Array[String] =
+    Array("date", "subscriberId", "appType") ++
+      TrafficInfo.Header ++
+      Array("locationId", "businessEntityId")
 
   implicit val fromCsv = new CsvParser[SubscriberIaApps] {
 
@@ -25,7 +38,7 @@ object SubscriberIaApps extends IaParser {
         totalVolumeText, locationIdText, businessEntityIdText) = fields
 
       SubscriberIaApps(
-        timestamp = fmt.parseDateTime(dateText).getMillis,
+        timestamp = Fmt.parseDateTime(dateText).getMillis,
         subscriberId = subscriberIdText,
         appType = appTypeText,
         trafficInfo = TrafficInfo(
@@ -35,6 +48,27 @@ object SubscriberIaApps extends IaParser {
           totalVolume = totalVolumeText.toDouble),
         locationId = locationIdText,
         businessEntityId = businessEntityIdText)
+    }
+  }
+
+  implicit val fromRow = new RowParser[SubscriberIaApps] {
+
+    override def fromRow(row: Row): SubscriberIaApps = {
+      val Row(
+        timestamp,
+        subscriberId,
+        appType,
+        trafficInfo,
+        locationId,
+        businessEntityId) = row
+
+      SubscriberIaApps(
+        timestamp = timestamp.asInstanceOf[Long],
+        subscriberId = subscriberId.asInstanceOf[String],
+        appType = appType.asInstanceOf[String],
+        trafficInfo = TrafficInfo.fromRow.fromRow(trafficInfo.asInstanceOf[Row]),
+        locationId = locationId.asInstanceOf[String],
+        businessEntityId = businessEntityId.asInstanceOf[String])
     }
   }
 }
