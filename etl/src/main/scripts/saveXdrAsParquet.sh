@@ -21,7 +21,7 @@ do
     if [ $? == 0 ]; then
         #Get a timestamp to generate temporal file
         TIMESTAMP=`date +%s`
-        TMP_FILE="saveAsParquetFromXdr.tmp_${TIMESTAMP}.scala"
+        TMP_FILE=$(echo $FILE | sed -e "s/\./\.tmp_${TIMESTAMP}\./")
         echo 1<&2 "INFO: ${0}: Testing if destination directory exists: "
         echo 1>&2 "    destinationDirectory: ${destinationDirectory}"
 

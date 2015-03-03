@@ -24,7 +24,7 @@ done
 DEST_PATH="${EVENTS_PARQUET_DIR}/${HADOOP_CS_PROBES_VERSION}/${datePath}/${HADOOP_CS_PROBES_PARQUET_FORMAT}"
 #Get a timestamp to generate temporal file
 TIMESTAMP=`date +%s`
-TMP_FILE="saveAsParquetFromEvent.tmp_${TIMESTAMP}.scala"
+TMP_FILE=$(echo $FILE | sed -e "s/\./\.tmp_${TIMESTAMP}\./")
 echo 1<&2 "INFO: ${0}: Testing if destination directory exists: "
 echo 1>&2 "    DEST_PATH: ${DEST_PATH}"
 
