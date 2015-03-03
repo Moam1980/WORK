@@ -4,13 +4,20 @@
 
 package sa.com.mobily.ia
 
-import sa.com.mobily.parsing.{OpenCsvParser, CsvParser}
+import org.apache.spark.sql._
+
+import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 
 case class SubscriberIaVolume(
     subscriberId: String,
-    volumeBytes: Double)
+    volumeBytes: Double) {
+
+  def fields: Array[String] = Array(subscriberId, volumeBytes.toString)
+}
 
 object SubscriberIaVolume extends IaParser {
+
+  val Header: Array[String] = Array("subscriberId", "volumeBytes")
 
   implicit val fromCsv = new CsvParser[SubscriberIaVolume] {
 
@@ -22,6 +29,17 @@ object SubscriberIaVolume extends IaParser {
       SubscriberIaVolume(
         subscriberId = subscriberIdText,
         volumeBytes = totalVolumeText.toDouble)
+    }
+  }
+
+  implicit val fromRow = new RowParser[SubscriberIaVolume] {
+
+    override def fromRow(row: Row): SubscriberIaVolume = {
+      val Row(subscriberId, volumeBytes) = row
+
+      SubscriberIaVolume(
+        subscriberId = subscriberId.asInstanceOf[String],
+        volumeBytes = volumeBytes.asInstanceOf[Double])
     }
   }
 }
