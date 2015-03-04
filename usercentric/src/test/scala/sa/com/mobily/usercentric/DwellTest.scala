@@ -120,4 +120,8 @@ class DwellTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   it should "compute the dwell duration in minutes" in new WithDwell {
     dwell.copy(endTime = 3661000).durationInMinutes should be (61)
   }
+
+  it should "compute the day of the dwell" in new WithDwell {
+    dwell.copy(startTime = 1414875600000L).formattedDay should be ("2014/11/02")
+  }
 }

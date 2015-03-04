@@ -19,8 +19,10 @@ import sa.com.mobily.roaming.CountryCallingCode
 object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   val outputDateTimeFormat = "yyyy/MM/dd HH:mm:ss"
+  val outputDateFormat = "yyyy/MM/dd"
   final val TimeZoneSaudiArabia = DateTimeZone.forID("Asia/Riyadh")
   final val Fmt = DateTimeFormat.forPattern(outputDateTimeFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
+  final val FmtDate = DateTimeFormat.forPattern(outputDateFormat).withZone(EdmCoreUtils.TimeZoneSaudiArabia)
   val ViewDateFormatter = "yyyy-MM-dd HH:mm:ss"
   final val ViewFmt = DateTimeFormat.forPattern(ViewDateFormatter)
   final val phoneNumberUtil = PhoneNumberUtil.getInstance

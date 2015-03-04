@@ -15,6 +15,7 @@ import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.EdmCoreUtils
+import sa.com.mobily.utils.EdmCoreUtils.FmtDate
 
 case class Dwell(
     user: User,
@@ -40,6 +41,8 @@ case class Dwell(
         countryIsoCode)
 
   def durationInMinutes: Long = new Duration(startTime, endTime).getStandardMinutes
+
+  def formattedDay: String = FmtDate.print(startTime)
 }
 
 object Dwell {

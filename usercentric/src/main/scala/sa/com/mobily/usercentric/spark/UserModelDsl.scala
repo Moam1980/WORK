@@ -10,11 +10,13 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
+import org.apache.spark.util.StatCounter
 
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.cell.spark.CellDsl
 import sa.com.mobily.event.Event
 import sa.com.mobily.event.spark.EventDsl
+import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
 import sa.com.mobily.user.User
@@ -116,6 +118,60 @@ class DwellFunctions(self: RDD[Dwell]) {
     self.keyBy(_.user).groupByKey.map(userDwells => (userDwells._1, userDwells._2.toList.sortBy(_.startTime)))
 }
 
+class DwellStatistics(self: RDD[Dwell]) {
+
+  lazy val daysWithDwells = dwellsPerDay.keys.distinct.collect
+  lazy val daysWithDwellsAreas = areasPerDay.keys.distinct.collect
+  lazy val daysWithDwellsDuration = durationsInMinutesPerDay.keys.distinct.collect
+
+  def toDwellStats: RDD[UserModelStatsView] =
+    totalNumberOfDwells ++ totalNumberOfUsersByDwells ++ meanDwellsByUser ++ stdDeviationDwellsByUser ++
+      meanDwellsArea ++ stdDeviationDwellsArea ++ meanDwellsDuration ++ stdDeviationDwellsDuration
+
+  private def totalNumberOfDwells = self.map(d =>
+    ((d.formattedDay), 1)).reduceByKey(_ + _).map(s => UserModelStatsView(TotalNumberOfDwells, s._1, s._2))
+
+  private def totalNumberOfUsersByDwells = self.map(d =>
+    (d.formattedDay, Set[(String, Float)]((d.user.imsi, d.user.msisdn)))).reduceByKey((a, b) =>
+      a ++ b).map(e => UserModelStatsView(TotalNumberOfUsersByDwells, e._1, e._2.size))
+
+  private def dwellsPerDay = self.map(dwell =>
+    ((dwell.formattedDay, dwell.user.imsi, dwell.user.msisdn), 1)).reduceByKey(_ + _).map(dwellsPerUserAndDay =>
+      (dwellsPerUserAndDay._1._1, dwellsPerUserAndDay._2))
+
+  private def statsDwellsByUser =
+    self.sparkContext.parallelize(daysWithDwells.map(day => (day, dwellsPerDay.filter(e => e._1 == day).values.stats)))
+
+  private def meanDwellsByUser = statsDwellsByUser.map(stat =>
+    (UserModelStatsView(MeanDwellsByUser, stat._1, stat._2.mean)))
+
+  private def stdDeviationDwellsByUser =
+    statsDwellsByUser.map(stat => (UserModelStatsView(StdDeviationDwellsByUser, stat._1, stat._2.stdev)))
+
+  private def areasPerDay = self.map(dwell =>
+    ((dwell.formattedDay, GeomUtils.parseWkt(dwell.geomWkt, Coordinates.SaudiArabiaUtmSrid).getArea)))
+
+  private def statsDwellsArea = self.sparkContext.parallelize(daysWithDwellsAreas.map(day =>
+      (day, areasPerDay.filter(e => e._1 == day).values.stats)))
+
+  private def meanDwellsArea = statsDwellsArea.map(stat => (UserModelStatsView(MeanDwellsArea, stat._1, stat._2.mean)))
+
+  private def stdDeviationDwellsArea =
+    statsDwellsArea.map(stat => (UserModelStatsView(StdDeviationDwellsArea, stat._1, stat._2.stdev)))
+
+  private def durationsInMinutesPerDay= self.map(dwell => (dwell.formattedDay, dwell.durationInMinutes))
+
+  private def statsDwellsDuration: RDD[(String, StatCounter)] =
+    self.sparkContext.parallelize(daysWithDwellsDuration.map(day =>
+      (day, durationsInMinutesPerDay.filter(e => e._1 == day).values.stats)))
+
+  private def meanDwellsDuration =
+    statsDwellsDuration.map(stat => (UserModelStatsView(MeanDwellsDuration, stat._1, stat._2.mean)))
+
+  private def stdDeviationDwellsDuration =
+    statsDwellsDuration.map(stat => (UserModelStatsView(StdDeviationDwellsDuration, stat._1, stat._2.stdev)))
+}
+
 trait UserModelDsl {
 
   implicit def userModelEventFunctions(userEventsWithMatchingCell: RDD[(User, List[Event])]): UserModelEventFunctions =
@@ -144,6 +200,8 @@ trait UserModelDsl {
     new JourneyViaPointWriter(journeyViaPoints)
 
   implicit def dwellFunctions(dwells: RDD[Dwell]): DwellFunctions = new DwellFunctions(dwells)
+
+  implicit def dwellStatistics(dwells: RDD[Dwell]): DwellStatistics = new DwellStatistics(dwells)
 }
 
 object UserModelDsl extends UserModelDsl with JourneyDsl with EventDsl with CellDsl
