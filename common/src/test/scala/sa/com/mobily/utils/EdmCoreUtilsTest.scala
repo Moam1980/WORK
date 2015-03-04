@@ -28,8 +28,10 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     val timestampRoundFLoorDay = 1412121600000L
 
     val outputDateFormat = "yyyy/MM/dd HH:mm:ss"
+    val outputShortDateFormat = "yyyy/MM/dd"
 
     val dateString = "2014/10/01 16:50:13"
+    val dateWithoutTimeString = "2014/10/01"
     val dateTimePatternWithZone = DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
     val firstSaturdayOfTheYear = dateTimePatternWithZone.parseDateTime("20150103")
     val firstSundayOfTheYear = dateTimePatternWithZone.parseDateTime("20150104")
@@ -237,8 +239,13 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.parseTimestampToSaudiDate(timestamp) should be (dateString)
   }
 
+  it should "return correct string date without time for timestamp" in new WithDates {
+    EdmCoreUtils.dateAsString(timestamp) should be (dateWithoutTimeString)
+  }
+
   it should "should return correct output format for timestamp" in new WithDates {
     EdmCoreUtils.outputDateTimeFormat should be (outputDateFormat)
+    EdmCoreUtils.outputDateFormat should be (outputShortDateFormat)
   }
 
   it should "should round timestamp to floor hour" in new WithDates {

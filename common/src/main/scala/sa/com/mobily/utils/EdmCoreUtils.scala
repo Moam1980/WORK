@@ -133,6 +133,8 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   def parseTimestampToSaudiDate(timestamp: Long): String = Fmt.print(timestamp)
 
+  def dateAsString(timestamp: Long): String = FmtDate.print(timestamp)
+
   def roundTimestampHourly(timestamp: Long): Long =
     new DateTime(timestamp, DateTimeZone.UTC).hourOfDay.roundFloorCopy.getMillis
 
