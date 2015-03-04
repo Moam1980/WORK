@@ -367,6 +367,18 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     val dwells = sc.parallelize(Array(dwell3, dwell2, dwell1))
   }
 
+  trait WithDwellsStatistics extends WithDwells {
+    val dwell4 = dwell1.copy(user = dwell1.user.copy("", "1234567", 0))
+    val dwell5 = dwell1.copy(
+      startTime = 1414875600000L,
+      endTime = 1414875900000L,
+      geomWkt = "POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))")
+    val dwell6 = dwell1.copy(startTime = 1414875600000L, endTime = 1414875900000L)
+
+    val dwellsStatistics = sc.parallelize(Array(dwell1, dwell4, dwell5, dwell6))
+    val stats = dwellsStatistics.toDwellStats
+  }
+
   "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell " +
     "(or overlapping in time)" in new WithSpatioTemporalSlots with WithCellCatalogue {
       events.byUserChronologically.aggTemporalOverlapAndSameCell.first._2.size should be (4)
@@ -481,5 +493,61 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     perUser.size should be (2)
     perUser(User("", "4200301", 0)) should be (List(dwell1, dwell2))
     perUser(User("", "4200302", 0)) should be (List(dwell3))
+  }
+
+  it should "get user model stats for number of dwells" in new WithDwellsStatistics {
+    val numberOfDwellsStats = stats.filter(s => s.metricType == TotalNumberOfDwells).collect
+    numberOfDwellsStats.size should be(2)
+    numberOfDwellsStats.find(_.date == dwell1.formattedDay).get.count should be(2)
+    numberOfDwellsStats.find(_.date == dwell5.formattedDay).get.count should be(2)
+  }
+
+  it should "get user model stats for user detected by dwells" in new WithDwellsStatistics {
+    val userDetectedByDwellsStats = stats.filter(s => s.metricType == TotalNumberOfUsersByDwells).collect
+    userDetectedByDwellsStats.size should be(2)
+    userDetectedByDwellsStats.find(_.date == dwell1.formattedDay).get.count should be(2)
+    userDetectedByDwellsStats.find(_.date == dwell5.formattedDay).get.count should be(1)
+  }
+
+  it should "get user model stats for dwells mean" in new WithDwellsStatistics {
+    val meanDwellsByUserStats = stats.filter(s => s.metricType == MeanDwellsByUser).collect
+    meanDwellsByUserStats.size should be(2)
+    meanDwellsByUserStats.find(_.date == dwell1.formattedDay).get.count should be(1.0)
+    meanDwellsByUserStats.find(_.date == dwell5.formattedDay).get.count should be(2.0)
+  }
+
+  it should "get user model stats for dwells standard deviation" in new WithDwellsStatistics {
+    val stdDeviationDwellsByUserStats = stats.filter(s => s.metricType == StdDeviationDwellsByUser).collect
+    stdDeviationDwellsByUserStats.size should be(2)
+    stdDeviationDwellsByUserStats.find(_.date == dwell1.formattedDay).get.count should be(0.0)
+    stdDeviationDwellsByUserStats.find(_.date == dwell5.formattedDay).get.count should be(0.0)
+  }
+
+  it should "get user model stats for dwells area mean" in new WithDwellsStatistics {
+    val meanDwellsAreaStats = stats.filter(s => s.metricType == MeanDwellsArea).collect
+    meanDwellsAreaStats.size should be(2)
+    meanDwellsAreaStats.find(_.date == dwell1.formattedDay).get.count should be(100.0)
+    meanDwellsAreaStats.find(_.date == dwell5.formattedDay).get.count should be(250.0)
+  }
+
+  it should "get user model stats for dwells area standard deviation" in new WithDwellsStatistics {
+    val stDeviationDwellsAreaStats = stats.filter(s => s.metricType == StdDeviationDwellsArea).collect
+    stDeviationDwellsAreaStats.size should be(2)
+    stDeviationDwellsAreaStats.find(_.date == dwell1.formattedDay).get.count should be(0.0)
+    stDeviationDwellsAreaStats.find(_.date == dwell5.formattedDay).get.count should be(150.0)
+  }
+
+  it should "get user model stats for dwells duration mean" in new WithDwellsStatistics {
+    val meanDwellsDurationStats = stats.filter(s => s.metricType == MeanDwellsDuration).collect
+    meanDwellsDurationStats.size should be(2)
+    meanDwellsDurationStats.find(_.date == dwell1.formattedDay).get.count should be(60.0)
+    meanDwellsDurationStats.find(_.date == dwell5.formattedDay).get.count should be(5.0)
+  }
+
+  it should "get user model stats for dwells duration standard deviation" in new WithDwellsStatistics {
+    val stDeviationDwellsDurationStats = stats.filter(s => s.metricType == StdDeviationDwellsDuration).collect
+    stDeviationDwellsDurationStats.size should be(2)
+    stDeviationDwellsDurationStats.find(_.date == dwell1.formattedDay).get.count should be(0.0)
+    stDeviationDwellsDurationStats.find(_.date == dwell5.formattedDay).get.count should be(0.0)
   }
 }
