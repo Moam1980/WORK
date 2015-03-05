@@ -28,6 +28,7 @@ HADOOP_PATH=/user/tdatuser
 HADOOP_CS_PROBES_FILE_PATH=${HADOOP_PATH}/cs-probes
 HADOOP_CS_PROBES_VERSION=0.3
 HADOOP_CS_PROBES_FORMAT=csv
+HADOOP_CS_PROBES_PARQUET_FORMAT=parquet
 
 # ISOP hadoop configuration -- Internet Analytics
 HADOOP_ISOP_FILE_PATH=${HADOOP_PATH}/ia
@@ -39,6 +40,11 @@ HADOOP_IMS_FILE_PATH=${HADOOP_PATH}/ims
 HADOOP_IMS_VERSION=0.7
 HADOOP_IMS_FORMAT=csv
 
+# Oracle DWH hadoop configuration -- Database including subscribers
+HADOOP_ORACLE_DWH_FILE_PATH=${HADOOP_PATH}/subscribers-oracle
+HADOOP_ORACLE_DWH_VERSION=0.7
+HADOOP_ORACLE_DWH_FORMAT=csv
+
 # CS source configuration
 CS_USER="edm"
 CS_SERVER="10.64.9.35"
@@ -47,3 +53,14 @@ CS_DIRECTORIES=("A-Interface" "IUCS-Interface")
 CS_DATA_SEPARATOR=("" ".")
 CS_FILE_PREFIXES=("ADR_AINT_6-" "TDR-IU-7-")
 CS_FILE_EXTENSIONS=(".gz" ".gz")
+
+# HDFS paths
+HDFS_HOME="/user/tdatuser"
+EVENTS_PARQUET_DIR="${HDFS_HOME}/cs-probes/event"
+CELL_CATALOGUE="${HDFS_HOME}/cell-catalogue/0.5/2015/01/06/csv"
+SUBSCRIBERS_FILE="${HDFS_HOME}/subscribers-oracle/0.6/2014/12/01/csv/customer-base-20141201.csv"
+USER_CENTRIC_DIR="${HDFS_HOME}/user-centric"
+HDFS_FILES_METRICS_PATH="${HDFS_HOME}/metrics/hadoop-files/csv"
+USER_ACTIVITY_DIR="${HDFS_HOME}/user-activity"
+
+SPARK_ARTIFACTS_DIR="/data/local-staging/tdatuser/artifacts"

@@ -17,9 +17,9 @@ DOWNLOAD_LOG_FILE=${LOG_PATH}/download
 ISOP_DOWNLOAD_PARALLEL_PROCS=5
 
 # Properties to connect to ISOP database
-DB_CONNECT_STRING="ISOP"
-DB_USER="Isop"
-DB_PASSWORD="isop"
+DB_CONNECT_STRING="DWRAC"
+DB_USER="DBI_EDM"
+DB_PASSWORD="bur0cr9c19"
 
 # Configuration for hadoop file size output
 HADOOP_PATH=/user/tdatuser
@@ -41,7 +41,7 @@ HADOOP_IMS_VERSION=0.7
 HADOOP_IMS_FORMAT=csv
 
 # Oracle DWH hadoop configuration -- Database including subscribers
-HADOOP_ORACLE_DWH_FILE_PATH=${HADOOP_PATH}/subscribers-oracle
+HADOOP_ORACLE_DWH_FILE_PATH=${HADOOP_PATH}/oracle-dwh
 HADOOP_ORACLE_DWH_VERSION=0.7
 HADOOP_ORACLE_DWH_FORMAT=csv
 

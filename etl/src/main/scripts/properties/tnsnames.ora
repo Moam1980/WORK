@@ -1,0 +1,30 @@
+ISOP =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.73.48.40)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = ora11gR2)
+    )
+  )
+IMS =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.14.223.105)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = imsdb.mobily.com.sa)
+    )
+  )
+DWRAC =
+  (DESCRIPTION =
+    (LOAD_BALANCE = yes)
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.14.188.54)(PORT = 1525))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.14.188.59)(PORT = 1525))
+    )
+    (CONNECT_DATA =
+      (FAILOVER_MODE = (TYPE = select)(METHOD = basic)(RETRIES = 100)(DELAY = 5))
+      (SERVICE_NAME = dwprod)
+    )
+  )
