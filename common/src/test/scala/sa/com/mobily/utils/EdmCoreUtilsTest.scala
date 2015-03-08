@@ -30,7 +30,11 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     val outputDateFormat = "yyyy/MM/dd HH:mm:ss"
     val outputShortDateFormat = "yyyy/MM/dd"
 
-    val dateString = "2014/10/01 16:50:13"
+    val dateWithTimeString = "2014/10/01 16:50:13"
+    val baseDT = new DateTime().withZone(EdmCoreUtils.TimeZoneSaudiArabia).withTime(0, 0, 0, 0)
+    val dt = baseDT.withDay(19).withMonth(7).withYear(2011)
+    val dateString = "2011/07/19"
+    val wrongDate = "2011/19/07"
     val dateWithoutTimeString = "2014/10/01"
     val dateTimePatternWithZone = DateTimeFormat.forPattern("yyyymmdd").withZone(EdmCoreUtils.TimeZoneSaudiArabia)
     val firstSaturdayOfTheYear = dateTimePatternWithZone.parseDateTime("20150103")
@@ -236,7 +240,7 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return correct string date for timestamp" in new WithDates {
-    EdmCoreUtils.parseTimestampToSaudiDate(timestamp) should be (dateString)
+    EdmCoreUtils.parseTimestampToSaudiDate(timestamp) should be (dateWithTimeString)
   }
 
   it should "return correct string date without time for timestamp" in new WithDates {
@@ -476,5 +480,10 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
 
   it should "compute the floor number of weeks for intervals within several weeks" in new WithIntervals {
     EdmCoreUtils.floorNumWeeks(intervalsTwoWeeks) should be (2)
+  }
+
+  it should "convert dates from string to DateTime" in new WithDates {
+    EdmCoreUtils.tryToParseTheDate(dateString).get should be (dt)
+    EdmCoreUtils.tryToParseTheDate(wrongDate).getOrElse(None) should be (None)
   }
 }

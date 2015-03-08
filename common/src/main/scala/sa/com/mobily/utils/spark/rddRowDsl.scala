@@ -6,6 +6,7 @@ package sa.com.mobily.utils.spark
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
+import scala.util.Try
 
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.rdd.RDD
@@ -24,7 +25,7 @@ class RddRowFunctions(self: SQLContext) {
   }
 
   def readFromPeriod(path: String, start: String, end: String): RDD[Row] =
-    readFromPeriod(path, RddRowDsl.getDateFromString(start), RddRowDsl.getDateFromString(end))
+    readFromPeriod(path, RddRowDsl.getDateFromString(start).get, RddRowDsl.getDateFromString(end).get)
 }
 
 trait RddRowDsl {
@@ -39,5 +40,13 @@ object RddRowDsl extends RddRowDsl {
   def replaceDate(path: String, dateTime: DateTime): String =
     DateRegex.replaceFirstIn(path, EdmCoreUtils.dateAsString(dateTime.getMillis))
 
-  def getDateFromString(dateAsString: String): DateTime = EdmCoreUtils.FmtDate.parseDateTime(dateAsString)
+  def getDateFromString(dateAsString: String): Try[DateTime] = for {
+    dateString <- Try(DateRegex.findFirstIn(dateAsString))
+    dateTime <- EdmCoreUtils.tryToParseTheDate(dateString.get)
+  } yield dateTime
+
+  def getDateFromPath(path: String): Try[DateTime] = for {
+    dateString <- Try(DateRegex.findFirstIn(path))
+    dateTime <- getDateFromString(dateString.get)
+  } yield dateTime
 }
