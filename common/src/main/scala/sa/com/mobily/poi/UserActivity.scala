@@ -22,7 +22,7 @@ case class UserActivity(
 
   lazy val keyByWeek: (User, String, Short, Set[(Short, Short)]) = (user, siteId, regionId, weekYear)
 
-  lazy val activityVector: Vector =
+  def activityVector: Vector =
     Vectors.sparse(
       UserActivity.HoursPerWeek,
       weekHoursWithActivity.map(
