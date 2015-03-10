@@ -19,7 +19,7 @@ ISOP_DOWNLOAD_PARALLEL_PROCS=5
 # Properties to connect to ISOP database
 DB_CONNECT_STRING="DWRAC"
 DB_USER="DBI_EDM"
-DB_PASSWORD="bur0cr9c19"
+DB_PASSWORD="bur0cr9c19#"
 
 # Configuration for hadoop file size output
 HADOOP_PATH=/user/tdatuser
