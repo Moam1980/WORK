@@ -90,4 +90,8 @@ class UserTest extends FlatSpec with ShouldMatchers {
     firstUserImei == userAnotherClass should be (false)
     firstUserImei.equals(userAnotherClass) should be (false)
   }
+
+  it should "get its identifier" in {
+    User("1234", "56789", 966999999999L).id should be (966999999999L)
+  }
 }

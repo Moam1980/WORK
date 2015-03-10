@@ -115,7 +115,8 @@ class UserModelSlotFunctions(userSlots: RDD[(User, List[SpatioTemporalSlot])]) {
 class DwellFunctions(self: RDD[Dwell]) {
 
   def byUserChronologically: RDD[(User, List[Dwell])] =
-    self.keyBy(_.user).groupByKey.map(userDwells => (userDwells._1, userDwells._2.toList.sortBy(_.startTime)))
+    self.map(d => (d.user, List(d))).reduceByKey(_ ++ _).map(userDwells =>
+      (userDwells._1, userDwells._2.sortBy(_.startTime)))
 }
 
 class DwellStatistics(self: RDD[Dwell]) {
