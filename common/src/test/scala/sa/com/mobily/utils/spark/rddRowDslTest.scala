@@ -21,9 +21,13 @@ class RddRowDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlConte
     val dt2 = baseDT.withDay(26).withMonth(7).withYear(2011)
     val dateString1 = "2011/07/19"
     val dateString2 = "2011/07/26"
+    val wrongDate1 = "2011/29/02"
+    val wrongDate2 = "2011/29/as"
     val fakePath = "fake/path/to/test/2015/01/01/parquet"
     val fakePathResult1 = s"fake/path/to/test/$dateString1/parquet"
     val fakePathResult2 = s"fake/path/to/test/$dateString2/parquet"
+    val wrongPathResult1 = s"fake/path/to/test/$wrongDate1/parquet"
+    val wrongPathResult2 = s"fake/path/to/test/$wrongDate2/parquet"
     val initPath = "/2015/01/01"
     val path1 = "/" + dateString1 + "/parquet"
     val path2 = "/" + dateString2 + "/parquet"
@@ -45,8 +49,17 @@ class RddRowDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlConte
   }
 
   "RddRowDsl" should "convert dates from string to DateTime" in new WithDatesAndPaths {
-    RddRowDsl.getDateFromString(dateString1) should be (dt1)
-    RddRowDsl.getDateFromString(dateString2) should be (dt2)
+    RddRowDsl.getDateFromString(dateString1).get should be (dt1)
+    RddRowDsl.getDateFromString(dateString2).get should be (dt2)
+    RddRowDsl.getDateFromString(wrongDate1).getOrElse(None) should be (None)
+    RddRowDsl.getDateFromString(wrongDate2).getOrElse(None) should be (None)
+  }
+
+  it should "convert dates from path to DateTime" in new WithDatesAndPaths {
+    RddRowDsl.getDateFromPath(fakePathResult1).get should be (dt1)
+    RddRowDsl.getDateFromPath(fakePathResult2).get should be (dt2)
+    RddRowDsl.getDateFromPath(wrongPathResult1).getOrElse(None) should be (None)
+    RddRowDsl.getDateFromPath(wrongPathResult2).getOrElse(None) should be (None)
   }
 
   it should "replace path with current dates" in new WithDatesAndPaths {

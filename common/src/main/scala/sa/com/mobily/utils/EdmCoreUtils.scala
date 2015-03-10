@@ -135,6 +135,8 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
 
   def dateAsString(timestamp: Long): String = FmtDate.print(timestamp)
 
+  def tryToParseTheDate(dateAsString: String): Try[DateTime] = Try(FmtDate.parseDateTime(dateAsString))
+
   def roundTimestampHourly(timestamp: Long): Long =
     new DateTime(timestamp, DateTimeZone.UTC).hourOfDay.roundFloorCopy.getMillis
 
