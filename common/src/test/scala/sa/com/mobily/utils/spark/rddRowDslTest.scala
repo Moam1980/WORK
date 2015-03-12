@@ -84,4 +84,13 @@ class RddRowDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlConte
     sqc.readFromPeriod(path, dateString1, dateString2).collect.sameElements(rows) should be (true)
     File(tmpPath).deleteRecursively
   }
+  
+  it should "read from period with date1 > date2" in new WithRows {
+    val tmpPath = File.makeTemp().name
+    val path = tmpPath + path1
+    val data = (0 to 7).map(i => save(i, path))
+    val rows = data.foldLeft(Seq[Person]())(_ ++ _).map(f => Row(f.id, f.name))
+    sqc.readFromPeriod(path, dateString2, dateString1).collect.sameElements(rows) should be (true)
+    File(tmpPath).deleteRecursively
+  }
 }
