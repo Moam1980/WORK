@@ -13,6 +13,5 @@ object SanityMetrics extends MetricFunctions[Measurable] {
     Map[MetricResultKey, Long]](
       TypeMetric.metricFunction,
       TypeMetric.totalFunction,
-      TemporalMetric.metricFunction,
-      IdMetric.metricFunction)
+      TemporalMetric.metricFunction)
 }

@@ -389,7 +389,7 @@ class EventDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContex
   it should "save as CSV metrics of events" in new WithEvents {
     val path = File.makeTemp().name
     events.saveMetrics(path)
-    events.sparkContext.textFile(path).count should be (5)
+    events.sparkContext.textFile(path).count should be (3)
     File(path).deleteRecursively
   }
   it should "calculate the vector to home clustering correctly" in new WithWeekEvents {
