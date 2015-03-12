@@ -20,6 +20,7 @@ class RddRowFunctions(self: SQLContext) {
   final def readFromPeriod(path: String, start: DateTime, end: DateTime,
       result: RDD[Row] = self.sparkContext.emptyRDD): RDD[Row] = {
     if (start == end) result.union(self.parquetFile(RddRowDsl.replaceDate(path, start)))
+    else if (start > end) readFromPeriod(path, end, start)
     else
       readFromPeriod(path, start.plusDays(1), end, result.union(self.parquetFile(RddRowDsl.replaceDate(path, start))))
   }
