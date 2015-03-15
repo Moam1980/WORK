@@ -8,6 +8,7 @@ import scala.annotation.tailrec
 
 import com.github.nscala_time.time.Imports._
 
+import sa.com.mobily.geometry.GeomUtils
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.utils.EdmCoreUtils
@@ -33,6 +34,9 @@ case class MobilityMatrixItem(
 }
 
 object MobilityMatrixItem {
+
+  val WeekDayDateFormatter = "E HH:mm:ss"
+  val WeekDayFmt = DateTimeFormat.forPattern(WeekDayDateFormatter)
 
   val Header =
     Array(
@@ -79,8 +83,10 @@ object MobilityMatrixItem {
           startLocation <- locations.filter(l => first.geom.intersects(l.geom));
           endLocation <- locations.filter(l => second.geom.intersects(l.geom)))
         yield {
-          val originWeight = startLocation.geom.intersection(first.geom).getArea / first.geom.getArea
-          val destWeight = endLocation.geom.intersection(second.geom).getArea / second.geom.getArea
+          val origWeight = startLocation.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections).intersection(
+            first.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections)).getArea / first.geom.getArea
+          val destWeight = endLocation.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections).intersection(
+            second.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections)).getArea / second.geom.getArea
           MobilityMatrixItem(
             startInterval = startInterval,
             endInterval = endInterval,
@@ -88,7 +94,7 @@ object MobilityMatrixItem {
             endLocation = endLocation.name,
             numWeeks = numWeeks,
             user = first.user,
-            weight = (originWeight + destWeight) / 2)
+            weight = (origWeight + destWeight) / 2)
         }
       perIntervalAndLocation(
         dwells = second :: tail,
