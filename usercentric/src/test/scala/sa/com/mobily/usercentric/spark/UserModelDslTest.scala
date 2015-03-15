@@ -224,41 +224,41 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
 
     val slot1 = SpatioTemporalSlot(
       user = User("", "", 1),
-      startTime = 1,
-      endTime = 2,
+      startTime = 1000000,
+      endTime = 2000000,
       cells = Set((1, 1)),
-      firstEventBeginTime = 1,
-      lastEventEndTime = 2,
+      firstEventBeginTime = 1000000,
+      lastEventEndTime = 2000000,
       outMinSpeed = 7.5,
       intraMinSpeedSum = 0.5,
       numEvents = 3)
     val slotJvp1 = slot1.copy(
-      startTime = 2,
-      endTime = 3,
+      startTime = 2000000,
+      endTime = 3000000,
       cells = Set((1, 2)),
-      firstEventBeginTime = 2,
-      lastEventEndTime = 3,
+      firstEventBeginTime = 2000000,
+      lastEventEndTime = 3000000,
       outMinSpeed = 10)
     val slotJvp2 = slot1.copy(
-      startTime = 5,
-      endTime = 7,
+      startTime = 5000000,
+      endTime = 7000000,
       cells = Set((1, 3)),
-      firstEventBeginTime = 5,
-      lastEventEndTime = 6,
+      firstEventBeginTime = 5000000,
+      lastEventEndTime = 7000000,
       outMinSpeed = 8)
     val slot2 = slot1.copy(
-      startTime = 10,
-      endTime = 15,
+      startTime = 10000000,
+      endTime = 15000000,
       cells = Set((1, 4)),
-      firstEventBeginTime = 12,
-      lastEventEndTime = 13,
+      firstEventBeginTime = 10000000,
+      lastEventEndTime = 15000000,
       outMinSpeed = 0)
     val slot3 = slot1.copy(
-      startTime = 30,
-      endTime = 35,
+      startTime = 30000000,
+      endTime = 35000000,
       cells = Set((1, 5)),
-      firstEventBeginTime = 32,
-      lastEventEndTime = 33,
+      firstEventBeginTime = 30000000,
+      lastEventEndTime = 35000000,
       outMinSpeed = 0)
 
     val slots = sc.parallelize(Array((User("", "", 1L), List(slot1, slotJvp1, slotJvp2, slot2, slot3))))
@@ -368,6 +368,7 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
   }
 
   trait WithDwellsStatistics extends WithDwells {
+
     val dwell4 = dwell1.copy(user = dwell1.user.copy("", "1234567", 0))
     val dwell5 = dwell1.copy(
       startTime = 1414875600000L,
@@ -377,6 +378,27 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
 
     val dwellsStatistics = sc.parallelize(Array(dwell1, dwell4, dwell5, dwell6))
     val stats = dwellsStatistics.toDwellStats
+  }
+
+  trait WithModelSlotsForViaPointDetection {
+
+    val dwellSlot1 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 0L,
+      endTime = 1000L,
+      cells = Set((1, 2)),
+      firstEventBeginTime = 0L,
+      lastEventEndTime = 50L,
+      outMinSpeed = 0.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot2 = dwellSlot1.copy(startTime = 1000L, endTime = 301000L, cells = Set((1, 4)))
+    val dwellSlot3 = dwellSlot1.copy(startTime = 1000000L, endTime = 1900000L, cells = Set((1, 5)))
+    val dwellSlot4 = dwellSlot1.copy(startTime = 1905000L, endTime = 1995000L, cells = Set((1, 7)))
+    val dwellSlot5 = dwellSlot1.copy(startTime = 2000000L, endTime = 2200000L, cells = Set((2, 3)))
+
+    val slots =
+      sc.parallelize(Array((dwellSlot1.user, List(dwellSlot1, dwellSlot2, dwellSlot3, dwellSlot4, dwellSlot5))))
   }
 
   "UserModelDsl" should "not aggregate when there are no consecutive events having the same cell " +
@@ -550,4 +572,12 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
     stDeviationDwellsDurationStats.find(_.date == dwell1.formattedDay).get.count should be(0.0)
     stDeviationDwellsDurationStats.find(_.date == dwell5.formattedDay).get.count should be(0.0)
   }
+
+  it should "convert suitable dwell slots to via points when building the model" in
+    new WithModelSlotsForViaPointDetection with WithCellCatalogue {
+      val model = slots.toUserCentric.first._2
+      model._1.size should be (3)
+      model._2.size should be (2)
+      model._3.size should be (2)
+    }
 }

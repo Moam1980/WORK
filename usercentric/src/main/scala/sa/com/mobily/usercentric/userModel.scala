@@ -54,6 +54,7 @@ object UserModel {
   val DistanceThresholdInMeters = 90000
   val UrbanSpeedInMetersPerSecond = 50 / 3.6
   val InterUrbanSpeedInMetersPerSecond = 90 / 3.6
+  val DefaultMinDwellDurationInMinutes = 15
 
   private val LatestHourInDay = 23
   private val LatestMinuteInHour = 59
@@ -135,6 +136,23 @@ object UserModel {
   }
 
   @tailrec
+  def candidatesToViaPoints(
+      slots: List[SpatioTemporalSlot],
+      isViaPoint: (SpatioTemporalSlot) => Boolean = probableViaPoint,
+      result: List[SpatioTemporalSlot] = List()): List[SpatioTemporalSlot] = slots match {
+    case Nil => result
+    case onlySlot :: Nil => result :+ onlySlot
+    case first :: second :: Nil => result :+ first :+ second
+    case first :: second :: tail =>
+      if (isViaPoint(second))
+        candidatesToViaPoints(
+          slots = List(second.copy(typeEstimate = JourneyViaPointEstimate)) ++ tail,
+          result = result :+ first)
+      else
+        candidatesToViaPoints(slots = second :: tail, result = result :+ first)
+  }
+
+  @tailrec
   def extendTime( // scalastyle:ignore cyclomatic.complexity
       slots: List[SpatioTemporalSlot],
       result: List[SpatioTemporalSlot] = List(),
@@ -203,4 +221,7 @@ object UserModel {
       else UrbanSpeedInMetersPerSecond
     (distance / speed).round.toInt
   }
+
+  def probableViaPoint(slotCandidate: SpatioTemporalSlot): Boolean =
+    slotCandidate.durationInMinutes < DefaultMinDwellDurationInMinutes
 }
