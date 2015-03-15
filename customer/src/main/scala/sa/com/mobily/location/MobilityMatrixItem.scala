@@ -18,6 +18,7 @@ case class MobilityMatrixItem(
     endInterval: Interval,
     startLocation: String,
     endLocation: String,
+    journeyDuration: Duration,
     numWeeks: Long,
     user: User,
     weight: Double) {
@@ -28,6 +29,7 @@ case class MobilityMatrixItem(
       EdmCoreUtils.ViewFmt.print(endInterval.getStart),
       startLocation,
       endLocation,
+      journeyDuration.seconds.toString,
       numWeeks.toString) ++
       user.fields :+
       weight.toString
@@ -44,6 +46,7 @@ object MobilityMatrixItem {
       "EndIntervalInitTime",
       "StartLocation",
       "EndLocation",
+      "JourneyDurationInSeconds",
       "NumWeeks") ++
       User.Header :+
       "Weight"
@@ -92,6 +95,7 @@ object MobilityMatrixItem {
             endInterval = endInterval,
             startLocation = startLocation.name,
             endLocation = endLocation.name,
+            journeyDuration = new Duration(first.endTime, second.startTime),
             numWeeks = numWeeks,
             user = first.user,
             weight = (origWeight + destWeight) / 2)

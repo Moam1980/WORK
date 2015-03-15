@@ -4,6 +4,7 @@
 
 package sa.com.mobily.location
 
+import com.github.nscala_time.time.Imports._
 import org.scalatest._
 
 import sa.com.mobily.geometry.Coordinates
@@ -22,17 +23,19 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
 
   trait WithMobilityMatrixItems extends WithIntervals {
 
-    val item = MobilityMatrixItem(intervals(0), intervals(1), "loc1", "loc2", 4, User("", "4200301", 0), 0.5)
+    val item = MobilityMatrixItem(intervals(0), intervals(1), "loc1", "loc2", new Duration(1800000L), 4,
+      User("", "4200301", 0), 0.5)
 
-    val itemDwell1And2 = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", 0, User("", "4200301", 0), 1)
-    val item1Dwell3And4 =
-      MobilityMatrixItem(intervals(0), intervals(1), "l3", "l5", 0, User("", "4200301", 0), 0.20869565217391306)
-    val item2Dwell3And4 =
-      MobilityMatrixItem(intervals(0), intervals(1), "l3", "l6", 0, User("", "4200301", 0), 0.1326086956521739)
-    val item3Dwell3And4 =
-      MobilityMatrixItem(intervals(0), intervals(1), "l4", "l5", 0, User("", "4200301", 0), 0.15869565217391307)
-    val item4Dwell3And4 =
-      MobilityMatrixItem(intervals(0), intervals(1), "l4", "l6", 0, User("", "4200301", 0), 0.08260869565217391)
+    val itemDwell1And2 =
+      MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(2460000L), 0, User("", "4200301", 0), 1)
+    val item1Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l3", "l5", new Duration(2460000L), 0,
+      User("", "4200301", 0), 0.20869565217391306)
+    val item2Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l3", "l6", new Duration(2460000L), 0,
+      User("", "4200301", 0), 0.1326086956521739)
+    val item3Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l4", "l5", new Duration(2460000L), 0,
+      User("", "4200301", 0), 0.15869565217391307)
+    val item4Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l4", "l6", new Duration(2460000L), 0,
+      User("", "4200301", 0), 0.08260869565217391)
   }
 
   trait WithDwells {
@@ -71,7 +74,7 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
 
   "MobilityMatrixItem" should "return fields" in new WithMobilityMatrixItems {
     item.fields should be (
-      Array("2014-11-02 00:00:00", "2014-11-02 01:00:00", "loc1", "loc2", "4", "", "4200301", "0", "0.5"))
+      Array("2014-11-02 00:00:00", "2014-11-02 01:00:00", "loc1", "loc2", "1800", "4", "", "4200301", "0", "0.5"))
   }
 
   it should "have same number of fields and header" in new WithMobilityMatrixItems {
