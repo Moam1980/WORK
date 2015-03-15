@@ -2,13 +2,14 @@
  * TODO: License goes here!
  */
 
-package sa.com.mobily.location
+package sa.com.mobily.mobility
 
 import scala.annotation.tailrec
 
 import com.github.nscala_time.time.Imports._
 
 import sa.com.mobily.geometry.GeomUtils
+import sa.com.mobily.location.Location
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.utils.EdmCoreUtils
