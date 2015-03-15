@@ -15,6 +15,7 @@ import org.apache.spark.rdd.RDD
 import sa.com.mobily.cell.Cell
 import sa.com.mobily.geometry.{Coordinates, GeomUtils}
 import sa.com.mobily.location._
+import sa.com.mobily.mobility.MobilityMatrixItem
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
 import sa.com.mobily.poi.{Poi, LocationPoiMetrics}

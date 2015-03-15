@@ -9,7 +9,8 @@ import org.scalatest._
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
-import sa.com.mobily.location.{Footfall, Location, MobilityMatrixItem}
+import sa.com.mobily.location.{Footfall, Location}
+import sa.com.mobily.mobility.MobilityMatrixItem
 import sa.com.mobily.poi._
 import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
