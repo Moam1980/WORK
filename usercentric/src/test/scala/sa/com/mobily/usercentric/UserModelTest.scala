@@ -328,6 +328,40 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
     val dwellSlot31 = dwellSlot30.copy(cells = Set((2, 4)))
   }
 
+  trait WithModelSlotsForViaPointDetection {
+
+    val dwellSlot1 = SpatioTemporalSlot(
+      user = User("", "1", 1),
+      startTime = 0L,
+      endTime = 1000L,
+      cells = Set((2, 1)),
+      firstEventBeginTime = 0L,
+      lastEventEndTime = 1000L,
+      outMinSpeed = 0.5,
+      intraMinSpeedSum = 0.5,
+      numEvents = 4)
+    val dwellSlot2 = dwellSlot1.copy(
+      startTime = 1000L,
+      endTime = 301000L,
+      firstEventBeginTime = 1000L,
+      lastEventEndTime = 301000L)
+    val dwellSlot3 = dwellSlot1.copy(
+      startTime = 1000000L,
+      endTime = 1900000L,
+      firstEventBeginTime = 1000000L,
+      lastEventEndTime = 1900000L)
+    val dwellSlot4 = dwellSlot1.copy(
+      startTime = 1905000L,
+      endTime = 1995000L,
+      firstEventBeginTime = 1905000L,
+      lastEventEndTime = 1995000L)
+    val dwellSlot5 = dwellSlot1.copy(
+      startTime = 2000000L,
+      endTime = 2200000L,
+      firstEventBeginTime = 2000000L,
+      lastEventEndTime = 2200000L)
+  }
+
   "UserModel" should "return an empty list with no events when aggregating same cells" in
     new WithSpatioTemporalSlots with WithCellCatalogue {
       UserModel.aggTemporalOverlapAndSameCell(List()) should be(List())
@@ -525,5 +559,34 @@ class UserModelTest extends FlatSpec with ShouldMatchers {
         viaPoint16,
         viaPoint17,
         dwellSlot31.copy(endTime = endOfDay)))
+  }
+
+  it should "accept an empty list of slots when detecting possible via points" in {
+    UserModel.candidatesToViaPoints(List()) should be(List())
+  }
+
+  it should "not convert dwell slots when there are just one slot" in new WithModelSlotsForViaPointDetection {
+    UserModel.candidatesToViaPoints((List(dwellSlot1))) should be (List(dwellSlot1))
+  }
+
+  it should "not convert dwell slots when there are just two slots" in new WithModelSlotsForViaPointDetection {
+    UserModel.candidatesToViaPoints((List(dwellSlot1, dwellSlot2))) should be (List(dwellSlot1, dwellSlot2))
+  }
+
+  it should "convert suitable dwell slots to via points (but first and last ones)" in
+    new WithModelSlotsForViaPointDetection {
+      UserModel.candidatesToViaPoints(List(dwellSlot1, dwellSlot2, dwellSlot3, dwellSlot4, dwellSlot5)) should
+        be (List(
+          dwellSlot1,
+          dwellSlot2.copy(typeEstimate = JourneyViaPointEstimate),
+          dwellSlot3,
+          dwellSlot4.copy(typeEstimate = JourneyViaPointEstimate),
+          dwellSlot5))
+    }
+
+  it should "identify probable via points" in new WithModelSlotsForViaPointDetection {
+    UserModel.probableViaPoint(dwellSlot1) should be (true)
+    UserModel.probableViaPoint(dwellSlot2) should be (true)
+    UserModel.probableViaPoint(dwellSlot3) should be (false)
   }
 }

@@ -80,6 +80,8 @@ case class SpatioTemporalSlot(
         GeomUtils.wkt(geom),
         countryIsoCode,
         typeEstimate.id)
+
+  def durationInMinutes: Long = new Duration(startTime, endTime).getStandardMinutes
 }
 
 object SpatioTemporalSlot {

@@ -105,7 +105,8 @@ class UserModelSlotFunctions(userSlots: RDD[(User, List[SpatioTemporalSlot])]) {
       RDD[(User, (List[Dwell], List[Journey], List[JourneyViaPoint]))] = {
     combine.mapValues(slots => {
       val withViaPoints = UserModel.fillViaPoints(slots)(cellCatalogue.value)
-      val withExtendedTime = UserModel.extendTime(withViaPoints)(cellCatalogue.value)
+      val withCandidateViaPoints = UserModel.candidatesToViaPoints(withViaPoints)
+      val withExtendedTime = UserModel.extendTime(withCandidateViaPoints)(cellCatalogue.value)
       val modelEntities = UserModel.userCentric(withExtendedTime)(cellCatalogue.value)
       (modelEntities._1, modelEntities._2, modelEntities._3)
     })

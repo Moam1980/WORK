@@ -80,6 +80,8 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
       intraMinSpeedSum = 0.5,
       numEvents = 3)
     val slotWithEmptyIntersection = slotWithTwoEvents.copy(cells = Set((1, 4), (1, 5)))
+
+    val slot = slotWithTwoEvents.copy(startTime = 0, endTime = 1800000)
   }
 
   "SpatioTemporalSlot" should "build geometry from WKT" in new WithSpatioTemporalSlots with WithCellCatalogue {
@@ -140,5 +142,9 @@ class SpatioTemporalSlotTest extends FlatSpec with ShouldMatchers with EdmCustom
     new WithSpatioTemporalSlots with WithCellCatalogue {
       slotWithEmptyIntersection.geom should
         equalGeometry(GeomUtils.parseWkt("POLYGON ((0 0, 0.5 20, 10 20, 10 0, 0 0))", Coordinates.SaudiArabiaUtmSrid))
+  }
+
+  it should "compute the duration of the slots in minutes" in new WithSpatioTemporalSlots {
+    slot.durationInMinutes should be(30)
   }
 }
