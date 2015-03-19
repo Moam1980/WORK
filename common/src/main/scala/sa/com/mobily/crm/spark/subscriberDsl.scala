@@ -16,6 +16,7 @@ import org.apache.spark.sql.Row
 import sa.com.mobily.crm._
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser, SparkWriter}
+import sa.com.mobily.user.User
 
 class SubscriberCsvReader(self: RDD[String]) {
 
@@ -41,6 +42,28 @@ class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
       (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collect.toMap)
 
   def toSubscriberView: RDD[SubscriberView] = self.map(subscriber => SubscriberView(subscriber))
+
+  def toFilteredSubscriberProfilingView(
+      users: RDD[User],
+      totalRevenue: (Subscriber) => Float = SubscriberProfilingView.totalRevenue,
+      ageGroup: (Subscriber) => String = SubscriberProfilingView.ageGroup,
+      genderGroup: (Subscriber) => String = SubscriberProfilingView.genderGroup,
+      nationalityGroup: (Subscriber) => String = SubscriberProfilingView.nationalityGroup,
+      affluenceGroup: (Long, Long) => String = SubscriberProfilingView.affluenceGroup): RDD[SubscriberProfilingView] = {
+    val userCompleteSubscriber = users.keyBy(u => u.imsi).join(self.keyBy(s => s.user.imsi)).map(
+      userSubs => (userSubs._1, userSubs._2._2)).reduceByKey(Subscriber.reduceByLastActivity).map(
+        uS => (uS._2, totalRevenue(uS._2))).sortBy(_._2).zipWithIndex
+
+    val totalSubs = userCompleteSubscriber.count
+
+    userCompleteSubscriber.map(s =>
+      SubscriberProfilingView(
+        imsi = s._1._1.user.imsi,
+        ageGroup = ageGroup(s._1._1),
+        genderGroup = genderGroup(s._1._1),
+        nationalityGroup = nationalityGroup(s._1._1),
+        affluenceGroup = affluenceGroup(s._2 + 1, totalSubs)))
+  }
 }
 
 class SubscriberStatistics(self: RDD[Subscriber]) {
@@ -48,7 +71,7 @@ class SubscriberStatistics(self: RDD[Subscriber]) {
   def countSubscribers[A: ClassTag](f: Subscriber => (A, Int)): Map[A, Int] =
     self.map(f).reduceByKey(_ + _).collect.toMap
 
-  def countSubscribersByGender: Map[String, Int] = countSubscribers(e => (e.gender, 1))
+  def countSubscribersByGender: Map[String, Int] = countSubscribers(e => (e.gender.id, 1))
 
   def countSubscribersByPayType: Map[PayType, Int] = countSubscribers(e => (e.types.pay, 1))
 

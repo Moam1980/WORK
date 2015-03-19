@@ -57,8 +57,8 @@ class SubscriberViewDslTest extends FlatSpec with ShouldMatchers with LocalSpark
   it should "save view subscribers in parquet" in new WithSubscriberText {
     val path = File.makeTemp().name
     subscribers.toSubscriberView.saveAsParquetFile(path)
-    sqc.parquetFile(path).toSubscriberView.collect should contain
-      theSameElementsAs(subscribers.toSubscriberView.collect())
+    sqc.parquetFile(path).toSubscriberView.collect should contain theSameElementsAs(
+      subscribers.toSubscriberView.collect())
     File(path).deleteRecursively
   }
 
