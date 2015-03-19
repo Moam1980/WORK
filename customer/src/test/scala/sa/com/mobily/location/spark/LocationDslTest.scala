@@ -210,7 +210,7 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val endDate = startDate.plusHours(3)
     val intervals = EdmCoreUtils.intervals(startDate, endDate, 60)
 
-    val itemDwell1And2 = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(2460000L), 0,
+    val itemDwell1And2 = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(2460000L), 1,
       User("", "4200301", 0), 1)
 
     val dwell1 = Dwell(

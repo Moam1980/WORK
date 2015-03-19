@@ -76,9 +76,10 @@ class JourneyViaPointTest extends FlatSpec with ShouldMatchers with EdmCustomMat
       numEvents = 1)
   }
 
-  "JourneyViaPoint" should "" in new WithCellCatalogue with WithSpatioTemporalSlot with WithJourneyViaPoint {
-    JourneyViaPoint(viaPointSlot, 3) should be (journeyVp)
-  }
+  "JourneyViaPoint" should "build from via point slot" in
+    new WithCellCatalogue with WithSpatioTemporalSlot with WithJourneyViaPoint {
+      JourneyViaPoint(viaPointSlot, 3) should be (journeyVp)
+    }
 
   it should "build geometry from WKT" in new WithJourneyViaPoint {
     journeyVp.geom should

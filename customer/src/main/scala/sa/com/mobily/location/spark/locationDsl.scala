@@ -102,14 +102,13 @@ class LocationFunctions(self: RDD[Location]) {
       timeIntervals: List[Interval],
       minMinutesInDwell: Int): RDD[MobilityMatrixItem] = {
     val bcLocations = self.context.broadcast(self.collect.toList)
-    val numWeeks = EdmCoreUtils.floorNumWeeks(timeIntervals)
     userDwells.flatMap(dwells =>
       MobilityMatrixItem.perIntervalAndLocation(
         dwells = dwells._2,
         timeIntervals = timeIntervals,
         locations = bcLocations.value,
         minMinutesInDwell = minMinutesInDwell,
-        numWeeks = numWeeks))
+        numWeeks = EdmCoreUtils.numDifferentWeeksWithSundayFirstDay(timeIntervals)))
   }
 
   def toLocationPoiView(pois: RDD[Poi]): RDD[LocationPoiView] =

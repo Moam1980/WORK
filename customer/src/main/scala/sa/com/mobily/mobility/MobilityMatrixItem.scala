@@ -20,7 +20,7 @@ case class MobilityMatrixItem(
     startLocation: String,
     endLocation: String,
     journeyDuration: Duration,
-    numWeeks: Long,
+    numWeeks: Int,
     user: User,
     weight: Double) {
 
@@ -37,9 +37,6 @@ case class MobilityMatrixItem(
 }
 
 object MobilityMatrixItem {
-
-  val WeekDayDateFormatter = "E HH:mm:ss"
-  val WeekDayFmt = DateTimeFormat.forPattern(WeekDayDateFormatter)
 
   val Header =
     Array(
@@ -59,7 +56,7 @@ object MobilityMatrixItem {
       timeIntervals: List[Interval],
       locations: List[Location],
       minMinutesInDwell: Int,
-      numWeeks: Long,
+      numWeeks: Int,
       results: List[MobilityMatrixItem] = List()): List[MobilityMatrixItem] = dwells match {
     case Nil => results
     case singleElem :: Nil => results
