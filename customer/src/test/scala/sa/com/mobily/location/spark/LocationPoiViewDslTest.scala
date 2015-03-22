@@ -49,8 +49,8 @@ class LocationPoiViewDslTest extends FlatSpec with ShouldMatchers with LocalSpar
   it should "save view location pois in parquet" in new WithLocationPoiViewText {
     val path = File.makeTemp().name
     locationPoiViews.toLocationPoiView.saveAsParquetFile(path)
-    sqc.parquetFile(path).toLocationPoiView.collect should contain
-      theSameElementsAs(locationPoiViews.toLocationPoiView.collect)
+    sqc.parquetFile(path).toLocationPoiView.collect should contain theSameElementsAs(
+      locationPoiViews.toLocationPoiView.collect)
     File(path).deleteRecursively
   }
 

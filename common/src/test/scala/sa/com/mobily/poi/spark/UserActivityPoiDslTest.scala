@@ -137,11 +137,11 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val userActivityPoisList = pois.collect.toList
 
     userActivityPoisList.length should be(4)
-    userActivityPoisList should contain(
+    userActivityPoisList should contain (
       (User("", "", firstUserMsisdn), firstUserSiteId, firstUserRegionId.toString), Work)
-    userActivityPoisList should contain(
+    userActivityPoisList should contain (
       (User("", "", secondUserMsisdn), secondUserSiteId, secondUserRegionId.toString), Home)
-    userActivityPoisList should contain(
+    userActivityPoisList should contain (
       (User("", "", firstUserMsisdn), secondUserSiteId, secondUserRegionId.toString), Home)
   }
 
@@ -152,7 +152,7 @@ class UserActivityPoiDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     userPoisList should contain ((User("", "", firstUserMsisdn),
       List((Work, List((firstUserSiteId, firstUserRegionId.toString), (firstUserSiteId, firstUserRegionId.toString))),
         (Home, List((secondUserSiteId, secondUserRegionId.toString))))))
-    userPoisList should contain(
+    userPoisList should contain (
       User("", "", secondUserMsisdn),
       List((Home, List((secondUserSiteId, secondUserRegionId.toString)))))
   }

@@ -33,7 +33,7 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
       idType =  Visa,
       idNumber = Some(1016603803l),
       age = Some(39.75f),
-      gender = "M",
+      gender = Male,
       siteId = Some(5049),
       regionId = Some(3),
       nationalities = Nationalities("SAUDI ARABIA", "SAUDI ARABIA"),
@@ -51,10 +51,23 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
         m3 = 133.77f,
         m4 = 109.99f,
         m5 = 106.36f,
-        m6 = 125.23f)
-    )
+        m6 = 125.23f))
     val badNationality = "BGD"
     val goodNationality = "BANGLADESH"
+  }
+
+  trait withSubscribersLastActivity extends WithCustomerSubscriber {
+    val customerSubscriber2 =
+      customerSubscriber.copy(date = customerSubscriber.date.copy(lastActivity = Some(2367355600000l)))
+
+    val customerSubscriberNoLastActivity =
+      customerSubscriber.copy(date = customerSubscriber.date.copy(lastActivity = None))
+
+    val customerSubscriberNoLastActivity2 =
+      customerSubscriber.copy(date = customerSubscriber.date.copy(
+        activation = None,
+        lastActivity = None,
+        lastRecharge = None))
   }
 
   "CustomerSubscriber" should "be built from CSV" in new WithCustomerSubscriber {
@@ -131,6 +144,22 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
   it should "be built from CSV with Driver Licence Number identification type" in new WithCustomerSubscriber {
     fromCsv.fromFields(fields.updated(1, DriverLicenceNumber.id)) should
       be (customerSubscriber.copy(idType = DriverLicenceNumber))
+  }
+
+  it should "be built from CSV with Male gender" in new WithCustomerSubscriber {
+    fromCsv.fromFields(fields.updated(5, Male.id)).gender should be (Male)
+  }
+
+  it should "be built from CSV with Female gender" in new WithCustomerSubscriber {
+    fromCsv.fromFields(fields.updated(5, Female.id)).gender should be (Female)
+  }
+
+  it should "be built from CSV with Unkwown gender" in new WithCustomerSubscriber {
+    fromCsv.fromFields(fields.updated(5, UnknownGender.id)).gender should be (UnknownGender)
+  }
+
+  it should "be built from CSV with Unkwown gender other case" in new WithCustomerSubscriber {
+    fromCsv.fromFields(fields.updated(5, "OTHER")).gender should be (UnknownGender)
   }
 
   it should "be built from CSV with Post-Paid pay type" in new WithCustomerSubscriber {
@@ -218,5 +247,28 @@ class SubscriberTest extends FlatSpec with ShouldMatchers {
 
   it should "not normalize a good nationality when is built from CSV" in new WithCustomerSubscriber {
     fromCsv.fromFields(fields.updated(8, goodNationality)).nationalities.declared should be (goodNationality)
+  }
+
+  it should "return s1 when reduceByLastActivity and s2 has no last activity" in new withSubscribersLastActivity {
+    Subscriber.reduceByLastActivity(customerSubscriber, customerSubscriberNoLastActivity) should be (
+      customerSubscriber)
+  }
+
+  it should "return s2 when reduceByLastActivity and s1 has no last activity" in new withSubscribersLastActivity {
+    Subscriber.reduceByLastActivity(customerSubscriberNoLastActivity, customerSubscriber) should be (
+      customerSubscriber)
+  }
+
+  it should "return s2 when reduceByLastActivity and s2 last activity is greater" in new withSubscribersLastActivity {
+    Subscriber.reduceByLastActivity(customerSubscriber, customerSubscriber2) should be (customerSubscriber2)
+  }
+
+  it should "return s1 when reduceByLastActivity and s1 last activity is greater" in new withSubscribersLastActivity {
+    Subscriber.reduceByLastActivity(customerSubscriber2, customerSubscriber) should be (customerSubscriber2)
+  }
+
+  it should "return s1 when reduceByLastActivity and s1 and s2 has no last activity" in new withSubscribersLastActivity {
+    Subscriber.reduceByLastActivity(customerSubscriberNoLastActivity, customerSubscriberNoLastActivity2) should be (
+      customerSubscriberNoLastActivity)
   }
 }

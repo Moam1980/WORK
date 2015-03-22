@@ -32,41 +32,48 @@ object Iqama extends CustomerIdType(id = "IQAMA")
 object FamilyCard extends CustomerIdType(id = "Family Card")
 object Ms extends CustomerIdType(id = "MS")
 object DriverLicenceNumber extends CustomerIdType(id = "Driver's Licence Number")
-object UnknownIdType extends CustomerIdType (id = "Unknown")
+object UnknownIdType extends CustomerIdType (id = EdmCoreUtils.UnknownKeyword)
+
+/** Gender identifications*/
+sealed case class Gender(id: String)
+
+object Male extends Gender(id = "M")
+object Female extends Gender(id = "F")
+object UnknownGender extends Gender(id = EdmCoreUtils.UnknownKeyword)
 
 /** Types of customer payment*/
 sealed case class PayType(id: String)
 
 object PrePaid extends PayType(id = "Pre-Paid")
 object PostPaid extends PayType(id = "Post-Paid")
-object UnknownPayType extends PayType (id = "Unknown")
+object UnknownPayType extends PayType (id = EdmCoreUtils.UnknownKeyword)
 
 sealed case class DataPackage(id: String)
 
 object Data extends DataPackage(id = "Data")
 object Voice extends DataPackage(id = "Voice")
-object UnknownDataPackage extends DataPackage (id = "Unknown")
+object UnknownDataPackage extends DataPackage (id = EdmCoreUtils.UnknownKeyword)
 
 sealed case class CorpPackage(id: String)
 
 object Iuc extends CorpPackage(id = "IUC")
 object LargeCorporate extends CorpPackage(id = "Large Corporate")
 object RetailCustomer extends CorpPackage(id = "Retail Customer")
-object UnknownCorpPackage extends CorpPackage (id = "Unknown")
+object UnknownCorpPackage extends CorpPackage (id = EdmCoreUtils.UnknownKeyword)
 
 sealed case class ActiveStatus(id: String)
 
 object Ots extends ActiveStatus(id = "OTS")
 object Active extends ActiveStatus(id = "Active")
 object HotSIM extends ActiveStatus(id = "HotSIM")
-object UnknownActiveStatus extends ActiveStatus (id = "Unknown")
+object UnknownActiveStatus extends ActiveStatus (id = EdmCoreUtils.UnknownKeyword)
 
 sealed case class SourceActivation(id: String)
 
 object Mcr extends SourceActivation(id = "MCR")
 object Siebel extends SourceActivation(id = "Siebel")
 object Mdm extends SourceActivation(id = "MDM")
-object UnknownSourceActivation extends SourceActivation (id = "Unknown")
+object UnknownSourceActivation extends SourceActivation (id = EdmCoreUtils.UnknownKeyword)
 
 sealed case class CalculatedSegment(id: String)
 
@@ -76,7 +83,7 @@ object S40 extends CalculatedSegment(id = "S40")
 object S60 extends CalculatedSegment(id = "S60")
 object S80 extends CalculatedSegment(id = "S80")
 object S90 extends CalculatedSegment(id = "S90")
-object UnknownSourceCalculatedSegment extends CalculatedSegment (id = "Unknown")
+object UnknownSourceCalculatedSegment extends CalculatedSegment (id = EdmCoreUtils.UnknownKeyword)
 
 case class Revenues (
     m1: Float,
@@ -109,7 +116,7 @@ case class Subscriber(
     idType: CustomerIdType,
     idNumber: Option[Long],
     age: Option[Float],
-    gender: String,
+    gender: Gender,
     siteId: Option[Int],
     regionId: Option[Short],
     nationalities: Nationalities,
@@ -163,7 +170,7 @@ object Subscriber {
         idType = parseCustomerIdType(idTypeText),
         idNumber = EdmCoreUtils.parseLong(idNumberText),
         age = EdmCoreUtils.parseFloat(ageText),
-        gender = genderText,
+        gender = parseGender(genderText),
         siteId = EdmCoreUtils.parseInt(siteIdText),
         regionId = EdmCoreUtils.parseShort(regionIdText),
         nationalities = Nationalities(
@@ -193,12 +200,12 @@ object Subscriber {
   implicit val fromRow = new RowParser[Subscriber] {
 
     override def fromRow(row: Row): Subscriber = {// scalastyle:ignore method.length
-      val Seq(
+      val Row(
         userRow,
         idTypeRow,
         idNumber,
         age,
-        gender,
+        idGenderRow,
         siteId,
         regionId,
         nationalitiesRow,
@@ -210,25 +217,26 @@ object Subscriber {
         roamingStatus,
         currentBalance,
         calculatedSegmentRow,
-        revenuesRow) = row.toSeq
+        revenuesRow) = row
       val user =  User.fromRow.fromRow(userRow.asInstanceOf[Row])
-      val Seq(customerIdType) = idTypeRow.asInstanceOf[Row].toSeq
-      val Seq(declared, inferred) = nationalitiesRow.asInstanceOf[Row].toSeq
-      val Seq(payRow, handset) = typesRow.asInstanceOf[Row].toSeq
-      val Seq(pay) = payRow.asInstanceOf[Row].toSeq
-      val Seq(Seq(data), Seq(corp)) = packagesRow.asInstanceOf[Row].toSeq
-      val Seq(activation, lastActivity, lastRecharge) = dateRow.asInstanceOf[Row].toSeq
-      val Seq(activeStatus) = activeStatusRow.asInstanceOf[Row].toSeq
-      val Seq(sourceActivation) = sourceActivationRow.asInstanceOf[Row].toSeq
-      val Seq(calculatedSegment) = calculatedSegmentRow.asInstanceOf[Row].toSeq
-      val Seq(m1, m2, m3 , m4, m5, m6) = revenuesRow.asInstanceOf[Row].toSeq
+      val Row(customerIdType) = idTypeRow.asInstanceOf[Row]
+      val Row(gender) = idGenderRow.asInstanceOf[Row]
+      val Row(declared, inferred) = nationalitiesRow.asInstanceOf[Row]
+      val Row(payRow, handset) = typesRow.asInstanceOf[Row]
+      val Row(pay) = payRow.asInstanceOf[Row]
+      val Row(Row(data), Row(corp)) = packagesRow.asInstanceOf[Row]
+      val Row(activation, lastActivity, lastRecharge) = dateRow.asInstanceOf[Row]
+      val Row(activeStatus) = activeStatusRow.asInstanceOf[Row]
+      val Row(sourceActivation) = sourceActivationRow.asInstanceOf[Row]
+      val Row(calculatedSegment) = calculatedSegmentRow.asInstanceOf[Row]
+      val Row(m1, m2, m3 , m4, m5, m6) = revenuesRow.asInstanceOf[Row]
 
       Subscriber(
         user = user,
         idType = CustomerIdType(customerIdType.asInstanceOf[String]),
         idNumber = EdmCoreUtils.longOption(idNumber),
         age = EdmCoreUtils.floatOption(age),
-        gender = gender.asInstanceOf[String],
+        gender = Gender(gender.asInstanceOf[String]),
         siteId = EdmCoreUtils.intOption(siteId),
         regionId = EdmCoreUtils.shortOption(regionId),
         nationalities = Nationalities(declared.asInstanceOf[String], inferred.asInstanceOf[String]),
@@ -272,6 +280,12 @@ object Subscriber {
       case DriverLicenceNumber.id => DriverLicenceNumber
       case _ =>  UnknownIdType
     }
+  }
+
+  def parseGender (gender: String): Gender = gender match {
+    case Male.id => Male
+    case Female.id => Female
+    case _ => UnknownGender
   }
 
   def parsePayType (payType: String): PayType = payType match {
@@ -318,5 +332,13 @@ object Subscriber {
   }
 
   def parseDate(s: String): Option[Long] = Try { fmt.parseDateTime(s).getMillis }.toOption
+
+  def reduceByLastActivity(s1: Subscriber, s2: Subscriber): Subscriber =
+    (s1.date.lastActivity, s2.date.lastActivity) match {
+      case (None, None) => s1
+      case (Some(_), None) => s1
+      case (None, Some(_)) => s2
+      case (Some(lastActivity1), Some(lastActivity2)) => if (lastActivity1 >= lastActivity2) s1 else s2
+    }
 }
 // scalastyle:ignore number.of.types

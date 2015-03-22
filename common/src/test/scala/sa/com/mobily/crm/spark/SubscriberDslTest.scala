@@ -10,6 +10,7 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.crm._
 import sa.com.mobily.utils.LocalSparkSqlContext
+import sa.com.mobily.user.User
 
 class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
@@ -57,6 +58,204 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
     val customerSubscriber1DifferentMsisdnAndStatus = s"$duplicateSubscriberMsisdn|Saudi National ID|1016603803" +
       s"|$subscriber1Imei|$subscriber1Imsi|M|5049|3|Saudi Arabia|KSA|Pre-Paid|Voice|39.75|Retail Customer|A" +
       s"|$duplicateSubscriberStatus|Siebel|Saudi Arabia|SamsungI930000|100.050000|A|A|S50|99.04|68.57|133.77|109.99|106.36|125.23"
+  }
+
+  trait WithSubscriberProfilingView {
+
+    val user1 = User(
+      imei = "3581870526733101",
+      imsi = "420030100040377",
+      msisdn = 966544312356L)
+    val subscriber1 = Subscriber(
+      user = user1,
+      idType =  Visa,
+      idNumber = Some(1016603803l),
+      age = Some(39.75f),
+      gender = Male,
+      siteId = Some(5049),
+      regionId = Some(3),
+      nationalities = Nationalities("SAUDI ARABIA", "SAUDI ARABIA"),
+      types = SubscriberTypes(PrePaid, "SamsungI930000"),
+      packages = SubscriberPackages(Voice, RetailCustomer),
+      date = SubscriberDates(Some(1367355600000l), Some(1406840400000l), Some(1406840400000l)),
+      activeStatus  = Active,
+      sourceActivation = Siebel,
+      roamingStatus = "Saudi Arabia",
+      currentBalance = Some(100.050000f),
+      calculatedSegment = S50,
+      revenues = Revenues(
+        m1 = 99.04f,
+        m2 = 68.57f,
+        m3 = 133.77f,
+        m4 = 109.99f,
+        m5 = 106.36f,
+        m6 = 125.23f))
+
+    val user2 = User(
+      imei = "",
+      imsi = "420030000000002",
+      msisdn = 0L)
+    val subscriber2 = Subscriber(
+      user = user2,
+      idType =  Visa,
+      idNumber = Some(1016603803l),
+      age = Some(20.75f),
+      gender = Female,
+      siteId = Some(5049),
+      regionId = Some(3),
+      nationalities = Nationalities("Other", "Other"),
+      types = SubscriberTypes(PostPaid, "SamsungI930000"),
+      packages = SubscriberPackages(Voice, RetailCustomer),
+      date = SubscriberDates(Some(1367355600000l), Some(1406840400000l), Some(1406840400000l)),
+      activeStatus  = Active,
+      sourceActivation = Siebel,
+      roamingStatus = "Saudi Arabia",
+      currentBalance = Some(100.050000f),
+      calculatedSegment = S50,
+      revenues = Revenues(
+        m1 = 0f,
+        m2 = 0f,
+        m3 = 0f,
+        m4 = 0f,
+        m5 = 0f,
+        m6 = 0f))
+    val user3 = user2.copy(imsi = "420030000000003")
+    val subscriber3 =
+      subscriber2.copy(
+        user = user3,
+        age = Some(63f),
+        types = subscriber2.types.copy(pay = PrePaid),
+        packages = subscriber2.packages.copy(corp = LargeCorporate))
+    val user4 = user2.copy(imsi = "420030000000004")
+    val subscriber4 =
+      subscriber2.copy(
+        user = user4,
+        types = subscriber2.types.copy(pay = PrePaid),
+        packages = subscriber2.packages.copy(corp = RetailCustomer),
+        revenues = Revenues(
+          m1 = 40.04f,
+          m2 = 40.57f,
+          m3 = 40.77f,
+          m4 = 40.99f,
+          m5 = 40.36f,
+          m6 = 40.23f))
+    val user5 = user2.copy(imsi = "420030000000005")
+    val subscriber5 =
+      subscriber4.copy(
+        user = user5,
+        revenues = Revenues(
+          m1 = 50.04f,
+          m2 = 50.57f,
+          m3 = 50.77f,
+          m4 = 50.99f,
+          m5 = 50.36f,
+          m6 = 50.23f))
+    val user6 = user2.copy(imsi = "420030000000006")
+    val subscriber6 =
+      subscriber4.copy(
+        user = user6,
+        revenues = Revenues(
+          m1 = 60.04f,
+          m2 = 60.57f,
+          m3 = 60.77f,
+          m4 = 60.99f,
+          m5 = 60.36f,
+          m6 = 60.23f))
+    val user7 = user2.copy(imsi = "420030000000007")
+    val subscriber7 =
+      subscriber4.copy(
+        user = user7,
+        revenues = Revenues(
+          m1 = 70.04f,
+          m2 = 70.57f,
+          m3 = 70.77f,
+          m4 = 70.99f,
+          m5 = 70.36f,
+          m6 = 70.23f))
+    val user8 = user2.copy(imsi = "420030000000008")
+    val subscriber8 =
+      subscriber4.copy(
+        user = user8,
+        revenues = Revenues(
+          m1 = 80.04f,
+          m2 = 80.57f,
+          m3 = 80.77f,
+          m4 = 80.99f,
+          m5 = 80.36f,
+          m6 = 80.23f))
+    val user9 = user2.copy(imsi = "420030000000009")
+    val subscriber9 =
+      subscriber4.copy(
+        user = user9,
+        revenues = Revenues(
+          m1 = 90.04f,
+          m2 = 90.57f,
+          m3 = 90.77f,
+          m4 = 90.99f,
+          m5 = 90.36f,
+          m6 = 90.23f))
+    val user10 = user2.copy(imsi = "420030000000010")
+    val subscriber10 =
+      subscriber4.copy(
+        user = user10,
+        revenues = Revenues(
+          m1 = 100.04f,
+          m2 = 100.57f,
+          m3 = 100.77f,
+          m4 = 100.99f,
+          m5 = 100.36f,
+          m6 = 100.23f))
+
+    val userOther = user1.copy(imsi = "Other")
+
+    val subscriberNone = subscriber1.copy(user = subscriber1.user.copy(imsi = "Not Found"))
+
+    val subscriberProfilingView1 =
+      SubscriberProfilingView(
+        imsi = "420030100040377",
+        ageGroup = "26-60",
+        genderGroup = "M",
+        nationalityGroup = "Saudi Arabia",
+        affluenceGroup = "Middle 30%")
+
+    val subscriberProfilingView2 =
+      SubscriberProfilingView(
+        imsi = "420030000000002",
+        ageGroup = "16-25",
+        genderGroup = "F",
+        nationalityGroup = "Non-Saudi",
+        affluenceGroup = "Top 20%")
+    val subscriberProfilingView3 =
+      SubscriberProfilingView(
+        imsi = "420030000000003",
+        ageGroup = "61-",
+        genderGroup = "F",
+        nationalityGroup = "Non-Saudi",
+        affluenceGroup = "Top 20%")
+    val subscriberProfilingView4 =
+      subscriberProfilingView2.copy(imsi = "420030000000004", affluenceGroup = "Bottom 50%")
+    val subscriberProfilingView5 =
+      subscriberProfilingView2.copy(imsi = "420030000000005", affluenceGroup = "Bottom 50%")
+    val subscriberProfilingView6 =
+      subscriberProfilingView2.copy(imsi = "420030000000006", affluenceGroup = "Bottom 50%")
+    val subscriberProfilingView7 =
+      subscriberProfilingView2.copy(imsi = "420030000000007", affluenceGroup = "Bottom 50%")
+    val subscriberProfilingView8 =
+      subscriberProfilingView2.copy(imsi = "420030000000008", affluenceGroup = "Bottom 50%")
+    val subscriberProfilingView9 =
+      subscriberProfilingView2.copy(imsi = "420030000000009", affluenceGroup = "Middle 30%")
+    val subscriberProfilingView10 =
+      subscriberProfilingView2.copy(imsi = "420030000000010", affluenceGroup = "Middle 30%")
+
+    val users = sc.parallelize(List(user1, user2, user3, user4, user5, user6, user7, user8, user9, user10))
+    val usersOther = sc.parallelize(List(userOther))
+    val subscribers =
+      sc.parallelize(List(subscriber1, subscriber2, subscriber3, subscriber4, subscriber5, subscriber6, subscriber7,
+        subscriber8, subscriber9, subscriber10, subscriberNone))
+    val subscribersProfilingView =
+      sc.parallelize(List(subscriberProfilingView1, subscriberProfilingView2, subscriberProfilingView3,
+        subscriberProfilingView4, subscriberProfilingView5, subscriberProfilingView6, subscriberProfilingView7,
+        subscriberProfilingView8, subscriberProfilingView9, subscriberProfilingView10))
   }
 
   "SubscriberDsl" should "get correctly parsed data" in new WithSubscriberText {
@@ -187,5 +386,24 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
 
   it should "parse to SubscriberView" in new WithSubscriberText {
     subscriber.toSubscriber.toSubscriberView.count should be (3)
+  }
+
+  it should "return correct subscribers profiling view when filtering" in new WithSubscriberProfilingView {
+    val subscribersProfilingViewFiltered = subscribers.toFilteredSubscriberProfilingView(users).collect
+
+    subscribersProfilingViewFiltered.size should be (subscribersProfilingView.count)
+    subscribersProfilingViewFiltered should contain theSameElementsAs(subscribersProfilingView.collect)
+  }
+
+  it should "return correct subscriber profiling view when filtering" in new WithSubscriberProfilingView {
+    val subscribersProfilingViewFiltered =
+      subscribers.toFilteredSubscriberProfilingView(sc.parallelize(List(user1))).collect
+
+    subscribersProfilingViewFiltered.size should be (1)
+    subscribersProfilingViewFiltered(0) should be (subscriberProfilingView1.copy(affluenceGroup = "Top 20%"))
+  }
+
+  it should "return no subscriber profiling view when no subscriber for users" in new WithSubscriberProfilingView {
+    subscribers.toFilteredSubscriberProfilingView(usersOther).count should be (0)
   }
 }

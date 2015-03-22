@@ -31,6 +31,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   val SecondsInHour = 3600
   val Separator = "|"
   val IntraSequenceSeparator = ";"
+  val UnknownKeyword = "Unknown"
   private val FirstDayOfWeekIndex = 1
   private val LastDayOfWeekIndex = 7
   private val NumDaysPerWeek = 7

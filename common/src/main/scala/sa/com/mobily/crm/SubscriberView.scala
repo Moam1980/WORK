@@ -54,7 +54,7 @@ object SubscriberView {
     SubscriberView(
       subscriber.user.imsi,
       subscriber.age,
-      subscriber.gender,
+      subscriber.gender.id,
       subscriber.nationalities,
       subscriber.types,
       subscriber.packages,

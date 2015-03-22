@@ -188,4 +188,8 @@ class EventTest extends FlatSpec with ShouldMatchers with LocalSparkContext with
   it should "be built from Row with a PsUfdrSource" in new WithEventsDifferentSources {
     fromRow.fromRow(rowPsUfdrSource) should be (eventPsUfdrSource)
   }
+
+  it should "return correct id" in new WithEvents {
+    event.id should be (560917079L)
+  }
 }

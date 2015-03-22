@@ -9,6 +9,7 @@ import org.apache.spark.sql._
 import sa.com.mobily.metrics.MeasurableById
 import sa.com.mobily.parsing.RowParser
 import sa.com.mobily.roaming.CountryCode
+import sa.com.mobily.utils.EdmCoreUtils
 
 case class User(
     imei: String,
@@ -17,11 +18,8 @@ case class User(
 
   require(!imei.isEmpty || !imsi.isEmpty || msisdn != 0)
 
-  def mcc: String = if (imsi.isEmpty) User.UnknownMcc else imsi.substring(User.MccStartIndex, User.MncStartIndex)
-  def mnc: String = {
-    val mncs = CountryCode.MccCountryOperatorsLookup.get(mcc).map(operators => operators.map(_.mnc)).getOrElse(List())
-    mncs.find(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).getOrElse(User.UnknownMnc)
-  }
+  def mcc: String = User.mcc(imsi)
+  def mnc: String = User.mnc(imsi)
 
   def fields: Array[String] = Array(imei, imsi, msisdn.toString)
 
@@ -50,10 +48,19 @@ object User {
 
   val MccStartIndex = 0
   val MncStartIndex = 3
-  val UnknownMcc = "Unknown"
-  val UnknownMnc = "Unknown"
+  val UnknownMcc = EdmCoreUtils.UnknownKeyword
+  val UnknownMnc = EdmCoreUtils.UnknownKeyword
 
   val Header: Array[String] = Array("imei", "imsi", "msisdn")
+
+  def mcc(imsi: String): String =
+    if (imsi.isEmpty) User.UnknownMcc else imsi.substring(User.MccStartIndex, User.MncStartIndex)
+
+  def mnc(imsi: String): String = {
+    val mncs =
+      CountryCode.MccCountryOperatorsLookup.get(mcc(imsi)).map(operators => operators.map(_.mnc)).getOrElse(List())
+    mncs.find(mnc => imsi.substring(User.MncStartIndex).startsWith(mnc)).getOrElse(User.UnknownMnc)
+  }
 
   implicit val fromRow = new RowParser[User] {
 
