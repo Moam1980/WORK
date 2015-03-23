@@ -59,6 +59,65 @@ class PoiDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext 
     val rows = sc.parallelize(List(row))
   }
 
+  trait WithPoisAndUsers {
+
+    val isoCode = "es"
+    val user1 = User(
+      imei = "3581870526733101",
+      imsi = "420030100040377",
+      msisdn = 966544312356L)
+    val poiHomeUser1 =
+      Poi(user = user1,
+        poiType = Home,
+        geomWkt = "POLYGON (( 0 0, 1 0, 1 1, 0 1, 0 0 ))",
+        countryIsoCode = isoCode)
+    val poiWorkUser1 =
+      Poi(user = user1,
+        poiType = Work,
+        geomWkt = "POLYGON (( 100 100, 110 100, 110 110, 100 110, 100 100 ))",
+        countryIsoCode = isoCode)
+
+    val user2 = User(
+      imei = "",
+      imsi = "420030000000002",
+      msisdn = 0L)
+    val poiHomeUser2 =
+      Poi(user = user2,
+        poiType = Home,
+        geomWkt = "POLYGON (( 5 5, 6 5, 6 6, 5 6, 5 5 ))",
+        countryIsoCode = isoCode)
+    val user3 = User(
+      imei = "",
+      imsi = "420030000000003",
+      msisdn = 0L)
+    val poiHomeUser3 =
+      Poi(user = user3,
+        poiType = Home,
+        geomWkt = "POLYGON (( 20 21, 23 21, 23 23, 20 21 ))",
+        countryIsoCode = isoCode)
+    val poiWorkUser3 =
+      Poi(user = user3,
+        poiType = Work,
+        geomWkt = "POLYGON (( 120 100, 130 100, 130 140, 120 100 ))",
+        countryIsoCode = isoCode)
+    val user4 = User(
+      imei = "",
+      imsi = "420030000000004",
+      msisdn = 0L)
+    val poiHomeUser4 =
+      Poi(user = user4,
+        poiType = Home,
+        geomWkt = "POLYGON (( 50 50, 60 50, 60 60, 50 60, 50 50 ))",
+        countryIsoCode = isoCode)
+    val user5 = User(
+      imei = "",
+      imsi = "420030000000005",
+      msisdn = 0L)
+
+    val users = sc.parallelize(List(user1, user2, user3, user4, user5))
+    val pois = sc.parallelize(List(poiHomeUser1, poiWorkUser1, poiHomeUser2, poiHomeUser3, poiWorkUser3, poiHomeUser4))
+  }
+
   "EventDsl" should "get correctly parsed rows" in new WithPoisRows {
     rows.toPoi.count should be (1)
   }
@@ -80,5 +139,32 @@ class PoiDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext 
       2,
       3,
       Map(List(Home, Work) -> 1, List(Work) -> 1)))
+  }
+
+  it should "filter by users" in new WithPoisAndUsers {
+    pois.filterByUsers(users).collect should contain theSameElementsAs(pois.collect)
+  }
+
+  it should "filter by user 1" in new WithPoisAndUsers {
+    val users1 = sc.parallelize(List(user1))
+    pois.filterByUsers(users1).collect should contain theSameElementsAs(Array(poiHomeUser1, poiWorkUser1))
+  }
+
+  it should "filter by users 1 and 2" in new WithPoisAndUsers {
+    val users1And2 = sc.parallelize(List(user1, user2))
+    val poisFiltered = Array(poiHomeUser1, poiWorkUser1, poiHomeUser2)
+    pois.filterByUsers(users1And2).collect should contain theSameElementsAs(poisFiltered)
+  }
+
+  it should "filter by users 1 and 5" in new WithPoisAndUsers {
+    val users1And2 = sc.parallelize(List(user1, user5))
+    val poisFiltered = Array(poiHomeUser1, poiWorkUser1)
+    pois.filterByUsers(users1And2).collect should contain theSameElementsAs(poisFiltered)
+  }
+
+  it should "filter by user 4" in new WithPoisAndUsers {
+    val users1And2 = sc.parallelize(List(user4))
+    val poisFiltered = Array(poiHomeUser4)
+    pois.filterByUsers(users1And2).collect should contain theSameElementsAs(poisFiltered)
   }
 }

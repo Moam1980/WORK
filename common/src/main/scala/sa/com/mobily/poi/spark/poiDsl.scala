@@ -13,7 +13,8 @@ import org.apache.spark.sql._
 
 import sa.com.mobily.geometry.GeomUtils
 import sa.com.mobily.parsing.spark.{SparkParser, SparkWriter}
-import sa.com.mobily.poi.{LocationPoiMetrics, PoiType, Poi}
+import sa.com.mobily.poi.{LocationPoiMetrics, Poi, PoiType}
+import sa.com.mobily.user.User
 
 class PoiRowReader(self: RDD[Row]) {
 
@@ -32,7 +33,7 @@ class PoiFunctions(self: RDD[Poi]) {
     userPoiTypes.map(userPoiTypes => (userPoiTypes._2.toSeq.sortBy(_.toString), userPoiTypes._1)).countByKey.toMap
   }
 
-  def locationPoiMetrics(locationGeom: Geometry) : LocationPoiMetrics  = {
+  def locationPoiMetrics(locationGeom: Geometry): LocationPoiMetrics  = {
     val total = self.count
     val usersCounter = self.map(_.user).distinct.count
     val poisType = perTypeCombination
@@ -43,6 +44,10 @@ class PoiFunctions(self: RDD[Poi]) {
     val max = intersectionRatio.max
     intersectionRatio.unpersist(false)
     LocationPoiMetrics(mean, stDev, max, min, usersCounter, total, poisType)
+  }
+
+  def filterByUsers(users: RDD[User]): RDD[Poi] = {
+    users.keyBy(u => u.imsi).join(self.keyBy(p => p.user.imsi)).map(userPoi => userPoi._2._2)
   }
 }
 

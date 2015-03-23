@@ -18,20 +18,21 @@ class LocationPoiViewTest extends FlatSpec with ShouldMatchers {
 
   trait WithLocationPoiView {
 
-    val line = "420030100040377|420|locationTest|Home"
-    val row1 = Row("420030100040377", "420", "locationTest", Row("Home"))
+    val line = "420030100040377|420|locationTest|Home|1"
+    val row1 = Row("420030100040377", "420", "locationTest", Row("Home"), 1D)
     val wrongRow = Row("420030100040377", "420", "locationTest", "Home")
-    val fields: Array[String] = Array(
-      "420030100040377",
-      "420",
-      "locationTest",
-      "Home")
+    val fields: Array[String] = Array("420030100040377", "420", "locationTest", "Home", "1.0")
 
-    val header: Array[String] = Array("imsi", "mcc", "name", "poi-type")
+    val header: Array[String] = Array("imsi", "mcc", "name", "poi-type", "weight")
     val polygonWkt = "POLYGON (( 0 0, 1 0, 1 1, 0 1, 0 0 ))"
     val user = User(imei = "866173010386736", imsi = "420030100040377", msisdn = 560917079L)
 
-    val locationPoiView = LocationPoiView(imsi = "420030100040377", mcc = "420", name = "locationTest", poiType = Home)
+    val locationPoiView = LocationPoiView(
+      imsi = "420030100040377",
+      mcc = "420",
+      name = "locationTest",
+      poiType = Home,
+      weight = 1)
     val location = Location(
       name = "locationTest",
       client = "clientTest",

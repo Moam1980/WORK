@@ -18,7 +18,7 @@ import sa.com.mobily.location._
 import sa.com.mobily.mobility.MobilityMatrixItem
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
-import sa.com.mobily.poi.{Poi, LocationPoiMetrics}
+import sa.com.mobily.poi.{LocationPoiMetrics, Poi}
 import sa.com.mobily.poi.spark.PoiDsl
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
@@ -86,9 +86,9 @@ class LocationFunctions(self: RDD[Location]) {
   }
 
   def poiMetrics(
-    pois: RDD[Poi],
-    isMatch: (Geometry, Location) => Boolean = Location.isMatch,
-    bestMatch: (Geometry, Seq[Location]) => Location = Location.bestMatch): Map[Location, LocationPoiMetrics] = {
+      pois: RDD[Poi],
+      isMatch: (Geometry, Location) => Boolean = Location.isMatch,
+      bestMatch: (Geometry, Seq[Location]) => Location = Location.bestMatch): Map[Location, LocationPoiMetrics] = {
     val matchedPoisLocations = matchPoi(pois, isMatch, bestMatch)
     val locations = self.collect.toList
     locations.map(location => {
@@ -113,6 +113,18 @@ class LocationFunctions(self: RDD[Location]) {
 
   def toLocationPoiView(pois: RDD[Poi]): RDD[LocationPoiView] =
     matchPoi(pois).map(locationPoi => LocationPoiView(locationPoi._1, locationPoi._2))
+
+  def toWeightedLocationPoiView(pois: RDD[Poi]): RDD[LocationPoiView] = {
+    val bcLocations = self.context.broadcast(self.collect.toList)
+    pois.flatMap(p => {
+      val areaGeom = p.geometry.getArea
+      bcLocations.value.filter(l => GeomUtils.safeIntersects(l.geom, p.geometry)).flatMap(l => {
+        val areaIntersection = GeomUtils.safeIntersection(l.geom, p.geometry).getArea
+        if (areaIntersection > 0D) Some(LocationPoiView(location = l, poi = p, weight = areaIntersection / areaGeom))
+        else None
+      })
+    })
+  }
 }
 
 class LocationTimeDwellFunctions(self: RDD[((Location, Interval), Dwell)]) {

@@ -9,7 +9,7 @@ import org.scalatest._
 
 import sa.com.mobily.cell.{Cell, FourGFdd, Micro}
 import sa.com.mobily.geometry.{Coordinates, GeomUtils, UtmCoordinates}
-import sa.com.mobily.location.{Footfall, Location}
+import sa.com.mobily.location.{Footfall, Location, LocationPoiView}
 import sa.com.mobily.mobility.MobilityMatrixItem
 import sa.com.mobily.poi._
 import sa.com.mobily.roaming.CountryCode
@@ -204,6 +204,24 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val location2Analysis = (location2, poiByLocation2)
   }
 
+  trait WithLocationPoiViews extends WithPoisForMatching {
+
+    val locationPoiView1 = LocationPoiView(location = location1, poi = poi1User1, weight = 1D)
+    val locationPoiView2 = LocationPoiView(location = location1, poi = poi2User1, weight = 0.140625D)
+    val locationPoiView3 = LocationPoiView(location = location1, poi = poi1User2, weight = 1D)
+    val locationPoiView4 = LocationPoiView(location = location1, poi = poi2User2, weight = 0.5625D)
+
+    val locationPoiViewsLocation1 =
+      Array(locationPoiView1, locationPoiView2, locationPoiView3, locationPoiView4)
+
+    val locationPoiView5 = LocationPoiView(location = location2, poi = poi2User1, weight = 0.390625D)
+    val locationPoiView6 = LocationPoiView(location = location2, poi = poi2User2, weight = 0.0625D)
+    val locationPoiView7 = LocationPoiView(location = location2, poi = poi1User3, weight = 1D)
+
+    val locationPoiViewsLocation2 =
+      Array(locationPoiView5, locationPoiView6, locationPoiView7)
+  }
+
   trait WithItemsForMobilityMatrix {
 
     val startDate = EdmCoreUtils.Fmt.parseDateTime("2014/11/02 00:00:00")
@@ -300,5 +318,20 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
 
   it should "parse to LocationPoiView" in new WithPoisForMatching {
     locations.toLocationPoiView(pois).count should be (5)
+  }
+
+  it should "parse to LocationPoiView including weight for location 1" in new WithLocationPoiViews {
+    sc.parallelize(Array(location1)).toWeightedLocationPoiView(pois).collect should contain theSameElementsAs (
+      locationPoiViewsLocation1)
+  }
+
+  it should "parse to LocationPoiView including weight for location 2" in new WithLocationPoiViews {
+    sc.parallelize(Array(location2)).toWeightedLocationPoiView(pois).collect should contain theSameElementsAs (
+        locationPoiViewsLocation2)
+  }
+
+  it should "parse to LocationPoiView including weight for locations" in new WithLocationPoiViews {
+    locations.toWeightedLocationPoiView(pois).collect should contain theSameElementsAs (
+      locationPoiViewsLocation1 ++ locationPoiViewsLocation2)
   }
 }
