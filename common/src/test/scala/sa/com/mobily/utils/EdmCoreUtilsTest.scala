@@ -80,7 +80,22 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
       extendedInterval31, extendedInterval32, extendedInterval33)
 
     val intervalsWholeDay = intervals :+ new Interval(10800000, 86400000)
-    val intervalsTwoWeeks = EdmCoreUtils.extendIntervals(intervalsWholeDay, 14)
+    val intervals14DaysThreeWeeks = EdmCoreUtils.extendIntervals(intervalsWholeDay, 14)
+
+    val startDate = EdmCoreUtils.Fmt.parseDateTime("2014/11/02 00:00:00")
+    val splitInFreq1 = startDate.plusHours(6)
+    val splitInFreq2 = splitInFreq1.plusHours(4)
+    val splitInFreq3 = splitInFreq2.plusHours(6)
+    val splitInFreq4 = splitInFreq3.plusHours(3)
+    val splitInFreq5 = splitInFreq4.plusHours(5)
+    val splitIntervals1 = EdmCoreUtils.intervals(startDate, splitInFreq1, 60)
+    val splitIntervals2 = EdmCoreUtils.intervals(splitInFreq1, splitInFreq2, 15)
+    val splitIntervals3 = EdmCoreUtils.intervals(splitInFreq2, splitInFreq3, 60)
+    val splitIntervals4 = EdmCoreUtils.intervals(splitInFreq3, splitInFreq4, 15)
+    val splitIntervals5 = EdmCoreUtils.intervals(splitInFreq4, splitInFreq5, 60)
+    val firstDayIntervals = splitIntervals1 ++ splitIntervals2 ++ splitIntervals3 ++ splitIntervals4 ++ splitIntervals5
+
+    val adaIntervals = EdmCoreUtils.extendIntervals(firstDayIntervals, 28)
   }
 
   "EdmCoreUtils" should "round numbers down with one decimal" in new WithManyDecimalNumbers {
@@ -475,11 +490,15 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "compute the floor number of weeks for several intervals within the same week" in new WithIntervals {
-    EdmCoreUtils.floorNumWeeks(intervals) should be (0)
+    EdmCoreUtils.numDifferentWeeksWithSundayFirstDay(intervals) should be (1)
   }
 
   it should "compute the floor number of weeks for intervals within several weeks" in new WithIntervals {
-    EdmCoreUtils.floorNumWeeks(intervalsTwoWeeks) should be (2)
+    EdmCoreUtils.numDifferentWeeksWithSundayFirstDay(intervals14DaysThreeWeeks) should be (3)
+  }
+
+  it should "compute the floor number of weeks for practical use cases (full weeks)" in new WithIntervals {
+    EdmCoreUtils.numDifferentWeeksWithSundayFirstDay(adaIntervals) should be (4)
   }
 
   it should "convert dates from string to DateTime" in new WithDates {

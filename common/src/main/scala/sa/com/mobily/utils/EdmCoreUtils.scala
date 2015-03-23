@@ -29,12 +29,13 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   val BaseForHexadecimal: Int = 16
   val MillisInSecond = 1000
   val SecondsInHour = 3600
+  val SecondsInMinute = 60
+  val DaysInWeek = 7
   val Separator = "|"
   val IntraSequenceSeparator = ";"
   val UnknownKeyword = "Unknown"
   private val FirstDayOfWeekIndex = 1
   private val LastDayOfWeekIndex = 7
-  private val NumDaysPerWeek = 7
 
   def roundAt(p: Int)(n: Double): Double = {
     // scalastyle:off magic.number
@@ -206,9 +207,12 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
     }
   }
 
-  def floorNumWeeks(intervals: List[Interval]): Long = {
-    val startTime = intervals.map(_.start).min
-    val endTime = intervals.map(_.end).max
-    new Duration(startTime, endTime).getStandardDays / NumDaysPerWeek
-  }
+  def numDifferentWeeksWithSundayFirstDay(intervals: List[Interval]): Int =
+    intervals.map(i =>
+      if (i.start.getDayOfWeek != LastDayOfWeekIndex) (i.start.getYear, i.start.getWeekOfWeekyear)
+      else {
+        val correctedDate = i.start.plusWeeks(1)
+        (correctedDate.getYear, correctedDate.getWeekOfWeekyear)
+      }
+    ).distinct.size
 }
