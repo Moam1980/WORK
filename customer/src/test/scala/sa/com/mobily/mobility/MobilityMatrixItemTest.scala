@@ -25,18 +25,18 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
   trait WithMobilityMatrixItems extends WithIntervals {
 
     val item = MobilityMatrixItem(intervals(0), intervals(1), "loc1", "loc2", new Duration(1800000L), 4,
-      User("", "4200301", 0), 0.5)
+      User("", "4200301", 0), 0.4, 0.6)
 
-    val itemDwell1And2 =
-      MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(2460000L), 0, User("", "4200301", 0), 1)
+    val itemDwell1And2 = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(2460000L), 0,
+      User("", "4200301", 0), 1, 1)
     val item1Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l3", "l5", new Duration(2460000L), 0,
-      User("", "4200301", 0), 0.20869565217391306)
+      User("", "4200301", 0), 0.2, 0.2173913043478261)
     val item2Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l3", "l6", new Duration(2460000L), 0,
-      User("", "4200301", 0), 0.1326086956521739)
+      User("", "4200301", 0), 0.2, 0.0652173913043478)
     val item3Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l4", "l5", new Duration(2460000L), 0,
-      User("", "4200301", 0), 0.15869565217391307)
+      User("", "4200301", 0), 0.1, 0.2173913043478261)
     val item4Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l4", "l6", new Duration(2460000L), 0,
-      User("", "4200301", 0), 0.08260869565217391)
+      User("", "4200301", 0), 0.1, 0.0652173913043478)
   }
 
   trait WithDwells {
@@ -74,8 +74,14 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
   }
 
   "MobilityMatrixItem" should "return fields" in new WithMobilityMatrixItems {
-    item.fields should be (
-      Array("2014-11-02 00:00:00", "2014-11-02 01:00:00", "loc1", "loc2", "1800", "4", "", "4200301", "0", "0.5"))
+    item.fields should be (Array("2014-11-02 00:00:00", "2014-11-02 01:00:00", "loc1", "loc2", "1800", "4", "",
+      "4200301", "0", "0.4", "0.6", "0.5"))
+  }
+
+  it should "have the proper header" in {
+    MobilityMatrixItem.Header should
+      be (Array("StartIntervalInitTime", "EndIntervalInitTime", "StartLocation", "EndLocation",
+        "JourneyDurationInSeconds", "NumWeeks") ++ User.Header ++ Array("OrigWeight", "DestWeight", "AverageWeight"))
   }
 
   it should "have same number of fields and header" in new WithMobilityMatrixItems {

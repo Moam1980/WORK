@@ -29,7 +29,7 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
   trait WithMobilityMatrixItem extends WithIntervals with WithUsers {
 
     val mobilityMatrixItem = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(1800000L), 4,
-      user1, 0.5)
+      user1, 0.4, 0.6)
   }
 
   trait WithMobilityMatrixViews extends WithMobilityMatrixItem {

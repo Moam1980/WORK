@@ -183,4 +183,10 @@ object GeomUtils {
     firstGeom.getFactory.buildGeometry(PolygonExtracter.getPolygons(
       DouglasPeuckerSimplifier.simplify(unionCandidate, SimplifyGeomTolerance)))
   }
+
+  def safeIntersects(geom1: Geometry, geom2: Geometry, buffer: Double = DefaultGeomBufferForIntersections): Boolean =
+    Try { geom1.intersects(geom2) }.toOption.getOrElse(geom1.buffer(buffer).intersects(geom2.buffer(buffer)))
+
+  def safeIntersection(geom1: Geometry, geom2: Geometry, buffer: Double = DefaultGeomBufferForIntersections): Geometry =
+    Try { geom1.intersection(geom2) }.toOption.getOrElse(geom1.buffer(buffer).intersection(geom2.buffer(buffer)))
 }
