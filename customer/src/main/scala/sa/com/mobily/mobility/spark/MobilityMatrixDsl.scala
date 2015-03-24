@@ -9,9 +9,23 @@ import scala.language.implicitConversions
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
-import sa.com.mobily.mobility.{MobilityMatrixItem, MobilityMatrixView}
+import sa.com.mobily.mobility.{MobilityMatrixItem, MobilityMatrixItemParquet, MobilityMatrixView}
+import sa.com.mobily.parsing.spark.{SparkWriter, SparkParser}
 import sa.com.mobily.utils.EdmCoreUtils
+
+class MobilityMatrixItemRowReader(self: RDD[Row]) {
+
+  def toMobilityMatrixItem: RDD[MobilityMatrixItem] =
+    SparkParser.fromRow[MobilityMatrixItemParquet](self).map(itemParquet => MobilityMatrixItem(itemParquet))
+}
+
+class MobilityMatrixItemWriter(self: RDD[MobilityMatrixItem]) {
+
+  def saveAsParquetFile(path: String): Unit =
+    SparkWriter.saveAsParquetFile[MobilityMatrixItemParquet](self.map(i => MobilityMatrixItemParquet(i)), path)
+}
 
 class MobilityMatrixFunctions(self: RDD[MobilityMatrixItem]) {
 
@@ -49,6 +63,12 @@ class MobilityMatrixFunctions(self: RDD[MobilityMatrixItem]) {
 }
 
 trait MobilityMatrixDsl {
+
+  implicit def mobilityMatrixItemRowReader(self: RDD[Row]): MobilityMatrixItemRowReader =
+    new MobilityMatrixItemRowReader(self)
+
+  implicit def mobilityMatrixItemWriter(mobilityMatrixItems: RDD[MobilityMatrixItem]): MobilityMatrixItemWriter =
+    new MobilityMatrixItemWriter(mobilityMatrixItems)
 
   implicit def mobilityMatrixFunctions(mobilityMatrix: RDD[MobilityMatrixItem]): MobilityMatrixFunctions =
     new MobilityMatrixFunctions(mobilityMatrix)
