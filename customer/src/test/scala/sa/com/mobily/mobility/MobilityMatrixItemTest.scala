@@ -27,6 +27,15 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
     val item = MobilityMatrixItem(intervals(0), intervals(1), "loc1", "loc2", new Duration(1800000L), 4,
       User("", "4200301", 0), 0.4, 0.6)
 
+    val itemParquet =
+      MobilityMatrixItemParquet(
+        intervals(0).getStart.getZone.getID,
+        intervals(0).getStartMillis,
+        intervals(0).getEndMillis,
+        intervals(1).getStartMillis,
+        intervals(1).getEndMillis,
+        "loc1", "loc2", 1800000L, 4, User("", "4200301", 0), 0.4, 0.6)
+
     val itemDwell1And2 = MobilityMatrixItem(intervals(0), intervals(1), "l1", "l2", new Duration(2460000L), 0,
       User("", "4200301", 0), 1, 1)
     val item1Dwell3And4 = MobilityMatrixItem(intervals(0), intervals(1), "l3", "l5", new Duration(2460000L), 0,
@@ -128,4 +137,8 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
       MobilityMatrixItem.perIntervalAndLocation(List(shortDwell, dwell3, dwell4), intervals, locations, 15, 0) should
         contain theSameElementsAs (List(item1Dwell3And4, item2Dwell3And4, item3Dwell3And4, item4Dwell3And4))
     }
+
+  it should "apply to MobilityMatrixItemParquet" in new WithMobilityMatrixItems {
+    MobilityMatrixItem(itemParquet) should be (item)
+  }
 }

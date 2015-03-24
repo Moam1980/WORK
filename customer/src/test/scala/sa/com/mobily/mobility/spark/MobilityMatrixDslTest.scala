@@ -4,14 +4,17 @@
 
 package sa.com.mobily.mobility.spark
 
+import scala.reflect.io.File
+
 import com.github.nscala_time.time.Imports._
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest._
 
 import sa.com.mobily.mobility.{MobilityMatrixItem, MobilityMatrixView}
 import sa.com.mobily.user.User
-import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkContext}
+import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkSqlContext}
 
-class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext {
+class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
 
   import MobilityMatrixDsl._
 
@@ -57,6 +60,26 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
     val item6 = item1.copy(startInterval = adaIntervals(270), endInterval = adaIntervals(271))
 
     val items = sc.parallelize(Array(item1, item2, item3, item4, item5, item6))
+  }
+
+  trait WithMobilityMatrixItemRows {
+
+    val startDate = EdmCoreUtils.Fmt.parseDateTime("2014/11/02 00:00:00")
+    val endDate = startDate.plusHours(3)
+    val intervals = EdmCoreUtils.intervals(startDate, endDate, 60)
+
+    val row1 =
+      Row(intervals(0).getStart.getZone.getID, intervals(0).getStartMillis, intervals(0).getEnd.getMillis,
+        intervals(1).getStartMillis, intervals(1).getEndMillis,
+        "loc1", "loc2", 1800000L, 4, Row("", "4200301", 0L), 0.4, 0.6)
+    val row2 =
+      Row(intervals(0).getStart.getZone.getID, intervals(0).getStartMillis, intervals(0).getEndMillis,
+        intervals(1).getStartMillis, intervals(1).getEndMillis,
+        "l1", "l2", 2460000L, 0, Row("", "4200302", 0L), 1D, 1D)
+    val wrongRow =
+      Row("", intervals(1), "loc1", "loc2", new Duration(1800000L), 4, Row("", "4200301", 0), 0.4, 0.6)
+
+    val rows = sc.parallelize(List(row1, row2))
   }
 
   trait WithMobilityMatrixViews extends WithMobilityMatrixItems {
@@ -203,5 +226,16 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
 
   it should "group items per day" in new WithMobilityMatrixViews {
     items.perDay(minUsersPerJourney = 0).collect should contain theSameElementsAs(viewItemsPerDay)
+  }
+
+  it should "get correctly parsed rows" in new WithMobilityMatrixItemRows {
+    rows.toMobilityMatrixItem.count should be (2)
+  }
+
+  it should "save in parquet" in new WithMobilityMatrixItems {
+    val path = File.makeTemp().name
+    items.saveAsParquetFile(path)
+    sqc.parquetFile(path).toMobilityMatrixItem.collect should be (items.collect)
+    File(path).deleteRecursively
   }
 }

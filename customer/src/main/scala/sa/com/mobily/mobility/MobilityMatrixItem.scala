@@ -58,9 +58,30 @@ object MobilityMatrixItem {
       "DestWeight",
       "AverageWeight")
 
-  // scalastyle:off method.length
+  def apply(mobilityMatrixItemParquet: MobilityMatrixItemParquet): MobilityMatrixItem =
+    MobilityMatrixItem(
+      startInterval =
+        new Interval(
+          new DateTime(mobilityMatrixItemParquet.startIntervalStart,
+            DateTimeZone.forID(mobilityMatrixItemParquet.timeZone)),
+          new DateTime(mobilityMatrixItemParquet.startIntervalEnd,
+            DateTimeZone.forID(mobilityMatrixItemParquet.timeZone))),
+      endInterval =
+        new Interval(
+          new DateTime(mobilityMatrixItemParquet.endIntervalStart,
+            DateTimeZone.forID(mobilityMatrixItemParquet.timeZone)),
+          new DateTime(mobilityMatrixItemParquet.endIntervalEnd,
+            DateTimeZone.forID(mobilityMatrixItemParquet.timeZone))),
+      startLocation = mobilityMatrixItemParquet.startLocation,
+      endLocation = mobilityMatrixItemParquet.endLocation,
+      journeyDuration = new Duration(mobilityMatrixItemParquet.journeyDurationInMillis),
+      numWeeks = mobilityMatrixItemParquet.numWeeks,
+      user = mobilityMatrixItemParquet.user,
+      origWeight = mobilityMatrixItemParquet.origWeight,
+      destWeight = mobilityMatrixItemParquet.destWeight)
+
   @tailrec
-  def perIntervalAndLocation(
+  def perIntervalAndLocation(// scalastyle:ignore method.length
       dwells: List[Dwell],
       timeIntervals: List[Interval],
       locations: List[Location],
