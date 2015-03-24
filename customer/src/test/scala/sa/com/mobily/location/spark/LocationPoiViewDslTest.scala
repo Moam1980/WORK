@@ -21,16 +21,16 @@ class LocationPoiViewDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val poi2Imsi = "456789"
     val poi3Imsi = "9101112"
     val poi4Imsi = "77101112"
-    val locationPoiView1 = s"$poi1Imsi|420|locationTest1|Home"
-    val locationPoiView2 = s"$poi2Imsi|420|locationTest2|Work"
-    val locationPoiView3 = s"$poi3Imsi|420|locationTest3|Home"
+    val locationPoiView1 = s"$poi1Imsi|420|locationTest1|Home|1"
+    val locationPoiView2 = s"$poi2Imsi|420|locationTest2|Work|1"
+    val locationPoiView3 = s"$poi3Imsi|420|locationTest3|Home|1"
     val locationPoiView4 = s"$poi4Imsi|420|locationTest4"
     val locationPoiViews = sc.parallelize(List(locationPoiView1, locationPoiView2, locationPoiView3, locationPoiView4))
   }
 
   trait WithLocationPoiViewRows {
-    val row1 = Row("420030100040377", "420", "locationTest1", Row("Home"))
-    val row2 = Row("420030100040378", "420", "locationTest2", Row("Home"))
+    val row1 = Row("420030100040377", "420", "locationTest1", Row("Home"), 1D)
+    val row2 = Row("420030100040378", "420", "locationTest2", Row("Home"), 1D)
     val rows = sc.parallelize(List(row1, row2))
   }
 
