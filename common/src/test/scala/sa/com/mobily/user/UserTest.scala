@@ -4,11 +4,17 @@
 
 package sa.com.mobily.user
 
+import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 class UserTest extends FlatSpec with ShouldMatchers {
 
+  import User._
+
   trait WithUser {
+
+    val row = Row("866173010386736", "420034122616618", 560917079L)
+    val wrongRow = Row("866173010386736", "420034122616618", "560917079L")
 
     val user = User(
       imei = "866173010386736",
@@ -93,5 +99,13 @@ class UserTest extends FlatSpec with ShouldMatchers {
 
   it should "get its identifier" in {
     User("1234", "56789", 966999999999L).id should be (966999999999L)
+  }
+
+  it should "be built from Row" in new WithUser {
+    fromRow.fromRow(row) should be (user)
+  }
+
+  it should "be discarded when row is wrong" in new WithUser {
+    an[Exception] should be thrownBy fromRow.fromRow(wrongRow)
   }
 }
