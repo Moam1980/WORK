@@ -450,4 +450,20 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   it should "union geometries and apply the Douglas Peucker Simplifier" in new WithUnionGeometries {
     GeomUtils.unionGeoms(geoms) should be (geomUnion)
   }
+
+  it should "intersect geometries safely when they intersect" in new WithUnionGeometries {
+    GeomUtils.safeIntersection(geom2, geom4) should equalGeometry(geom2.intersection(geom4))
+  }
+
+  it should "intersect geometries safely when they don't intersect" in new WithUnionGeometries {
+    GeomUtils.safeIntersection(geom1, geom3) should equalGeometry(geom1.intersection(geom3))
+  }
+
+  it should "state safely whether two geometries intersect (when they do)" in new WithUnionGeometries {
+    GeomUtils.safeIntersects(geom2, geom4) should be (geom2.intersects(geom4))
+  }
+
+  it should "state safely whether two geometries intersect (when they don't)" in new WithUnionGeometries {
+    GeomUtils.safeIntersects(geom1, geom3) should be (geom1.intersects(geom3))
+  }
 }

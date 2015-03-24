@@ -42,8 +42,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
 
   trait WithMobilityMatrixItems extends WithIntervals with WithUsers {
 
-    val item1 = MobilityMatrixItem(adaIntervals(0), adaIntervals(1), "l1", "l2", new Duration(2460000L), 2, user1, 1)
-    val item2 = item1.copy(journeyDuration = new Duration(1860000L), weight = 0.5, user = user2)
+    val item1 = MobilityMatrixItem(adaIntervals(0), adaIntervals(1), "l1", "l2", new Duration(2460000L), 2, user1, 1, 1)
+    val item2 = item1.copy(journeyDuration = new Duration(1860000L), origWeight = 0.5, destWeight = 0.5, user = user2)
     val item3 = item2.copy(startLocation = "l2", endLocation = "l2")
     val item4 = item1.copy(
       startInterval = adaIntervals(179),
@@ -51,7 +51,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
       startLocation = "l3",
       endLocation = "l4",
       journeyDuration = new Duration(900000L),
-      weight = 0.75)
+      origWeight = 0.75,
+      destWeight = 0.75)
     val item5 = item1.copy(startInterval = adaIntervals(45), endInterval = adaIntervals(46), user = user3)
     val item6 = item1.copy(startInterval = adaIntervals(270), endInterval = adaIntervals(271))
 

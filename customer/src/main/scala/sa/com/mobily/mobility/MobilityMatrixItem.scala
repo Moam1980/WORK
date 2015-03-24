@@ -22,7 +22,10 @@ case class MobilityMatrixItem(
     journeyDuration: Duration,
     numWeeks: Int,
     user: User,
-    weight: Double) {
+    origWeight: Double,
+    destWeight: Double) {
+
+  def weight: Double = (origWeight + destWeight) / 2
 
   def fields: Array[String] =
     Array(
@@ -32,8 +35,11 @@ case class MobilityMatrixItem(
       endLocation,
       journeyDuration.seconds.toString,
       numWeeks.toString) ++
-      user.fields :+
-      weight.toString
+    user.fields ++
+    Array(
+      origWeight.toString,
+      destWeight.toString,
+      weight.toString)
 }
 
 object MobilityMatrixItem {
@@ -46,8 +52,11 @@ object MobilityMatrixItem {
       "EndLocation",
       "JourneyDurationInSeconds",
       "NumWeeks") ++
-      User.Header :+
-      "Weight"
+      User.Header ++
+    Array(
+      "OrigWeight",
+      "DestWeight",
+      "AverageWeight")
 
   // scalastyle:off method.length
   @tailrec
@@ -84,10 +93,8 @@ object MobilityMatrixItem {
           startLocation <- locations.filter(l => first.geom.intersects(l.geom));
           endLocation <- locations.filter(l => second.geom.intersects(l.geom)))
         yield {
-          val origWeight = startLocation.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections).intersection(
-            first.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections)).getArea / first.geom.getArea
-          val destWeight = endLocation.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections).intersection(
-            second.geom.buffer(GeomUtils.DefaultGeomBufferForIntersections)).getArea / second.geom.getArea
+          val origWeight = GeomUtils.safeIntersection(startLocation.geom, first.geom).getArea / first.geom.getArea
+          val destWeight = GeomUtils.safeIntersection(endLocation.geom, second.geom).getArea / second.geom.getArea
           MobilityMatrixItem(
             startInterval = startInterval,
             endInterval = endInterval,
@@ -96,7 +103,8 @@ object MobilityMatrixItem {
             journeyDuration = new Duration(first.endTime, second.startTime),
             numWeeks = numWeeks,
             user = first.user,
-            weight = (origWeight + destWeight) / 2)
+            origWeight = origWeight,
+            destWeight = destWeight)
         }
       perIntervalAndLocation(
         dwells = second :: tail,
