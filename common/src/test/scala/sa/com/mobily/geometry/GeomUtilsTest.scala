@@ -105,7 +105,7 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
 
   trait WithGeometries {
 
-    val geomWsg84tWkt = "POLYGON ((24.8484987 46.82329508, 24.84850154 46.82328424, 24.84870162 46.82279442, " +
+    val geomWgs84tWkt = "POLYGON ((24.8484987 46.82329508, 24.84850154 46.82328424, 24.84870162 46.82279442, " +
       "24.84898089 46.82232655, 24.84933645 46.82189541, 24.84976271 46.82151477, 24.85025319 46.8211984, " +
       "24.85079782 46.82095802, 24.85138655 46.82080338, 24.85200661 46.82074419, 24.85264441 46.82078519, " +
       "24.85328457 46.82092913, 24.85391262 46.82117779, 24.85451322 46.82152994, 24.85507291 46.82197946, " +
@@ -123,12 +123,12 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
       "24.84764779 46.82362693, 24.84772653 46.82353705, 24.84781506 46.8234592, 24.84791155 46.82339432, " +
       "24.84801511 46.82334241, 24.8481239 46.82330541, 24.8482352 46.82328429, 24.84834904 46.82327804, " +
       "24.84846267 46.82328762, 24.8484987 46.82329508))"
-    val geomWsg84 = GeomUtils.parseWkt(geomWsg84tWkt, Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
-    val geomWsg84DifferentPrecision = GeomUtils.parseWkt(
-      geomWsg84tWkt, Coordinates.Wgs84GeodeticSrid, Coordinates.UtmPrecisionModel)
-    val geomFactoryWsg84 = GeomUtils.geomFactory(Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
+    val geomWgs84 = GeomUtils.parseWkt(geomWgs84tWkt, Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
+    val geomWgs84DifferentPrecision = GeomUtils.parseWkt(
+      geomWgs84tWkt, Coordinates.Wgs84GeodeticSrid, Coordinates.UtmPrecisionModel)
+    val geomFactoryWgs84 = GeomUtils.geomFactory(Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
 
-    val geomWsg84WktLongitudeFirst = "POLYGON ((46.82329508 24.8484987, 46.82328424 24.84850154, " +
+    val geomWgs84WktLongitudeFirst = "POLYGON ((46.82329508 24.8484987, 46.82328424 24.84850154, " +
       "46.82279442 24.84870162, 46.82232655 24.84898089, 46.82189541 24.84933645, 46.82151477 24.84976271, " +
       "46.8211984 24.85025319, 46.82095802 24.85079782, 46.82080338 24.85138655, 46.82074419 24.85200661, " +
       "46.82078519 24.85264441, 46.82092913 24.85328457, 46.82117779 24.85391262, 46.82152994 24.85451322, " +
@@ -146,7 +146,7 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
       "46.82372685 24.84757976, 46.82362693 24.84764779, 46.82353705 24.84772653, 46.8234592 24.84781506, " +
       "46.82339432 24.84791155, 46.82334241 24.84801511, 46.82330541 24.8481239, 46.82328429 24.8482352, " +
       "46.82327804 24.84834904, 46.82328762 24.84846267, 46.82329508 24.8484987))"
-    val geomWsg84LongitudeFirst = GeomUtils.parseWkt(geomWsg84WktLongitudeFirst,
+    val geomWgs84LongitudeFirst = GeomUtils.parseWkt(geomWgs84WktLongitudeFirst,
       Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
 
     val geomUtm38NWkt = "POLYGON ((684233.4 2749404.5, 684232.3 2749404.8, 684182.5 2749426.3, " +
@@ -391,49 +391,49 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     GeomUtils.transformGeom(geomUtm38N, geomFactoryUtm38N, true) should be (geomUtm38N)
   }
 
-  it should "not transform a Geometry when geometry factory is the same WSG84 and longitudeFirst false" in
+  it should "not transform a Geometry when geometry factory is the same WGS84 and longitudeFirst false" in
       new WithGeometries {
-    GeomUtils.transformGeom(geomWsg84, geomFactoryWsg84, false) should be (geomWsg84)
+    GeomUtils.transformGeom(geomWgs84, geomFactoryWgs84, false) should be (geomWgs84)
   }
 
-  it should "not transform a Geometry when geometry factory is the same WSG84 and longitudeFirst true" in
+  it should "not transform a Geometry when geometry factory is the same WGS84 and longitudeFirst true" in
     new WithGeometries {
-      GeomUtils.transformGeom(geomWsg84, geomFactoryWsg84, true) should be (geomWsg84)
+      GeomUtils.transformGeom(geomWgs84, geomFactoryWgs84, true) should be (geomWgs84)
     }
 
-  it should "transform a Geometry when SRID is not equal to factory provided WSG84 and longitudeFirst false" in
+  it should "transform a Geometry when SRID is not equal to factory provided WGS84 and longitudeFirst false" in
       new WithGeometries {
-    GeomUtils.transformGeom(geomUtm38N, geomFactoryWsg84, false) should
-      equalGeometry (geomWsg84, Coordinates.SevenDecimalsScale)
+    GeomUtils.transformGeom(geomUtm38N, geomFactoryWgs84, false) should
+      equalGeometry (geomWgs84, Coordinates.SevenDecimalsScale)
   }
 
-  it should "transform a Geometry when SRID is not equal to factory provided WSG84 and longitudeFirst true" in
+  it should "transform a Geometry when SRID is not equal to factory provided WGS84 and longitudeFirst true" in
       new WithGeometries {
-    GeomUtils.transformGeom(geomUtm38N, geomFactoryWsg84, true) should
-      equalGeometry (geomWsg84LongitudeFirst, Coordinates.SevenDecimalsScale)
+    GeomUtils.transformGeom(geomUtm38N, geomFactoryWgs84, true) should
+      equalGeometry (geomWgs84LongitudeFirst, Coordinates.SevenDecimalsScale)
   }
 
-  it should "transform a Geometry when precision is not equal to factory provided WSG84 and longitudeFirst false" in
+  it should "transform a Geometry when precision is not equal to factory provided WGS84 and longitudeFirst false" in
     new WithGeometries {
-      GeomUtils.transformGeom(geomWsg84DifferentPrecision, geomFactoryWsg84, false) should
-        equalGeometry (geomWsg84, Coordinates.OneDecimalScale)
+      GeomUtils.transformGeom(geomWgs84DifferentPrecision, geomFactoryWgs84, false) should
+        equalGeometry (geomWgs84, Coordinates.OneDecimalScale)
     }
 
-  it should "transform a Geometry when precision is not equal to factory provided WSG84 and longitudeFirst true" in
+  it should "transform a Geometry when precision is not equal to factory provided WGS84 and longitudeFirst true" in
     new WithGeometries {
-      GeomUtils.transformGeom(geomWsg84DifferentPrecision, geomFactoryWsg84, true) should
-        equalGeometry (geomWsg84LongitudeFirst, Coordinates.OneDecimalScale)
+      GeomUtils.transformGeom(geomWgs84DifferentPrecision, geomFactoryWgs84, true) should
+        equalGeometry (geomWgs84LongitudeFirst, Coordinates.OneDecimalScale)
     }
 
   it should "transform a Geometry when SRID is not equal to factory provided UTM 38N and longitudeFirst false" in
       new WithGeometries {
-    GeomUtils.transformGeom(geomWsg84, geomFactoryUtm38N, false) should
+    GeomUtils.transformGeom(geomWgs84, geomFactoryUtm38N, false) should
       equalGeometry (geomUtm38N, Coordinates.OneDecimalScale)
   }
 
   it should "transform a Geometry when SRID is not equal to factory provided UTM 38N and longitudeFirst true" in
     new WithGeometries {
-      GeomUtils.transformGeom(geomWsg84, geomFactoryUtm38N, true) should
+      GeomUtils.transformGeom(geomWgs84, geomFactoryUtm38N, true) should
         equalGeometry (geomUtm38N, Coordinates.OneDecimalScale)
     }
 
