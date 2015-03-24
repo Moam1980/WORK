@@ -85,7 +85,7 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
       "26.46631248 50.07688767, 26.46622911 50.07692704, 26.46614167 50.07695422, 26.46605199 50.07696829, " +
       "26.4659618 50.07697133, 26.46587211 50.07696038, 26.46578372 50.07693847, 26.46569848 50.0769037, " +
       "26.46564199 50.07687119))"
-    val geomWsg84 = GeomUtils.parseWkt(shapeWgs84Wkt, Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
+    val geomWgs84 = GeomUtils.parseWkt(shapeWgs84Wkt, Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
 
     val location = Location(name = "locationTest", client = "clientTest", epsg = Coordinates.Wgs84GeodeticEpsg,
       geomWkt = shapeWgs84Wkt)

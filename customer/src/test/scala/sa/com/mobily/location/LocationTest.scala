@@ -33,7 +33,7 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
       "46.82372685 24.84757976, 46.82362693 24.84764779, 46.82353705 24.84772653, 46.8234592 24.84781506, " +
       "46.82339432 24.84791155, 46.82334241 24.84801511, 46.82330541 24.8481239, 46.82328429 24.8482352, " +
       "46.82327804 24.84834904, 46.82328762 24.84846267, 46.82329508 24.8484987))"
-    val geomWsg84 = GeomUtils.parseWkt(shapeWgs84Wkt, Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
+    val geomWgs84 = GeomUtils.parseWkt(shapeWgs84Wkt, Coordinates.Wgs84GeodeticSrid, Coordinates.LatLongPrecisionModel)
 
     val locationLine = "locationTest|clientTest|" + Coordinates.Wgs84GeodeticEpsg + "|" + shapeWgs84Wkt
     val location = Location(name = "locationTest", client = "clientTest", epsg = Coordinates.Wgs84GeodeticEpsg,
@@ -74,7 +74,7 @@ class LocationTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
   }
 
   it should "return correct geometry" in new WithLocation {
-    location.geom should equalGeometry(geomWsg84)
+    location.geom should equalGeometry(geomWgs84)
   }
 
   it should "be built from CSV" in new WithLocation {
