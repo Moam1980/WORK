@@ -37,7 +37,7 @@ object Location {
     }
   }
 
-  def isMatch(geom: Geometry, location: Location): Boolean = geom.intersects(location.geom)
+  def isMatch(geom: Geometry, location: Location): Boolean = GeomUtils.safeIntersects(geom, location.geom)
 
   def bestMatch(geom: Geometry, locations: Seq[Location]): Location = geom match {
     case geom: GeometryCollection =>
