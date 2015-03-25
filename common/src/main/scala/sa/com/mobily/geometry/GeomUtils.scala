@@ -146,7 +146,7 @@ object GeomUtils {
   def intersectionRatio(first: Geometry, second: Geometry): Double = {
     val firstArea = first.getArea
     val secondArea = second.getArea
-    val intersectArea = largePrecision(first).intersection(largePrecision(second)).getArea
+    val intersectArea = GeomUtils.safeIntersection(largePrecision(first), largePrecision(second)).getArea
     if (firstArea >= secondArea) intersectArea / secondArea else intersectArea / firstArea
   }
 
