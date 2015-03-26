@@ -352,8 +352,11 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
 
   trait WithDwells {
 
+    val user1 = User("", "4200301", 0)
+    val user2 = User("", "4200302", 0)
+
     val dwell1 = Dwell(
-      user = User("", "4200301", 0),
+      user = user1,
       startTime = 3600000,
       endTime = 7200000,
       geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
@@ -362,9 +365,10 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       lastEventEndTime = 9,
       numEvents = 2)
     val dwell2 = dwell1.copy(startTime = 7400000, endTime = 8100000)
-    val dwell3 = dwell1.copy(user = User("", "4200302", 0))
+    val dwell3 = dwell1.copy(user = user2)
 
     val dwells = sc.parallelize(Array(dwell3, dwell2, dwell1))
+    val usersForFiltering = sc.parallelize(Array(user1))
   }
 
   trait WithDwellsStatistics extends WithDwells {
@@ -580,4 +584,8 @@ class UserModelDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlCo
       model._2.size should be (2)
       model._3.size should be (2)
     }
+
+  it should "get dwells for certain users" in new WithDwells {
+    dwells.forUsers(usersForFiltering).collect should contain theSameElementsAs(List(dwell1, dwell2))
+  }
 }

@@ -451,19 +451,16 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     GeomUtils.unionGeoms(geoms) should be (geomUnion)
   }
 
-  it should "intersect geometries safely when they intersect" in new WithUnionGeometries {
-    GeomUtils.safeIntersection(geom2, geom4) should equalGeometry(geom2.intersection(geom4))
+  it should "intersect geometries safely when normal intersection is possible" in new WithUnionGeometries {
+    GeomUtils.safeIntersection(geom2, geom4) should be (geom2.intersection(geom4))
   }
 
-  it should "intersect geometries safely when they don't intersect" in new WithUnionGeometries {
-    GeomUtils.safeIntersection(geom1, geom3) should equalGeometry(geom1.intersection(geom3))
-  }
+  it should "state safely whether two geometries intersect (when normal intersects operation is possible)" in
+    new WithUnionGeometries {
+      GeomUtils.safeIntersects(geom2, geom4) should be (geom2.intersects(geom4))
+    }
 
-  it should "state safely whether two geometries intersect (when they do)" in new WithUnionGeometries {
-    GeomUtils.safeIntersects(geom2, geom4) should be (geom2.intersects(geom4))
-  }
-
-  it should "state safely whether two geometries intersect (when they don't)" in new WithUnionGeometries {
-    GeomUtils.safeIntersects(geom1, geom3) should be (geom1.intersects(geom3))
+  it should "union geometries safely (when normal union is possible)" in new WithUnionGeometries {
+    GeomUtils.safeUnion(geom1, geom2) should be (geom1.union(geom2))
   }
 }

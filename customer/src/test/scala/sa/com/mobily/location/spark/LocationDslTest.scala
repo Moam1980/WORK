@@ -256,6 +256,37 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val locations = sc.parallelize(Array(l1, l2, l3, l4, l5, l6))
   }
 
+  trait WithDwellsForDistinctUsers {
+
+    val l1 = Location(name = "l1", client = "client", epsg = Coordinates.SaudiArabiaUtmEpsg,
+      geomWkt = "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
+    val l2 = l1.copy(name = "l2", geomWkt = "POLYGON ((10 10, 20 10, 20 20, 10 20, 10 10))")
+    val locations = sc.parallelize(Array(l1, l2))
+
+    val user1 = User(imei = "", imsi = "420031", msisdn = 9661)
+    val user2 = User(imei = "", imsi = "420032", msisdn = 9662)
+    val user3 = User(imei = "", imsi = "420033", msisdn = 9663)
+
+    val dwell1 = Dwell(
+      user = user1,
+      startTime = 1000,
+      endTime = 62000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 3000,
+      lastEventEndTime = 70000,
+      numEvents = 2)
+    val dwell2 = dwell1.copy(user = user2, startTime = 55000, endTime = 120000,
+      geomWkt = "POLYGON ((12 12, 12 20, 20 20, 20 12, 12 12))")
+    val dwell3 = dwell1.copy(startTime = 61000, endTime = 760000,
+      geomWkt = "POLYGON ((50 50, 60 50, 60 60, 50 60, 50 50))")
+    val dwell4 = dwell1.copy(startTime = 25812345000L, endTime = 25812445000L)
+    val dwell5 = dwell1.copy(user = user3, startTime = 133000, endTime = 192000)
+    val dwell6 = dwell1.copy(user = user2, startTime = 121000, endTime = 300000)
+
+    val dwells = sc.parallelize(Array(dwell1, dwell2, dwell3, dwell4, dwell5, dwell6))
+  }
+
   "LocationDsl" should "get correctly parsed data" in new WithLocationText {
     locationsText.toLocation.count should be (3)
   }
@@ -334,4 +365,9 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     locations.toWeightedLocationPoiView(pois).collect should contain theSameElementsAs (
       locationPoiViewsLocation1 ++ locationPoiViewsLocation2)
   }
+
+  it should "get distinct users per day (filtering those intersecting locations and with the minimum duration" in
+    new WithDwellsForDistinctUsers {
+      locations.distinctUsersPerDay(dwells, 1).collect should contain theSameElementsAs(List(user1, user2, user1))
+    }
 }

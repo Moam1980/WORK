@@ -125,6 +125,13 @@ class LocationFunctions(self: RDD[Location]) {
       })
     })
   }
+
+  def distinctUsersPerDay(dwells: RDD[Dwell], minMinutesInDwell: Int): RDD[User] = {
+    val unionGeom = self.map(_.geom).reduce((geom1, geom2) => GeomUtils.safeUnion(geom1, geom2))
+    val filteredDwells =
+      dwells.filter(_.durationInMinutes >= minMinutesInDwell).filter(d => GeomUtils.safeIntersects(d.geom, unionGeom))
+    filteredDwells.map(d => (d.user, d.formattedDay)).distinct.keys
+  }
 }
 
 class LocationTimeDwellFunctions(self: RDD[((Location, Interval), Dwell)]) {
