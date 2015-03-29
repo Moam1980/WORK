@@ -4,7 +4,7 @@
 
 package sa.com.mobily.geometry
 
-import com.vividsolutions.jts.geom.{Coordinate, PrecisionModel}
+import com.vividsolutions.jts.geom.{Coordinate, GeometryCollection, PrecisionModel}
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{TwoG, EgBts}
@@ -22,7 +22,7 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     val poly = geomFactory.createPolygon(
       Array(new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1),
         new Coordinate(0, 0)))
-    val polyPoints = Map((1, (0D, 0D)), (2, (1D, 0D)), (3, (1D, 1D)), (4, (0D, 1D)), (5, (0D, 0D)))
+    val polyPoints = Map((1, Map((1, (0D, 0D)), (2, (1D, 0D)), (3, (1D, 1D)), (4, (0D, 1D)), (5, (0D, 0D)))))
 
     val position = geomFactory.createPoint(new Coordinate(0, 0))
 
@@ -101,6 +101,15 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
         "46.5 -18.4, 43.8 -24.1, 40.5 -29.4, 36.4 -34.2, 31.9 -38.5, 26.8 -42.2, 21.3 -45.2, 15.5 -47.6, 9.4 -49.1, " +
         "3.1 -49.9, -3.1 -49.9, -9.4 -49.1, -15.5 -47.6, -21.3 -45.2, -26.1 -42.6))",
       sridPlanar)
+
+    val allGeometries =
+      List(poly, utm38NPolygon, expectedWgs84Polygon, expectedCircle, expectedCircle, expectedCirSect,
+        expectedConchoid, expectedConchoidWithBackLobe, expectedHippopede, expectedHippopedeWithBackLobe)
+
+    val allGeometriesComplex =
+      Array(poly, utm38NPolygon,
+        new GeometryCollection(Array(expectedWgs84Polygon, expectedCircle, expectedCircle, expectedCirSect,
+        expectedConchoid, expectedConchoidWithBackLobe, expectedHippopede, expectedHippopedeWithBackLobe), geomFactory))
   }
 
   trait WithGeometries {
@@ -299,8 +308,8 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     val shapeWkt2 = "POLYGON (( 13 14, 17 14, 17 10, 13 14 ))"
     val shapeWkt3 = "POLYGON (( 230 0, 230 4, 2 4, 2 0, 230 0 ))"
     val shapeWkt4 = "POLYGON (( 13 114, 17 114, 17 10, 13 114 ))"
-    val shapeWktUnion = "MULTIPOLYGON (((230 0, 2 0, 2 4, 230 4, 230 0)), ((17 14, 130 14, 130 10, 2 10, 2 14, 16.8 14, " +
-        "13 114, 17 114, 17 14)))"
+    val shapeWktUnion = "MULTIPOLYGON (((230 0, 2 0, 2 4, 230 4, 230 0)), ((17 14, 130 14, 130 10, 2 10, 2 14, " +
+      "16.8 14, 13 114, 17 114, 17 14)))"
 
     val geom1 = GeomUtils.parseWkt(shapeWkt1 , coords1.srid)
     val geom2 = GeomUtils.parseWkt(shapeWkt2 , coords1.srid)
@@ -375,6 +384,30 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   it should "calculate the intersection ratio between two geometries" in new WithIntersectionCells {
     GeomUtils.intersectionRatio(geometry1, geometry2) should be (intersectRatio +- rangeTolerance)
     GeomUtils.intersectionRatio(geometry2, geometry1) should be (intersectRatio +- rangeTolerance)
+  }
+
+  it should "return one geometry as a List when asking for simple geometries" in new WithShapes {
+    GeomUtils.geomAsSimpleGeometries(poly) should be (List(poly))
+    GeomUtils.geomAsSimpleGeometries(utm38NPolygon) should be (List(utm38NPolygon))
+    GeomUtils.geomAsSimpleGeometries(expectedWgs84Polygon) should be (List(expectedWgs84Polygon))
+    GeomUtils.geomAsSimpleGeometries(expectedCircle) should be (List(expectedCircle))
+    GeomUtils.geomAsSimpleGeometries(expectedCirSect) should be (List(expectedCirSect))
+    GeomUtils.geomAsSimpleGeometries(expectedConchoid) should be (List(expectedConchoid))
+    GeomUtils.geomAsSimpleGeometries(expectedConchoidWithBackLobe) should be (List(expectedConchoidWithBackLobe))
+    GeomUtils.geomAsSimpleGeometries(expectedHippopede) should be (List(expectedHippopede))
+    GeomUtils.geomAsSimpleGeometries(expectedHippopedeWithBackLobe) should be (List(expectedHippopedeWithBackLobe))
+  }
+
+  it should "return all geometries as a List when asking for simple geometries with GeometryCollection" in new
+      WithShapes {
+    GeomUtils.geomAsSimpleGeometries(new GeometryCollection(allGeometries.toArray, geomFactory)) should be(
+      allGeometries)
+  }
+
+  it should "return all geometries as a List when asking for simple geometries with GeometryCollections" in new
+      WithShapes {
+    GeomUtils.geomAsSimpleGeometries(new GeometryCollection(allGeometriesComplex, geomFactory)) should be(
+      allGeometries)
   }
 
   it should "return coordinates as a Map including position" in new WithShapes {
@@ -462,5 +495,10 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
 
   it should "union geometries safely (when normal union is possible)" in new WithUnionGeometries {
     GeomUtils.safeUnion(geom1, geom2) should be (geom1.union(geom2))
+  }
+
+  it should "return correct scale as Int for precision model" in new WithShapes {
+    utm38NPolygon.getPrecisionModel.getMaximumSignificantDigits should be (2)
+    expectedWgs84Polygon.getPrecisionModel.getMaximumSignificantDigits should be (8)
   }
 }

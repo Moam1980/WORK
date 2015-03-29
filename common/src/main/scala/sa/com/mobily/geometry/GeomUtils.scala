@@ -12,6 +12,7 @@ import com.vividsolutions.jts.geom.util.PolygonExtracter
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier
 import com.vividsolutions.jts.util.GeometricShapeFactory
+import org.apache.commons.math3.util.Precision
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 
@@ -150,8 +151,21 @@ object GeomUtils {
     if (firstArea >= secondArea) intersectArea / secondArea else intersectArea / firstArea
   }
 
-  def geomAsPoints(geom: Geometry): Map[Int, (Double, Double)] =
-    geom.getCoordinates.zipWithIndex.map { e => (e._2 + 1, (e._1.x, e._1.y)) }.toMap
+  def geomAsSimpleGeometries(geom: Geometry): Seq[Geometry] = {
+    if (geom.getNumGeometries == 1) Seq(geom)
+    else {
+      val geoms = for (i <- 0 to geom.getNumGeometries - 1) yield (geomAsSimpleGeometries(geom.getGeometryN(i)))
+      geoms.flatten
+    }
+  }
+
+  def geomAsPoints(geom: Geometry): Map[Int, Map[Int, (Double, Double)]] = {
+    val scale = geom.getPrecisionModel.getMaximumSignificantDigits
+
+    geomAsSimpleGeometries(geom).zipWithIndex.map { g =>
+      (g._2 + 1, g._1.getCoordinates.zipWithIndex.map { e =>
+        (e._2 + 1, (Precision.round(e._1.x, scale), Precision.round(e._1.y, scale)))}.toMap)}.toMap
+  }
 
   def largePrecision(geom: Geometry): Geometry =
     GeomUtils.geomFactory(geom.getSRID, new PrecisionModel).createGeometry(geom)

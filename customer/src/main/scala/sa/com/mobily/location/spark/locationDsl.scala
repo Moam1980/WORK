@@ -132,6 +132,12 @@ class LocationFunctions(self: RDD[Location]) {
       dwells.filter(_.durationInMinutes >= minMinutesInDwell).filter(d => GeomUtils.safeIntersects(d.geom, unionGeom))
     filteredDwells.map(d => (d.user, d.formattedDay)).distinct.keys
   }
+
+  def withCentroids: RDD[Location] =
+    self.map(location => location.copy(geomWkt = GeomUtils.wkt(location.geom.getCentroid)))
+
+  def toWgs84LocationPointView: RDD[LocationPointView] =
+    self.flatMap(location => LocationPointView.normalizedWgs84Geom(location))
 }
 
 class LocationTimeDwellFunctions(self: RDD[((Location, Interval), Dwell)]) {
