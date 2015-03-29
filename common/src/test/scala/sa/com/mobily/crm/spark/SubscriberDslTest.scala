@@ -206,7 +206,7 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
           m5 = 100.36f,
           m6 = 100.23f))
 
-    val userOther = user1.copy(imsi = "Other")
+    val userOther = user1.copy(imsi = "214341234567890")
 
     val subscriberNone = subscriber1.copy(user = subscriber1.user.copy(imsi = "Not Found"))
 
@@ -247,7 +247,11 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
     val subscriberProfilingView10 =
       subscriberProfilingView2.copy(imsi = "420030000000010", affluenceGroup = "Middle 30%")
 
-    val users = sc.parallelize(List(user1, user2, user3, user4, user5, user6, user7, user8, user9, user10))
+    val subscriberProfilingViewOther = SubscriberProfilingView(userOther.imsi)
+
+      subscriberProfilingView2.copy(imsi = "420030000000010", affluenceGroup = "Middle 30%")
+
+    val users = sc.parallelize(List(user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, userOther))
     val usersOther = sc.parallelize(List(userOther))
     val subscribers =
       sc.parallelize(List(subscriber1, subscriber2, subscriber3, subscriber4, subscriber5, subscriber6, subscriber7,
@@ -256,6 +260,13 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
       sc.parallelize(List(subscriberProfilingView1, subscriberProfilingView2, subscriberProfilingView3,
         subscriberProfilingView4, subscriberProfilingView5, subscriberProfilingView6, subscriberProfilingView7,
         subscriberProfilingView8, subscriberProfilingView9, subscriberProfilingView10))
+
+    val subscriberProfilingViewsNoInfo = sc.parallelize(List(subscriberProfilingViewOther))
+
+    val allSubscribersProfilingView =
+      sc.parallelize(List(subscriberProfilingView1, subscriberProfilingView2, subscriberProfilingView3,
+        subscriberProfilingView4, subscriberProfilingView5, subscriberProfilingView6, subscriberProfilingView7,
+        subscriberProfilingView8, subscriberProfilingView9, subscriberProfilingView10, subscriberProfilingViewOther))
   }
 
   "SubscriberDsl" should "get correctly parsed data" in new WithSubscriberText {
@@ -405,5 +416,23 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
 
   it should "return no subscriber profiling view when no subscriber for users" in new WithSubscriberProfilingView {
     subscribers.toFilteredSubscriberProfilingView(usersOther).count should be (0)
+  }
+
+  it should "return default subscribers profiling view when no subscriber information" in new
+      WithSubscriberProfilingView {
+    val subscribersProfilingViewNoSubscriberInfo =
+      subscribers.toSubscriberProfilingViewNoSubsInfo(users).collect
+
+    subscribersProfilingViewNoSubscriberInfo.size should be (subscriberProfilingViewsNoInfo.count)
+    subscribersProfilingViewNoSubscriberInfo should contain theSameElementsAs(subscriberProfilingViewsNoInfo.collect)
+  }
+
+  it should "return all subscribers profiling view for users" in new
+      WithSubscriberProfilingView {
+    val subscribersProfilingViewResult =
+      subscribers.toSubscriberProfilingView(users).collect
+
+    subscribersProfilingViewResult.size should be (allSubscribersProfilingView.count)
+    subscribersProfilingViewResult should contain theSameElementsAs(allSubscribersProfilingView.collect)
   }
 }

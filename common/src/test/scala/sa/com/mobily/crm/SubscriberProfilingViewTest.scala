@@ -15,6 +15,28 @@ class SubscriberProfilingViewTest extends FlatSpec with ShouldMatchers {
 
   import SubscriberProfilingView._
 
+  trait WithImsis {
+
+    val saudiArabiaImsi = "420030100040377"
+    val nonSaudiArabiaImsi = "214341234567890"
+
+    val subscriberProfilingViewSaudi =
+      SubscriberProfilingView(
+        imsi = "420030100040377",
+        ageGroup = EdmCoreUtils.UnknownKeyword,
+        genderGroup = EdmCoreUtils.UnknownKeyword,
+        nationalityGroup = EdmCoreUtils.UnknownKeyword,
+        affluenceGroup = EdmCoreUtils.UnknownKeyword)
+
+    val subscriberProfilingViewRoamer =
+      SubscriberProfilingView(
+        imsi = "214341234567890",
+        ageGroup = EdmCoreUtils.UnknownKeyword,
+        genderGroup = EdmCoreUtils.UnknownKeyword,
+        nationalityGroup = NationalityRoamers,
+        affluenceGroup = EdmCoreUtils.UnknownKeyword)
+  }
+
   trait WithSubscriberProfilingView {
 
     val line = "420030100040377|16-25|M|Saudi Arabia|Top 20%"
@@ -271,10 +293,20 @@ class SubscriberProfilingViewTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "return nationality groups" in new WithSubscriber {
-    SubscriberProfilingView.NationalityGroups should be (Array("Saudi Arabia", "Roamers", "Non-Saudi"))
+    SubscriberProfilingView.NationalityGroups should be (
+      Array("Saudi Arabia", "Roamers", "Non-Saudi", EdmCoreUtils.UnknownKeyword))
   }
 
   it should "return affluence groups" in new WithSubscriber {
-    SubscriberProfilingView.affluenceGroups should be (Array("Top 20%", "Middle 30%", "Bottom 50%"))
+    SubscriberProfilingView.affluenceGroups should be (
+      Array("Top 20%", "Middle 30%", "Bottom 50%", EdmCoreUtils.UnknownKeyword))
+  }
+
+  it should "apply from a saudi imsi generating Unknown values" in new WithImsis {
+    SubscriberProfilingView(saudiArabiaImsi) should be (subscriberProfilingViewSaudi)
+  }
+
+  it should "apply from a non saudi imsi generating Unknown values and roamer nationality" in new WithImsis {
+    SubscriberProfilingView(nonSaudiArabiaImsi) should be (subscriberProfilingViewRoamer)
   }
 }

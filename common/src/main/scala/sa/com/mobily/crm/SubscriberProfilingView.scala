@@ -35,6 +35,15 @@ object SubscriberProfilingView {
 
   val Header: Array[String] = Array("imsi", "ageGroup", "genderGroup", "nationalityGroup", "affluenceGroup")
 
+  def apply(imsi: String): SubscriberProfilingView =
+    SubscriberProfilingView(
+      imsi = imsi,
+      ageGroup = EdmCoreUtils.UnknownKeyword,
+      genderGroup = EdmCoreUtils.UnknownKeyword,
+      nationalityGroup =
+        if (User.mcc(imsi) != CountryCode.SaudiArabiaMcc) NationalityRoamers else EdmCoreUtils.UnknownKeyword,
+      affluenceGroup = EdmCoreUtils.UnknownKeyword)
+
   implicit val fromCsv = new CsvParser[SubscriberProfilingView] {
 
     override def lineCsvParser: OpenCsvParser = new OpenCsvParser
@@ -90,7 +99,8 @@ object SubscriberProfilingView {
   val NationalitySaudiArabia = "Saudi Arabia"
   val NationalityRoamers = "Roamers"
   val NationalityNonSaudi = "Non-Saudi"
-  val NationalityGroups = Array(NationalitySaudiArabia, NationalityRoamers, NationalityNonSaudi)
+  val NationalityGroups =
+    Array(NationalitySaudiArabia, NationalityRoamers, NationalityNonSaudi, EdmCoreUtils.UnknownKeyword)
 
   def nationalityGroup(subscriber: Subscriber): String =
     if (subscriber.nationalities.inferred.toUpperCase == "SAUDI ARABIA") NationalitySaudiArabia
@@ -104,7 +114,7 @@ object SubscriberProfilingView {
   val AffluenceTop20 = "Top 20%"
   val AffluenceMiddle30 = "Middle 30%"
   val AffluenceBottom50 = "Bottom 50%"
-  val affluenceGroups = Array(AffluenceTop20, AffluenceMiddle30, AffluenceBottom50)
+  val affluenceGroups = Array(AffluenceTop20, AffluenceMiddle30, AffluenceBottom50, EdmCoreUtils.UnknownKeyword)
 
   def affluenceGroup(order: Long, max: Long): String = ((order * 100f) / max) match {
     case p if (p > 80) => AffluenceTop20
