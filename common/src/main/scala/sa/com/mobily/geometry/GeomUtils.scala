@@ -189,4 +189,7 @@ object GeomUtils {
 
   def safeIntersection(geom1: Geometry, geom2: Geometry, buffer: Double = DefaultGeomBufferForIntersections): Geometry =
     Try { geom1.intersection(geom2) }.toOption.getOrElse(geom1.buffer(buffer).intersection(geom2.buffer(buffer)))
+
+  def safeUnion(geom1: Geometry, geom2: Geometry, buffer: Double = DefaultGeomBufferForIntersections): Geometry =
+    Try { geom1.union(geom2) }.toOption.getOrElse(geom1.buffer(buffer).union(geom2.buffer(buffer)))
 }

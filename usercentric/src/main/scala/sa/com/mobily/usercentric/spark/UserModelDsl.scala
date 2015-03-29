@@ -118,6 +118,11 @@ class DwellFunctions(self: RDD[Dwell]) {
   def byUserChronologically: RDD[(User, List[Dwell])] =
     self.map(d => (d.user, List(d))).reduceByKey(_ ++ _).map(userDwells =>
       (userDwells._1, userDwells._2.sortBy(_.startTime)))
+
+  def forUsers(users: RDD[User]): RDD[Dwell] = {
+    val bcUsersForFiltering = self.sparkContext.broadcast(users.map(u => (u, None)).collect.toMap)
+    self.filter(d => bcUsersForFiltering.value.contains(d.user))
+  }
 }
 
 class DwellStatistics(self: RDD[Dwell]) {
