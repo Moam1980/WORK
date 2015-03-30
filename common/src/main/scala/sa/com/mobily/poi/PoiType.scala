@@ -8,6 +8,7 @@ sealed case class PoiType(identifier: String)
 
 object Home extends PoiType(identifier = "Home")
 object Work extends PoiType(identifier = "Work")
+object Other extends PoiType(identifier = "Other")
 object TypeOne extends PoiType(identifier = "TypeOne")
 object TypeTwo extends PoiType(identifier = "TypeTwo")
 object TypeThree extends PoiType(identifier = "TypeThree")
