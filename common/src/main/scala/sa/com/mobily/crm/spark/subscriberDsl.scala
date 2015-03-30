@@ -66,7 +66,7 @@ class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
   }
 
   def toSubscriberProfilingViewNoSubsInfo(users: RDD[User]): RDD[SubscriberProfilingView] =
-    users.keyBy(u => u.imsi).subtractByKey(self.keyBy(s => s.user.imsi)).map(u => SubscriberProfilingView(u._1))
+    users.keyBy(_.imsi).subtractByKey(self.keyBy(_.user.imsi)).map(u => SubscriberProfilingView(u._1))
 
   def toSubscriberProfilingView(
       users: RDD[User],
