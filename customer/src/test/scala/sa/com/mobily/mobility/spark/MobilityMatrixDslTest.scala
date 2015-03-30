@@ -10,6 +10,7 @@ import com.github.nscala_time.time.Imports._
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.scalatest._
 
+import sa.com.mobily.crm.{ProfilingCategory, SubscriberProfilingView}
 import sa.com.mobily.mobility.{MobilityMatrixItem, MobilityMatrixView}
 import sa.com.mobily.user.User
 import sa.com.mobily.utils.{EdmCoreUtils, LocalSparkSqlContext}
@@ -195,6 +196,40 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
     val viewItemsPerDay = List(perDay1, perDay2)
   }
 
+  trait WithSubscribersProfilingView {
+
+    val subscriberProfilingView1 =
+      SubscriberProfilingView(
+        imsi = "4200301",
+        category =
+          ProfilingCategory(
+            ageGroup = "16-25",
+            genderGroup = "M",
+            nationalityGroup = "Saudi Arabia",
+            affluenceGroup = "Top 20%"))
+    val subscriberProfilingView2 =
+      SubscriberProfilingView(
+        imsi = "4200302",
+        category =
+          ProfilingCategory(
+            ageGroup = "25-60",
+            genderGroup = "F",
+            nationalityGroup = "Roamers",
+            affluenceGroup = "Middle 30%"))
+    val subscriberProfilingView3 =
+      SubscriberProfilingView(
+        imsi = "4200303",
+        category =
+          ProfilingCategory(
+            ageGroup = "60-",
+            genderGroup = "F",
+            nationalityGroup = "Non-Saudi",
+            affluenceGroup = "Bottom 50%"))
+
+    val subscribersProfilingView =
+      sc.parallelize(Array(subscriberProfilingView1, subscriberProfilingView2, subscriberProfilingView3))
+  }
+
   "MobilityMatrixDsl" should "group items using ADA day groups, no minimum users per journey and " +
     "keeping same location journeys" in new WithMobilityMatrixViews {
     items.perDayGroups(
@@ -238,4 +273,11 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
     sqc.parquetFile(path).toMobilityMatrixItem.collect should be (items.collect)
     File(path).deleteRecursively
   }
+
+  it should "filter items belonging to a certain profiling category" in
+    new WithMobilityMatrixItems with WithSubscribersProfilingView {
+      val targetCategory = ProfilingCategory("16-25", "M", "Saudi Arabia", "Top 20%")
+      items.forProfilingCategory(targetCategory, subscribersProfilingView).collect should
+        contain theSameElementsAs(List(item1, item4, item6))
+    }
 }

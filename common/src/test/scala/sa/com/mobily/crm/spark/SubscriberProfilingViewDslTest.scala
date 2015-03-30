@@ -28,8 +28,8 @@ class SubscriberProfilingViewDslTest extends FlatSpec with ShouldMatchers with L
 
   trait WithSubscriberRows {
 
-    val row1 = Row("420030100040377", "16-25", "M", "Saudi Arabia", "Top 20%")
-    val row2 = Row("412011234567891", "26-60", "F", "Other", "Middle 30%")
+    val row1 = Row("420030100040377", Row("16-25", "M", "Saudi Arabia", "Top 20%"))
+    val row2 = Row("412011234567891", Row("26-60", "F", "Other", "Middle 30%"))
 
     val rows = sc.parallelize(List(row1, row2))
   }
