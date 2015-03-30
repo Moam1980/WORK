@@ -64,6 +64,24 @@ class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
         nationalityGroup = nationalityGroup(s._1._1),
         affluenceGroup = affluenceGroup(s._2 + 1, totalSubs)))
   }
+
+  def toSubscriberProfilingViewNoSubsInfo(users: RDD[User]): RDD[SubscriberProfilingView] =
+    users.keyBy(_.imsi).subtractByKey(self.keyBy(_.user.imsi)).map(u => SubscriberProfilingView(u._1))
+
+  def toSubscriberProfilingView(
+      users: RDD[User],
+      totalRevenue: (Subscriber) => Float = SubscriberProfilingView.totalRevenue,
+      ageGroup: (Subscriber) => String = SubscriberProfilingView.ageGroup,
+      genderGroup: (Subscriber) => String = SubscriberProfilingView.genderGroup,
+      nationalityGroup: (Subscriber) => String = SubscriberProfilingView.nationalityGroup,
+      affluenceGroup: (Long, Long) => String = SubscriberProfilingView.affluenceGroup): RDD[SubscriberProfilingView] =
+    toFilteredSubscriberProfilingView(
+      users = users,
+      totalRevenue = totalRevenue,
+      ageGroup = ageGroup,
+      genderGroup = genderGroup,
+      nationalityGroup = nationalityGroup,
+      affluenceGroup = affluenceGroup).union(toSubscriberProfilingViewNoSubsInfo(users))
 }
 
 class SubscriberStatistics(self: RDD[Subscriber]) {
