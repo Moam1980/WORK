@@ -210,46 +210,65 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
 
     val subscriberNone = subscriber1.copy(user = subscriber1.user.copy(imsi = "Not Found"))
 
-    val subscriberProfilingView1 =
-      SubscriberProfilingView(
-        imsi = "420030100040377",
+    val categorySubsProfilingView1 =
+      ProfilingCategory(
         ageGroup = "26-60",
         genderGroup = "M",
         nationalityGroup = "Saudi Arabia",
         affluenceGroup = "Middle 30%")
-
-    val subscriberProfilingView2 =
+    val subscriberProfilingView1 =
       SubscriberProfilingView(
-        imsi = "420030000000002",
+        imsi = "420030100040377",
+        category = categorySubsProfilingView1)
+
+    val categorySubsProfilingView2 =
+      ProfilingCategory(
         ageGroup = "16-25",
         genderGroup = "F",
         nationalityGroup = "Non-Saudi",
         affluenceGroup = "Top 20%")
+    val subscriberProfilingView2 =
+      SubscriberProfilingView(
+        imsi = "420030000000002",
+        category = categorySubsProfilingView2)
     val subscriberProfilingView3 =
       SubscriberProfilingView(
         imsi = "420030000000003",
-        ageGroup = "61-",
-        genderGroup = "F",
-        nationalityGroup = "Non-Saudi",
-        affluenceGroup = "Top 20%")
+        category = ProfilingCategory(
+          ageGroup = "61-",
+          genderGroup = "F",
+          nationalityGroup = "Non-Saudi",
+          affluenceGroup = "Top 20%"))
     val subscriberProfilingView4 =
-      subscriberProfilingView2.copy(imsi = "420030000000004", affluenceGroup = "Bottom 50%")
+      SubscriberProfilingView(
+        imsi = "420030000000004",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Bottom 50%"))
     val subscriberProfilingView5 =
-      subscriberProfilingView2.copy(imsi = "420030000000005", affluenceGroup = "Bottom 50%")
+      SubscriberProfilingView(
+        imsi = "420030000000005",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Bottom 50%"))
     val subscriberProfilingView6 =
-      subscriberProfilingView2.copy(imsi = "420030000000006", affluenceGroup = "Bottom 50%")
+      SubscriberProfilingView(
+        imsi = "420030000000006",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Bottom 50%"))
     val subscriberProfilingView7 =
-      subscriberProfilingView2.copy(imsi = "420030000000007", affluenceGroup = "Bottom 50%")
+      SubscriberProfilingView(
+        imsi = "420030000000007",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Bottom 50%"))
     val subscriberProfilingView8 =
-      subscriberProfilingView2.copy(imsi = "420030000000008", affluenceGroup = "Bottom 50%")
+      SubscriberProfilingView(
+        imsi = "420030000000008",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Bottom 50%"))
     val subscriberProfilingView9 =
-      subscriberProfilingView2.copy(imsi = "420030000000009", affluenceGroup = "Middle 30%")
+      SubscriberProfilingView(
+        imsi = "420030000000009",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Middle 30%"))
     val subscriberProfilingView10 =
-      subscriberProfilingView2.copy(imsi = "420030000000010", affluenceGroup = "Middle 30%")
+      SubscriberProfilingView(
+        imsi = "420030000000010",
+        category = categorySubsProfilingView2.copy(affluenceGroup = "Middle 30%"))
 
     val subscriberProfilingViewOther = SubscriberProfilingView(userOther.imsi)
-
-      subscriberProfilingView2.copy(imsi = "420030000000010", affluenceGroup = "Middle 30%")
 
     val users = sc.parallelize(List(user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, userOther))
     val usersOther = sc.parallelize(List(userOther))
@@ -411,7 +430,8 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
       subscribers.toFilteredSubscriberProfilingView(sc.parallelize(List(user1))).collect
 
     subscribersProfilingViewFiltered.size should be (1)
-    subscribersProfilingViewFiltered(0) should be (subscriberProfilingView1.copy(affluenceGroup = "Top 20%"))
+    subscribersProfilingViewFiltered(0) should
+      be (subscriberProfilingView1.copy(category = categorySubsProfilingView1.copy(affluenceGroup = "Top 20%")))
   }
 
   it should "return no subscriber profiling view when no subscriber for users" in new WithSubscriberProfilingView {
@@ -420,8 +440,7 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
 
   it should "return default subscribers profiling view when no subscriber information" in new
       WithSubscriberProfilingView {
-    val subscribersProfilingViewNoSubscriberInfo =
-      subscribers.toSubscriberProfilingViewNoSubsInfo(users).collect
+    val subscribersProfilingViewNoSubscriberInfo = subscribers.toSubscriberProfilingViewNoSubsInfo(users).collect
 
     subscribersProfilingViewNoSubscriberInfo.size should be (subscriberProfilingViewsNoInfo.count)
     subscribersProfilingViewNoSubscriberInfo should contain theSameElementsAs(subscriberProfilingViewsNoInfo.collect)
@@ -429,8 +448,7 @@ class SubscriberDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlC
 
   it should "return all subscribers profiling view for users" in new
       WithSubscriberProfilingView {
-    val subscribersProfilingViewResult =
-      subscribers.toSubscriberProfilingView(users).collect
+    val subscribersProfilingViewResult = subscribers.toSubscriberProfilingView(users).collect
 
     subscribersProfilingViewResult.size should be (allSubscribersProfilingView.count)
     subscribersProfilingViewResult should contain theSameElementsAs(allSubscribersProfilingView.collect)

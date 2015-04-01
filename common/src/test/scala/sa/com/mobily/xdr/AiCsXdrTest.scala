@@ -282,51 +282,51 @@ class AiCsXdrTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext
     AiCell.Header should be(cellHeader)
   }
 
-  "AiCell" should "return correct header for id" in new WithAiCell {
+  it should "return correct header for id" in new WithAiCell {
     AiCell.IdHeader should be(cellIdHeader)
   }
 
-  "AiCell" should "return correct fields" in new WithAiCell {
+  it should "return correct fields" in new WithAiCell {
     cell.fields should be(cellFields)
   }
 
-  "AiCell" should "return correct fields for id" in new WithAiCell {
+  it should "return correct fields for id" in new WithAiCell {
     cell.idFields should be(cellIdFields)
   }
 
-  "AiCell" should "return correct fields for id without first lac" in new WithAiCell {
+  it should "return correct fields for id without first lac" in new WithAiCell {
     cellWithoutFirstLac.idFields should be(cellWithoutFirstLacIdFields)
   }
 
-  "AiCell" should "return correct fields for id without first cell id" in new WithAiCell {
+  it should "return correct fields for id without first cell id" in new WithAiCell {
     cellWithoutFirstCellId.idFields should be(cellWithoutFirstSacIdFields)
   }
 
-  "AiCell" should "return correct fields for id without neither first lac nor first cell id" in new WithAiCell {
+  it should "return correct fields for id without neither first lac nor first cell id" in new WithAiCell {
     cellWithoutId.idFields should be(cellWithoutIdFields)
   }
 
-  "AiCell" should "return true when equals and id is the same" in new WithAiCell {
+  it should "return true when equals and id is the same" in new WithAiCell {
     cell == cellEqual should be(true)
     cell.equals(cellEqual) should be(true)
   }
 
-  "AiCell" should "return false when equals and lac is different" in new WithAiCell {
+  it should "return false when equals and lac is different" in new WithAiCell {
     cell == cellDistinctFirstLac should be(false)
     cell.equals(cellDistinctFirstLac) should be(false)
   }
 
-  "AiCell" should "return false when equals and sac is different" in new WithAiCell {
+  it should "return false when equals and sac is different" in new WithAiCell {
     cell == cellDistinctFirstLac should be(false)
     cell.equals(cellDistinctFirstLac) should be(false)
   }
 
-  "AiCell" should "return false when equals and different objects" in new WithAiCell {
+  it should "return false when equals and different objects" in new WithAiCell {
     cell == cellFields should be(false)
     cell.equals(cellFields) should be(false)
   }
 
-  "AiCell" should "return true when checking hash codes" in new WithAiCell {
+  it should "return true when checking hash codes" in new WithAiCell {
     cell.hashCode == cell.id.hashCode should be(true)
     cell.hashCode.equals(cell.id.hashCode) should be(true)
   }

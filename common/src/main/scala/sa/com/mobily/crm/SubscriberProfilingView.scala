@@ -4,8 +4,6 @@
 
 package sa.com.mobily.crm
 
-import scala.language.existentials
-
 import org.apache.spark.sql._
 
 import sa.com.mobily.parsing.{CsvParser, OpenCsvParser, RowParser}
@@ -15,34 +13,34 @@ import sa.com.mobily.utils.EdmCoreUtils
 
 case class SubscriberProfilingView(
     imsi: String,
+    category: ProfilingCategory) {
+
+  def fields: Array[String] = imsi +: category.fields
+}
+
+case class ProfilingCategory(
     ageGroup: String,
     genderGroup: String,
     nationalityGroup: String,
     affluenceGroup: String) {
 
-  def fields: Array[String] =
-    Array(
-      imsi,
-      ageGroup,
-      genderGroup,
-      nationalityGroup,
-      affluenceGroup)
+  def fields: Array[String] = Array(ageGroup, genderGroup, nationalityGroup, affluenceGroup)
 }
 
 object SubscriberProfilingView {
 
-  val MaxTotalRevenue = 99999999
-
-  val Header: Array[String] = Array("imsi", "ageGroup", "genderGroup", "nationalityGroup", "affluenceGroup")
+  val Header: Array[String] = "imsi" +: ProfilingCategory.Header
 
   def apply(imsi: String): SubscriberProfilingView =
     SubscriberProfilingView(
       imsi = imsi,
-      ageGroup = EdmCoreUtils.UnknownKeyword,
-      genderGroup = EdmCoreUtils.UnknownKeyword,
-      nationalityGroup =
-        if (User.mcc(imsi) != CountryCode.SaudiArabiaMcc) NationalityRoamers else EdmCoreUtils.UnknownKeyword,
-      affluenceGroup = EdmCoreUtils.UnknownKeyword)
+      category = ProfilingCategory(
+        ageGroup = EdmCoreUtils.UnknownKeyword,
+        genderGroup = EdmCoreUtils.UnknownKeyword,
+        nationalityGroup =
+          if (User.mcc(imsi) != CountryCode.SaudiArabiaMcc) ProfilingCategory.NationalityRoamers
+          else EdmCoreUtils.UnknownKeyword,
+        affluenceGroup = EdmCoreUtils.UnknownKeyword))
 
   implicit val fromCsv = new CsvParser[SubscriberProfilingView] {
 
@@ -53,39 +51,47 @@ object SubscriberProfilingView {
 
       SubscriberProfilingView(
         imsi = imsi,
-        ageGroup = ageGroup,
-        genderGroup = genderGroup,
-        nationalityGroup = nationalityGroup,
-        affluenceGroup = affluenceGroup)
+        ProfilingCategory(
+          ageGroup = ageGroup,
+          genderGroup = genderGroup,
+          nationalityGroup = nationalityGroup,
+          affluenceGroup = affluenceGroup))
     }
   }
 
   implicit val fromRow = new RowParser[SubscriberProfilingView] {
 
     override def fromRow(row: Row): SubscriberProfilingView = {
-      val Row(imsi, ageGroup, genderGroup, nationalityGroup, affluenceGroup) = row
+      val Row(imsi, Row(ageGroup, genderGroup, nationalityGroup, affluenceGroup)) = row
 
       SubscriberProfilingView(
         imsi = imsi.asInstanceOf[String],
-        ageGroup = ageGroup.asInstanceOf[String],
-        genderGroup = genderGroup.asInstanceOf[String],
-        nationalityGroup = nationalityGroup.asInstanceOf[String],
-        affluenceGroup = affluenceGroup.asInstanceOf[String])
+        ProfilingCategory(
+          ageGroup = ageGroup.asInstanceOf[String],
+          genderGroup = genderGroup.asInstanceOf[String],
+          nationalityGroup = nationalityGroup.asInstanceOf[String],
+          affluenceGroup = affluenceGroup.asInstanceOf[String]))
     }
   }
+}
+
+object ProfilingCategory {
+
+  val Header: Array[String] = Array("ageGroup", "genderGroup", "nationalityGroup", "affluenceGroup")
+
+  val MaxTotalRevenue = 99999999
 
   val Age16To25 = "16-25"
   val Age26To60 = "26-60"
   val AgeGreaterThan60 = "61-"
   val AgeGroups = Array(Age16To25, Age26To60, AgeGreaterThan60, EdmCoreUtils.UnknownKeyword)
 
-  def ageGroup(subscriber: Subscriber): String = subscriber.age.map(age =>
-    age match {
-      case a if (a >= 16 && a < 26) => Age16To25
-      case a if (a >= 26 && a <= 60) => Age26To60
-      case a if (a >= 61) => AgeGreaterThan60
-      case _ => EdmCoreUtils.UnknownKeyword
-    }).getOrElse(EdmCoreUtils.UnknownKeyword)
+  def ageGroup(subscriber: Subscriber): String = subscriber.age.collect {
+    case a if a >= 16 && a < 26 => Age16To25
+    case a if a >= 26 && a <= 60 => Age26To60
+    case a if a >= 61 => AgeGreaterThan60
+    case _ => EdmCoreUtils.UnknownKeyword
+  }.getOrElse(EdmCoreUtils.UnknownKeyword)
 
   val GenderMale = Male.id
   val GenderFemale = Female.id
@@ -117,8 +123,8 @@ object SubscriberProfilingView {
   val affluenceGroups = Array(AffluenceTop20, AffluenceMiddle30, AffluenceBottom50, EdmCoreUtils.UnknownKeyword)
 
   def affluenceGroup(order: Long, max: Long): String = ((order * 100f) / max) match {
-    case p if (p > 80) => AffluenceTop20
-    case p if (p <= 80 && p > 50 ) => AffluenceMiddle30
-    case p if (p <= 50) => AffluenceBottom50
+    case p if p > 80 => AffluenceTop20
+    case p if p <= 80 && p > 50 => AffluenceMiddle30
+    case p if p <= 50 => AffluenceBottom50
   }
 }

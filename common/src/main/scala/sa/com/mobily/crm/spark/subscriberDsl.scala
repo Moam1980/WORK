@@ -31,38 +31,39 @@ class SubscriberCsvReader(self: RDD[String]) {
 
 class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
 
-  def toBroadcastImsiByMsisdn(chooseSubscriber: (Subscriber, Subscriber) =>
-        Subscriber = (s1, s2) => s1): Broadcast[Map[Long, String]] =
-    self.sparkContext.broadcast(self.keyBy(s =>
-      (s.user.msisdn)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.imsi)).collect.toMap)
+  def toBroadcastImsiByMsisdn(
+      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[Long, String]] =
+    self.sparkContext.broadcast(
+      self.keyBy(_.user.msisdn).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.imsi)).collect.toMap)
 
-  def toBroadcastMsisdnByImsi(chooseSubscriber: (Subscriber, Subscriber) =>
-        Subscriber = (s1, s2) => s1): Broadcast[Map[String, Long]] =
-    self.sparkContext.broadcast(self.keyBy(s =>
-      (s.user.imsi)).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collect.toMap)
+  def toBroadcastMsisdnByImsi(
+      chooseSubscriber: (Subscriber, Subscriber) => Subscriber = (s1, s2) => s1): Broadcast[Map[String, Long]] =
+    self.sparkContext.broadcast(
+      self.keyBy(_.user.imsi).reduceByKey(chooseSubscriber).map(e => (e._1, e._2.user.msisdn)).collect.toMap)
 
   def toSubscriberView: RDD[SubscriberView] = self.map(subscriber => SubscriberView(subscriber))
 
   def toFilteredSubscriberProfilingView(
       users: RDD[User],
-      totalRevenue: (Subscriber) => Float = SubscriberProfilingView.totalRevenue,
-      ageGroup: (Subscriber) => String = SubscriberProfilingView.ageGroup,
-      genderGroup: (Subscriber) => String = SubscriberProfilingView.genderGroup,
-      nationalityGroup: (Subscriber) => String = SubscriberProfilingView.nationalityGroup,
-      affluenceGroup: (Long, Long) => String = SubscriberProfilingView.affluenceGroup): RDD[SubscriberProfilingView] = {
+      totalRevenue: (Subscriber) => Float = ProfilingCategory.totalRevenue,
+      ageGroup: (Subscriber) => String = ProfilingCategory.ageGroup,
+      genderGroup: (Subscriber) => String = ProfilingCategory.genderGroup,
+      nationalityGroup: (Subscriber) => String = ProfilingCategory.nationalityGroup,
+      affluenceGroup: (Long, Long) => String = ProfilingCategory.affluenceGroup): RDD[SubscriberProfilingView] = {
+
     val userCompleteSubscriber = users.keyBy(u => u.imsi).join(self.keyBy(s => s.user.imsi)).map(
       userSubs => (userSubs._1, userSubs._2._2)).reduceByKey(Subscriber.reduceByLastActivity).map(
         uS => (uS._2, totalRevenue(uS._2))).sortBy(_._2).zipWithIndex
-
     val totalSubs = userCompleteSubscriber.count
 
     userCompleteSubscriber.map(s =>
       SubscriberProfilingView(
         imsi = s._1._1.user.imsi,
-        ageGroup = ageGroup(s._1._1),
-        genderGroup = genderGroup(s._1._1),
-        nationalityGroup = nationalityGroup(s._1._1),
-        affluenceGroup = affluenceGroup(s._2 + 1, totalSubs)))
+        category = ProfilingCategory(
+          ageGroup = ageGroup(s._1._1),
+          genderGroup = genderGroup(s._1._1),
+          nationalityGroup = nationalityGroup(s._1._1),
+          affluenceGroup = affluenceGroup(s._2 + 1, totalSubs))))
   }
 
   def toSubscriberProfilingViewNoSubsInfo(users: RDD[User]): RDD[SubscriberProfilingView] =
@@ -70,11 +71,11 @@ class SubscriberFunctions(self: RDD[Subscriber]) extends Serializable {
 
   def toSubscriberProfilingView(
       users: RDD[User],
-      totalRevenue: (Subscriber) => Float = SubscriberProfilingView.totalRevenue,
-      ageGroup: (Subscriber) => String = SubscriberProfilingView.ageGroup,
-      genderGroup: (Subscriber) => String = SubscriberProfilingView.genderGroup,
-      nationalityGroup: (Subscriber) => String = SubscriberProfilingView.nationalityGroup,
-      affluenceGroup: (Long, Long) => String = SubscriberProfilingView.affluenceGroup): RDD[SubscriberProfilingView] =
+      totalRevenue: (Subscriber) => Float = ProfilingCategory.totalRevenue,
+      ageGroup: (Subscriber) => String = ProfilingCategory.ageGroup,
+      genderGroup: (Subscriber) => String = ProfilingCategory.genderGroup,
+      nationalityGroup: (Subscriber) => String = ProfilingCategory.nationalityGroup,
+      affluenceGroup: (Long, Long) => String = ProfilingCategory.affluenceGroup): RDD[SubscriberProfilingView] =
     toFilteredSubscriberProfilingView(
       users = users,
       totalRevenue = totalRevenue,

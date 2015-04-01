@@ -11,6 +11,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
+import sa.com.mobily.crm.{ProfilingCategory, SubscriberProfilingView}
 import sa.com.mobily.mobility.{MobilityMatrixItem, MobilityMatrixItemParquet, MobilityMatrixView}
 import sa.com.mobily.parsing.spark.{SparkWriter, SparkParser}
 import sa.com.mobily.utils.EdmCoreUtils
@@ -63,6 +64,14 @@ class MobilityMatrixFunctions(self: RDD[MobilityMatrixItem]) {
       numDaysWithinOneWeek = (start, end) => EdmCoreUtils.DaysInWeek,
       minUsersPerJourney = minUsersPerJourney,
       keepJourneysBetweenSameLocations = keepJourneysBetweenSameLocations)
+
+  def forProfilingCategory(
+      targetCategory: ProfilingCategory,
+      subscribersProfiling: RDD[SubscriberProfilingView]): RDD[MobilityMatrixItem] = {
+    val subsWithinCategory =
+      subscribersProfiling.filter(_.category == targetCategory).map(s => (s.imsi, None)).collect.toMap
+    self.filter(item => subsWithinCategory.contains(item.user.imsi))
+  }
 }
 
 trait MobilityMatrixDsl {
