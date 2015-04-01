@@ -4,7 +4,7 @@
 
 package sa.com.mobily.mobility.spark
 
-import sa.com.mobily.crm.SubscriberProfilingView
+import sa.com.mobily.crm.{ProfilingCategory, SubscriberProfilingView}
 
 import scala.reflect.io.File
 
@@ -105,24 +105,27 @@ class MobilityMatrixItemTripPurposeDslTest extends FlatSpec with ShouldMatchers 
 
     val subscriberProfilingView1 =
       SubscriberProfilingView(imsi = user1.imsi,
-        ageGroup = "16-25",
-        genderGroup = "M",
-        nationalityGroup = "Saudi Arabia",
-        affluenceGroup = "Top 20%")
+        category = ProfilingCategory(
+          ageGroup = "16-25",
+          genderGroup = "M",
+          nationalityGroup = "Saudi Arabia",
+          affluenceGroup = "Top 20%"))
 
     val subscriberProfilingView2 =
       SubscriberProfilingView(imsi = user2.imsi,
-        ageGroup = "16-25",
-        genderGroup = "M",
-        nationalityGroup = "Saudi Arabia",
-        affluenceGroup = "Top 20%")
+        category = ProfilingCategory(
+          ageGroup = "16-25",
+          genderGroup = "M",
+          nationalityGroup = "Saudi Arabia",
+          affluenceGroup = "Top 20%"))
 
     val subscriberProfilingView3 =
       SubscriberProfilingView(imsi = user3.imsi,
-        ageGroup = "16-25",
-        genderGroup = "M",
-        nationalityGroup = "Saudi Arabia",
-        affluenceGroup = "Top 20%")
+        category = ProfilingCategory(
+          ageGroup = "16-25",
+          genderGroup = "M",
+          nationalityGroup = "Saudi Arabia",
+          affluenceGroup = "Top 20%"))
 
     val subscriberProfilingViews =
       sc.parallelize(Array(subscriberProfilingView1, subscriberProfilingView2, subscriberProfilingView3))
