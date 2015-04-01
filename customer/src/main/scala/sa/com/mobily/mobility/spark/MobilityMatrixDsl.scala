@@ -17,8 +17,11 @@ import sa.com.mobily.utils.EdmCoreUtils
 
 class MobilityMatrixItemRowReader(self: RDD[Row]) {
 
+  def toMobilityMatrixItemParquet: RDD[MobilityMatrixItemParquet] =
+    SparkParser.fromRow[MobilityMatrixItemParquet](self)
+
   def toMobilityMatrixItem: RDD[MobilityMatrixItem] =
-    SparkParser.fromRow[MobilityMatrixItemParquet](self).map(itemParquet => MobilityMatrixItem(itemParquet))
+    toMobilityMatrixItemParquet.map(itemParquet => MobilityMatrixItem(itemParquet))
 }
 
 class MobilityMatrixItemWriter(self: RDD[MobilityMatrixItem]) {
