@@ -9,6 +9,8 @@ import scala.reflect.io.File
 import org.apache.spark.sql.Row
 import org.scalatest.{FlatSpec, ShouldMatchers}
 
+import sa.com.mobily.location.{LocationPoiView, UserPoiProfiling}
+import sa.com.mobily.poi._
 import sa.com.mobily.utils.LocalSparkSqlContext
 
 class LocationPoiViewDslTest extends FlatSpec with ShouldMatchers with LocalSparkSqlContext {
@@ -34,6 +36,82 @@ class LocationPoiViewDslTest extends FlatSpec with ShouldMatchers with LocalSpar
     val rows = sc.parallelize(List(row1, row2))
   }
 
+  trait WithUserPoiProfiling {
+
+    val poi1Imsi = "1234567"
+    val poi2Imsi = "456789"
+    val poi3Imsi = "9101112"
+    val poi4Imsi = "77101112"
+
+    val locationPoiView1_1 =
+      LocationPoiView(
+        imsi = poi1Imsi,
+        mcc = "123",
+        name = "locationTest1",
+        poiType = Home,
+        weight = 0.23D)
+
+    val locationPoiView1_2 =
+      LocationPoiView(
+        imsi = poi1Imsi,
+        mcc = "123",
+        name = "locationTest2",
+        poiType = Work,
+        weight = 0.73D)
+
+    val locationPoiView2_1 =
+      LocationPoiView(
+        imsi = poi2Imsi,
+        mcc = "456",
+        name = "locationTest2",
+        poiType = Work,
+        weight = 0.45D)
+
+    val locationPoiView2_2 =
+      LocationPoiView(
+        imsi = poi2Imsi,
+        mcc = "456",
+        name = "locationTest5",
+        poiType = PoiType("Other"),
+        weight = 0.825D)
+
+    val locationPoiView3_1 =
+      LocationPoiView(
+        imsi = poi3Imsi,
+        mcc = "910",
+        name = "locationTest10",
+        poiType = Home,
+        weight = 0.67D)
+
+    val locationPoiView3_2 =
+      LocationPoiView(
+        imsi = poi3Imsi,
+        mcc = "910",
+        name = "locationTest22",
+        poiType = PoiType("Other"),
+        weight = 0.97D)
+
+    val locationPoiView4 =
+      LocationPoiView(
+        imsi = poi4Imsi,
+        mcc = "771",
+        name = "locationTest12",
+        poiType = PoiType("Other"),
+        weight = 0.12D)
+
+    val locationPoiViews =
+      sc.parallelize(List(locationPoiView1_1, locationPoiView1_2, locationPoiView2_1, locationPoiView2_2,
+        locationPoiView3_1, locationPoiView3_2, locationPoiView4))
+
+    val userPoiProfiling1 = UserPoiProfiling(poi1Imsi, HomeAndWorkDefined)
+    val userPoiProfiling2 = UserPoiProfiling(poi2Imsi, WorkDefined)
+    val userPoiProfiling3 = UserPoiProfiling(poi3Imsi, HomeDefined)
+    val userPoiProfiling4 = UserPoiProfiling(poi4Imsi, OtherDefined)
+
+    val userPoiProfilings =
+      sc.parallelize(List(userPoiProfiling1, userPoiProfiling2, userPoiProfiling3, userPoiProfiling4))
+  }
+
   "LocationPoiViewDsl" should "get correctly parsed data" in new WithLocationPoiViewText {
     locationPoiViews.toLocationPoiView.count should be (3)
   }
@@ -56,5 +134,9 @@ class LocationPoiViewDslTest extends FlatSpec with ShouldMatchers with LocalSpar
 
   it should "get correctly parsed rows" in new WithLocationPoiViewRows {
     rows.toLocationPoiView.count should be (2)
+  }
+
+  it should "return correct user poi profiling" in new WithUserPoiProfiling {
+    locationPoiViews.toUserPoiProfiling.collect should contain theSameElementsAs(userPoiProfilings.collect)
   }
 }
