@@ -127,4 +127,14 @@ object ProfilingCategory {
     case p if p <= 80 && p > 50 => AffluenceMiddle30
     case p if p <= 50 => AffluenceBottom50
   }
+
+  def ageFilter(ageBin: String)(category: ProfilingCategory): Boolean = category.ageGroup == ageBin
+
+  def genderFilter(genderBin: String)(category: ProfilingCategory): Boolean = category.genderGroup == genderBin
+
+  def nationalityFilter(nationalityBin: String)(category: ProfilingCategory): Boolean =
+    category.nationalityGroup == nationalityBin
+
+  def affluenceFilter(affluenceBin: String)(category: ProfilingCategory): Boolean =
+    category.affluenceGroup == affluenceBin
 }

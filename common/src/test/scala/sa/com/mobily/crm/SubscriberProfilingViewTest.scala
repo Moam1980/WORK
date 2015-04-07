@@ -136,6 +136,22 @@ class SubscriberProfilingViewTest extends FlatSpec with ShouldMatchers {
     val maxTotalRevenueValue = 99999999
   }
 
+  trait WithSubscriberProfilingViewForFiltering {
+
+    val category1 =
+      ProfilingCategory(
+        ageGroup = "16-25",
+        genderGroup = "M",
+        nationalityGroup = "Saudi Arabia",
+        affluenceGroup = "Top 20%")
+    val category2 =
+      ProfilingCategory(
+        ageGroup = "25-60",
+        genderGroup = "F",
+        nationalityGroup = "Roamers",
+        affluenceGroup = "Middle 30%")
+  }
+
   "SubscriberProfilingView" should "return correct fields" in new WithSubscriberProfilingView {
     subscriberProfilingView.fields should be (fields)
   }
@@ -313,5 +329,25 @@ class SubscriberProfilingViewTest extends FlatSpec with ShouldMatchers {
 
   it should "apply from a non saudi imsi generating Unknown values and roamer nationality" in new WithImsis {
     SubscriberProfilingView(nonSaudiArabiaImsi) should be (subscriberProfilingViewRoamer)
+  }
+
+  "ProfilingCategory" should "filter by age" in new WithSubscriberProfilingViewForFiltering {
+    ProfilingCategory.ageFilter("16-25")(category1) should be (true)
+    ProfilingCategory.ageFilter("16-25")(category2) should be (false)
+  }
+
+  it should "filter by gender" in new WithSubscriberProfilingViewForFiltering {
+    ProfilingCategory.genderFilter("M")(category1) should be (true)
+    ProfilingCategory.genderFilter("M")(category2) should be (false)
+  }
+
+  it should "filter by nationality" in new WithSubscriberProfilingViewForFiltering {
+    ProfilingCategory.nationalityFilter("Saudi Arabia")(category1) should be (true)
+    ProfilingCategory.nationalityFilter("Saudi Arabia")(category2) should be (false)
+  }
+
+  it should "filter by affluence" in new WithSubscriberProfilingViewForFiltering {
+    ProfilingCategory.affluenceFilter("Top 20%")(category1) should be (true)
+    ProfilingCategory.affluenceFilter("Top 20%")(category2) should be (false)
   }
 }

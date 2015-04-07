@@ -66,10 +66,10 @@ class MobilityMatrixFunctions(self: RDD[MobilityMatrixItem]) {
       keepJourneysBetweenSameLocations = keepJourneysBetweenSameLocations)
 
   def forProfilingCategory(
-      targetCategory: ProfilingCategory,
+      targetCategory: ProfilingCategory => Boolean,
       subscribersProfiling: RDD[SubscriberProfilingView]): RDD[MobilityMatrixItem] = {
-    val subsWithinCategory =
-      subscribersProfiling.filter(_.category == targetCategory).map(s => (s.imsi, None)).collect.toMap
+    val filteredSubs = subscribersProfiling.filter(subsProfiling => targetCategory(subsProfiling.category))
+    val subsWithinCategory = filteredSubs.map(s => (s.imsi, None)).collect.toMap
     self.filter(item => subsWithinCategory.contains(item.user.imsi))
   }
 }
