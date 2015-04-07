@@ -276,7 +276,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
 
   it should "filter items belonging to a certain profiling category" in
     new WithMobilityMatrixItems with WithSubscribersProfilingView {
-      val targetCategory = ProfilingCategory("16-25", "M", "Saudi Arabia", "Top 20%")
+      val targetCategory = (category: ProfilingCategory) =>
+        category == ProfilingCategory("16-25", "M", "Saudi Arabia", "Top 20%")
       items.forProfilingCategory(targetCategory, subscribersProfilingView).collect should
         contain theSameElementsAs(List(item1, item4, item6))
     }
