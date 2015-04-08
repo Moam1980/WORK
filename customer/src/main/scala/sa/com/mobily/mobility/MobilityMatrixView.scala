@@ -24,7 +24,8 @@ case class MobilityMatrixView(
   lazy val avgWeight = sumWeight / numPeriods
   lazy val numDistinctUsers = users.size
 
-  def key: (String, String, String, String) = (startIntervalInitTime, endIntervalInitTime, startLocation, endLocation)
+  def key: (String, String, String, String, Int) =
+    (startIntervalInitTime, endIntervalInitTime, startLocation, endLocation, numPeriods)
 
   def fields: Array[String] =
     Array(
@@ -86,6 +87,18 @@ object MobilityMatrixView {
       sumWeight = viewItem1.sumWeight + viewItem2.sumWeight,
       numPeriods = viewItem1.numPeriods,
       users = viewItem1.users ++ viewItem2.users)
+
+  def difference(viewItem1: MobilityMatrixView, viewItem2: MobilityMatrixView): MobilityMatrixView =
+    MobilityMatrixView(
+      startIntervalInitTime = viewItem1.startIntervalInitTime,
+      endIntervalInitTime = viewItem1.endIntervalInitTime,
+      startLocation = viewItem1.startLocation,
+      endLocation = viewItem1.endLocation,
+      sumWeightedJourneyDurationInSeconds =
+        Math.abs(viewItem1.sumWeightedJourneyDurationInSeconds - viewItem2.sumWeightedJourneyDurationInSeconds),
+      sumWeight = Math.abs(viewItem1.sumWeight - viewItem2.sumWeight),
+      numPeriods = viewItem1.numPeriods,
+      users = (viewItem1.users -- viewItem2.users) ++ (viewItem2.users -- viewItem1.users))
 
   def adaTimeBin(date: DateTime): String =
     if (AdaLabourPatternDays.contains(date.getDayOfWeek)) AdaLabourPatternDaysPrint + " " + TimeFmt.print(date)

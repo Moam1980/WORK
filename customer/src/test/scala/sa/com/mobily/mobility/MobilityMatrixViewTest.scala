@@ -41,8 +41,18 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
 
     val view1 = MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 1800, 0.3, 2, Set(user1, user2))
     val view2 = MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 900, 0.4, 2, Set(user3))
+    val view3 = MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 100, 0.2, 2, Set(user1))
     val aggView =
       MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 2700, 0.7, 2, Set(user1, user2, user3))
+    val diffView1And2 =
+      MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 900, 0.10000000000000003, 2,
+        Set(user1, user2, user3))
+    val diffView1And3 =
+      MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 1700, 0.09999999999999998, 2, Set(user2))
+    val diffView2And3 =
+      MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 800, 0.2, 2, Set(user1, user3))
+    val diffViewEquals =
+      MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 0, 0, 2, Set())
   }
 
   "MobilityMatrixView" should "return fields" in new WithMobilityMatrixViews {
@@ -71,7 +81,7 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "get the fields to use as key" in new WithMobilityMatrixViews {
-    mobilityMatrixView.key should be (("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2"))
+    mobilityMatrixView.key should be (("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 2))
   }
 
   it should "build from MobilityMatrixItem with relevant time bin and number of periods within one week" in
@@ -82,8 +92,25 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
         (d1, d2) => EdmCoreUtils.DaysInWeek) should be (mobilityMatrixViewFromItem)
     }
 
-  it should "aggregate two MobilityMatrixItem" in new WithMobilityMatrixViews {
+  it should "aggregate two MobilityMatrixView" in new WithMobilityMatrixViews {
     MobilityMatrixView.aggregate(view1, view2) should be (aggView)
+  }
+
+  it should "difference two MobilityMatrixView" in new WithMobilityMatrixViews {
+    MobilityMatrixView.difference(view1, view2) should be (diffView1And2)
+    MobilityMatrixView.difference(view2, view1) should be (diffView1And2)
+
+    MobilityMatrixView.difference(view1, view3) should be (diffView1And3)
+    MobilityMatrixView.difference(view3, view1) should be (diffView1And3)
+
+    MobilityMatrixView.difference(view2, view3) should be (diffView2And3)
+    MobilityMatrixView.difference(view3, view2) should be (diffView2And3)
+  }
+
+  it should "difference same MobilityMatrixView" in new WithMobilityMatrixViews {
+    MobilityMatrixView.difference(view1, view1) should be (diffViewEquals)
+    MobilityMatrixView.difference(view2, view2) should be (diffViewEquals)
+    MobilityMatrixView.difference(view3, view3) should be (diffViewEquals)
   }
 
   it should "compute ADA time bins for normal working days pattern" in {
