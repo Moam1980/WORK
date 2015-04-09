@@ -20,7 +20,7 @@ case class MobilityMatrixView(
     users: Set[User]) {
 
   lazy val avgJourneyDurationInMinutes =
-    (sumWeightedJourneyDurationInSeconds / (sumWeight * EdmCoreUtils.SecondsInMinute)).round
+    (sumWeightedJourneyDurationInSeconds / (numPeriods * sumWeight * EdmCoreUtils.SecondsInMinute)).round
   lazy val avgWeight = sumWeight / numPeriods
   lazy val numDistinctUsers = users.size
 
