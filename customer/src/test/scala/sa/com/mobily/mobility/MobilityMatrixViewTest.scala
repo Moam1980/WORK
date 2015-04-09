@@ -56,7 +56,7 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
   }
 
   "MobilityMatrixView" should "return fields" in new WithMobilityMatrixViews {
-    mobilityMatrixView.fields should be (Array("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", "30", "0.5", "2"))
+    mobilityMatrixView.fields should be (Array("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", "15", "0.5", "2"))
   }
 
   it should "have the proper header" in {
@@ -69,7 +69,7 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "compute the average journey duration in minutes" in new WithMobilityMatrixViews {
-    mobilityMatrixView.avgJourneyDurationInMinutes should be (30)
+    mobilityMatrixView.avgJourneyDurationInMinutes should be (15)
   }
 
   it should "compute the average weight" in new WithMobilityMatrixViews {
