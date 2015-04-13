@@ -91,8 +91,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "Sun-Wed 01:00:00",
         startLocation = "l1",
         endLocation = "l2",
-        sumWeightedJourneyDurationInSeconds = 5850L,
-        sumWeight = 2.5,
+        sumWeightedJourneyDurationInSeconds = 5385L,
+        sumWeight = 2.25,
         numPeriods = 8,
         users = Set(user1, user2, user3))
     val viewItemKeepSameLocation =
@@ -101,8 +101,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "Sun-Wed 01:00:00",
         startLocation = "l2",
         endLocation = "l2",
-        sumWeightedJourneyDurationInSeconds = 930L,
-        sumWeight = 0.5,
+        sumWeightedJourneyDurationInSeconds = 465L,
+        sumWeight = 0.25,
         numPeriods = 8,
         users = Set(user2))
     val viewItemWedThuLoc3Loc4 =
@@ -111,8 +111,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "Thu 00:00:00",
         startLocation = "l3",
         endLocation = "l4",
-        sumWeightedJourneyDurationInSeconds = 675L,
-        sumWeight = 0.75,
+        sumWeightedJourneyDurationInSeconds = 506.25,
+        sumWeight = 0.5625,
         numPeriods = 2,
         users = Set(user1))
     val viewItemSat =
@@ -132,8 +132,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "Sun 01:00:00",
         startLocation = "l1",
         endLocation = "l2",
-        sumWeightedJourneyDurationInSeconds = 3390L,
-        sumWeight = 1.5,
+        sumWeightedJourneyDurationInSeconds = 2925L,
+        sumWeight = 1.25,
         numPeriods = 2,
         users = Set(user1, user2))
     val perDayOfWeek2 =
@@ -142,8 +142,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "Thu 00:00:00",
         startLocation = "l3",
         endLocation = "l4",
-        sumWeightedJourneyDurationInSeconds = 675L,
-        sumWeight = 0.75,
+        sumWeightedJourneyDurationInSeconds = 506.25,
+        sumWeight = 0.5625,
         numPeriods = 2,
         users = Set(user1))
     val perDayOfWeek3 =
@@ -173,8 +173,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "01:00:00",
         startLocation = "l1",
         endLocation = "l2",
-        sumWeightedJourneyDurationInSeconds = 8310L,
-        sumWeight = 3.5,
+        sumWeightedJourneyDurationInSeconds = 7845L,
+        sumWeight = 3.25,
         numPeriods = 14,
         users = Set(user1, user2, user3))
     val perDay2 =
@@ -183,8 +183,8 @@ class MobilityMatrixDslTest extends FlatSpec with ShouldMatchers with LocalSpark
         endIntervalInitTime = "00:00:00",
         startLocation = "l3",
         endLocation = "l4",
-        sumWeightedJourneyDurationInSeconds = 675L,
-        sumWeight = 0.75,
+        sumWeightedJourneyDurationInSeconds = 506.25,
+        sumWeight = 0.5625,
         numPeriods = 14,
         users = Set(user1))
 

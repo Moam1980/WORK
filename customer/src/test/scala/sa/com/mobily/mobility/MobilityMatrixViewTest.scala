@@ -37,7 +37,7 @@ class MobilityMatrixViewTest extends FlatSpec with ShouldMatchers {
     val mobilityMatrixView =
       MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 1800, 1, 2, Set(user1, user2))
     val mobilityMatrixViewFromItem =
-      MobilityMatrixView("00:00:00", "01:00:00", "l1", "l2", 900, 0.5, 28, Set(user1))
+      MobilityMatrixView("00:00:00", "01:00:00", "l1", "l2", 432, 0.24, 28, Set(user1))
 
     val view1 = MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 1800, 0.3, 2, Set(user1, user2))
     val view2 = MobilityMatrixView("Tue-Wed 13:00:00", "Tue-Wed 14:00:00", "l1", "l2", 900, 0.4, 2, Set(user3))

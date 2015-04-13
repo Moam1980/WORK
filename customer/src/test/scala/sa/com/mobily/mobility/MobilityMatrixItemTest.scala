@@ -84,7 +84,7 @@ class MobilityMatrixItemTest extends FlatSpec with ShouldMatchers {
 
   "MobilityMatrixItem" should "return fields" in new WithMobilityMatrixItems {
     item.fields should be (Array("2014-11-02 00:00:00", "2014-11-02 01:00:00", "loc1", "loc2", "1800", "4", "",
-      "4200301", "0", "0.4", "0.6", "0.5"))
+      "4200301", "0", "0.4", "0.6", "0.24"))
   }
 
   it should "have the proper header" in {
