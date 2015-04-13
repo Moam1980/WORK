@@ -25,7 +25,7 @@ case class MobilityMatrixItem(
     origWeight: Double,
     destWeight: Double) {
 
-  def weight: Double = (origWeight + destWeight) / 2
+  def weight: Double = origWeight * destWeight
 
   def fields: Array[String] =
     Array(
