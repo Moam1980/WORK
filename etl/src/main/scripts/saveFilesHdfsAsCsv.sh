@@ -19,7 +19,7 @@ function usageHelp ()
     echo 1>&2 "    -p <properties_file>: Properties file to use, is mandatory"
     echo 1>&2 "    -f <override_flag>: Flag to override folder if exists, is mandatory"
     echo 1>&2 "Examples:"
-    echo 1>&2 "    ${0} -v 0.8.0 -o \"--master yarn-client --executor-memory 1g\" \
+    echo 1>&2 "    ${0} -v 1.0.0 -o \"--master yarn-client --executor-memory 1g\" \
         -p \"properties/etl-config.properties\" -f \"false\"
      -- Save as CSV all files in HDFS as master server"
 }
