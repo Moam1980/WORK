@@ -7,3 +7,5 @@ import sa.com.mobily.user.User
 
 implicit val cellCatalogue = sc.textFile("${CELL_CATALOGUE}").toCell.toBroadcastMap
 new SQLContext(sc).parquetFile("${source}").toEvent.toUserActivity.saveAsParquetFile("${destination}")
+
+exit

@@ -38,3 +38,5 @@ def load(sources: List[String], result: RDD[Event] = sc.emptyRDD): RDD[Event] = 
 }
 
 load(sources).saveAsParquetFile("${destination_dir}")
+
+exit
