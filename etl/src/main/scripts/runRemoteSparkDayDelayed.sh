@@ -17,6 +17,7 @@ function usageHelp ()
     echo 1>&2 "    -u <user>: user in order to connect to remote server, is mandatory"
     echo 1>&2 "    -l <master_server>: server to connect to where command is going to be run, is mandatory"
     echo 1>&2 "    -c <commnand>: command to run in remote server, is mandatory"
+    echo 1>&2 "    -r <scriptRevision>: Version of scripts to use, is mandatory"
     echo 1>&2 "    -v <edmVersion>: Version of EDM core to use, is mandatory"
     echo 1>&2 "    -o <spark_options>: Spark options to run process, is mandatory"
     echo 1>&2 "    -p <properties_file>: Properties file to use, is optional"
@@ -24,7 +25,7 @@ function usageHelp ()
     echo 1>&2 "    -d <delayDays>: Delay in days from today to run the command, is mandatory"
     echo 1>&2 "Examples:"
     echo 1>&2 "    ${0} -u edm -l 10.64.246.168 -c \"${BASE_DIR}/saveEventAsParquet.sh\" -d 1 \
-        -v 0.8.0 -o \"--master yarn-client --executor-memory 1g\"
+         -r 1.0.0 -v 1.0.0 -o \"--master yarn-client --executor-memory 1g\"
       -- Convert and save to Parquet data files from 20141004 to 20141205 using 10.64.246.168 as master server"
 }
 
@@ -34,11 +35,12 @@ overrideFlag="false"
 
 # Check if number of parameters is the expected
 if [ $# -ge 14 -a $# -le 18 ]; then
-    while getopts u:l:c::v:p:o:f:d: o
+    while getopts u:l:c:r:v:p:o:f:d: o
     do    case "${o}" in
         u)  user="${OPTARG}";;
         l)  server="${OPTARG}";;
         c)  command="${OPTARG}";;
+        r)  scriptVersion="${OPTARG}";;
         v)  edmVersion="${OPTARG}";;
         p)  propertiesFile="${OPTARG}";;
         o)  sparkOptions="${OPTARG}";;
@@ -76,18 +78,25 @@ if [ -z "${command}" ]; then
     exit 5
 fi
 
+if [ -z "${scriptVersion}" ]; then
+    # Show error and exit
+    echo 1<&2 "ERROR: ${0}: Script version is mandatory: please include \"-r <scriptRevision>\" as a parameter"
+    usageHelp $*
+    exit 6
+fi
+
 if [ -z "${edmVersion}" ]; then
     # Show error and exit
     echo 1<&2 "ERROR: ${0}: EDM version is mandatory: please include \"-v <edm_version>\" as a parameter"
     usageHelp $*
-    exit 6
+    exit 7
 fi
 
 if [ -z "${sparkOptions}" ]; then
     # Show error and exit
     echo 1<&2 "ERROR: ${0}: Spark options are  mandatory: please include \"-o <spark_options>\" as a parameter"
     usageHelp $*
-    exit 7
+    exit 8
 fi
 
 # Check delayDays
@@ -95,13 +104,14 @@ if [ -z "${delayDays}" ]; then
     # Show error and exit
     echo 1<&2 "ERROR: ${0}: Delay in days from today is mandatory: please include \"-d <delayDays>\" as a parameter"
     usageHelp $*
-    exit 3
+    exit 9
 fi
 
 echo 1<&2 "INFO: ${0}: Running with following parameters: "
 echo 1>&2 "    user: ${user}"
 echo 1>&2 "    server: ${server}"
 echo 1>&2 "    command: ${command}"
+echo 1>&2 "    scriptVersion: ${scriptVersion}"
 echo 1>&2 "    edmVersion: ${edmVersion}"
 echo 1>&2 "    sparkOptions: ${sparkOptions}"
 echo 1>&2 "    propertiesFile: ${propertiesFile}"
@@ -125,7 +135,7 @@ fi
 . ${BASE_DIR}/functions.sh
 
 # Run remote script from master server
-ssh ${user}@${server} ". ~/.bash_profile; ./etl-script-${edmVersion}/runSparkDaily.sh -c \"${command}\"\
+ssh ${user}@${server} ". ~/.bash_profile; ./etl-script-${scriptVersion}/runSparkDaily.sh -c \"${command}\"\
     -s \"${dayCalculated}\" -e \"${dayCalculated}\" -p  \"${propertiesFile}\" -v \"${edmVersion}\" -o \"${sparkOptions}\"\
     -f \"${overrideFlag}\"" 
 

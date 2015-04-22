@@ -22,7 +22,7 @@ function usageHelp ()
     echo 1>&2 "    -o <spark_options>: Spark options to run process, is mandatory"
     echo 1>&2 "    -c <command_script>: Main script to run daily, is mandatory"
     echo 1>&2 "Examples:"
-    echo 1>&2 "    ${0}  -s 20141004 -e 20141205 -v 0.8.0 -o \"--master yarn-client --executor-memory 1g\"\
+    echo 1>&2 "    ${0}  -s 20141004 -e 20141205 -v 1.0.0 -o \"--master yarn-client --executor-memory 1g\"\
         -p \"properties/etl-config.properties\" -f \"false\" -c \"example.sh\"\
         -- Execute code of example.sh from 20141004 to 20141205 using 10.64.246.168 as master server"
 }
