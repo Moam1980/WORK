@@ -18,3 +18,5 @@ cellCatalogue.unpersist()
 model.flatMap(userModel => userModel._2._1).saveAsParquetFile("${dwell}")
 model.flatMap(userModel => userModel._2._2).saveAsParquetFile("${journey}")
 model.flatMap(userModel => userModel._2._3).saveAsParquetFile("${jvp}")
+
+exit
