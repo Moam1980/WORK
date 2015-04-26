@@ -23,6 +23,7 @@ import sa.com.mobily.poi.spark.PoiDsl
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.utils.EdmCoreUtils
+import sa.com.mobily.visit.UserVisitMetrics
 
 class LocationReader(self: RDD[String]) {
 
@@ -63,13 +64,25 @@ class LocationFunctions(self: RDD[Location]) {
     val bcLocations = self.context.broadcast(self.collect.toList)
     dwells.flatMap(d => {
       val dwellIntervals = intervals.filter(i =>
-        Option(new Interval(d.startTime, d.endTime, EdmCoreUtils.timeZone(d.countryIsoCode)).overlap(i)).isDefined)
+        new Interval(d.startTime, d.endTime, EdmCoreUtils.timeZone(d.countryIsoCode)).overlaps(i))
       bcLocations.value.filter(l => isMatch(d.geom, l)) match {
         case Nil => Nil
         case onlyLocation :: Nil => dwellIntervals.map(i => ((onlyLocation, i), d))
         case severalLocations => dwellIntervals.map(i => ((bestMatch(d.geom, severalLocations), i), d))
       }
     })
+  }
+
+  def userVisitMetrics(
+      dwells: RDD[Dwell],
+      intervals: List[Interval],
+      isMatch: (Geometry, Location) => Boolean = Location.isMatch,
+      bestMatch: (Geometry, Seq[Location]) => Location = Location.bestMatch): RDD[UserVisitMetrics] = {
+    val matchedDwells = matchDwell(dwells = dwells, intervals = intervals, isMatch = isMatch, bestMatch = bestMatch)
+    val dwellPerLocationIntervalAndUser = matchedDwells.map(locIntDwell =>
+      ((locIntDwell._1._1, locIntDwell._1._2, locIntDwell._2.user), List(locIntDwell._2)))
+    dwellPerLocationIntervalAndUser.reduceByKey(_ ++ _).map(locIntUserDwells =>
+      UserVisitMetrics(locIntUserDwells._1._1.name, locIntUserDwells._1._2, locIntUserDwells._2.sortBy(_.startTime)))
   }
 
   def matchPoi(
@@ -140,21 +153,11 @@ class LocationFunctions(self: RDD[Location]) {
     self.flatMap(location => LocationPointView.normalizedWgs84Geom(location))
 }
 
-class LocationTimeDwellFunctions(self: RDD[((Location, Interval), Dwell)]) {
-
-  def profile: RDD[((Location, Interval), User)] = self.mapValues(_.user).distinct
-
-  def footfall: RDD[((Location, Interval), Footfall)] = self.mapValues(Footfall(_)).reduceByKey(Footfall.aggregate)
-}
-
 trait LocationDsl {
 
   implicit def locationReader(csv: RDD[String]): LocationReader = new LocationReader(csv)
 
   implicit def locationFunctions(locations: RDD[Location]): LocationFunctions = new LocationFunctions(locations)
-
-  implicit def locTimeDwellFunctions(locTimeDwell: RDD[((Location, Interval), Dwell)]): LocationTimeDwellFunctions =
-    new LocationTimeDwellFunctions(locTimeDwell)
 }
 
 object LocationDsl extends LocationDsl with ParsedItemsDsl

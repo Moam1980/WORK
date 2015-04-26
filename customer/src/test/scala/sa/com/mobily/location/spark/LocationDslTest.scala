@@ -17,6 +17,7 @@ import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.usercentric.spark.UserModelDsl
 import sa.com.mobily.utils.{EdmCoreUtils, EdmCustomMatchers, LocalSparkContext}
+import sa.com.mobily.visit.UserVisitMetrics
 
 class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext with EdmCustomMatchers {
 
@@ -294,9 +295,6 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     val dwells = sc.parallelize(Array(dwell1, dwell2, dwell3, dwell4, dwell5))
     val intervals = EdmCoreUtils.intervals(new DateTime(0), new DateTime(180000), 1)
 
-    val footfallLoc1Time1 = Footfall(users = Set(user1, user3), numDwells = 3, avgPrecision = 44)
-    val footfallLoc2Time1 = Footfall(users = Set(user2), numDwells = 1, avgPrecision = 64)
-    val footfallLoc2Time2 = Footfall(users = Set(user2), numDwells = 1, avgPrecision = 64)
     val locIntDwells =
       Array(
         ((location1, intervals(0)), dwell1),
@@ -304,17 +302,78 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
         ((location1, intervals(0)), dwell4),
         ((location2, intervals(0)), dwell2),
         ((location2, intervals(1)), dwell2))
-    val footfall =
-      Array(
-        ((location1, intervals(0)), footfallLoc1Time1),
-        ((location2, intervals(0)), footfallLoc2Time1),
-        ((location2, intervals(1)), footfallLoc2Time2))
-    val profile =
-      Array(
-        ((location1, intervals(0)), user1),
-        ((location1, intervals(0)), user3),
-        ((location2, intervals(0)), user2),
-        ((location2, intervals(1)), user2))
+  }
+
+  trait WithDwellsForUserVisitMetrics {
+
+    val location1 = Location(name = "location1", client = "client", epsg = Coordinates.SaudiArabiaUtmEpsg,
+      geomWkt = "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
+    val location2 = location1.copy(name = "location2", geomWkt = "POLYGON ((10 10, 20 10, 20 20, 10 20, 10 10))")
+    val locations = sc.parallelize(Array(location1, location2))
+
+    val user1 = User(imei = "", imsi = "420031", msisdn = 9661)
+    val user2 = User(imei = "", imsi = "420032", msisdn = 9662)
+    val user3 = User(imei = "", imsi = "420033", msisdn = 9663)
+
+    val dwellUser1Loc1Time1 = Dwell(
+      user = user1,
+      startTime = 1000,
+      endTime = 540000,
+      geomWkt = "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))",
+      cells = Seq((2, 4), (2, 6)),
+      firstEventBeginTime = 3,
+      lastEventEndTime = 9,
+      numEvents = 2)
+    val dwellUser2Loc2Time1And2 = dwellUser1Loc1Time1.copy(user = user2, startTime = 550000, endTime = 1200000,
+      geomWkt = "POLYGON ((12 12, 12 20, 20 20, 20 12, 12 12))")
+    val dwellUser3Loc1Time1First = dwellUser1Loc1Time1.copy(user = user3, startTime = 300000, endTime = 420000,
+      geomWkt = "POLYGON ((7.5 7.5, 7.5 11.5, 11.5 11.5, 11.5 7.5, 7.5 7.5))")
+    val dwellUser3Loc1Time1Second = dwellUser3Loc1Time1First.copy(startTime = 480000, endTime = 580000)
+    val dwellUser3Loc1Time3 = dwellUser3Loc1Time1First.copy(startTime = 1330000, endTime = 1450000,
+      geomWkt = "POLYGON ((30 30, 30 40, 40 40, 40 30, 30 30))")
+    val dwells = sc.parallelize(Array(dwellUser1Loc1Time1, dwellUser2Loc2Time1And2, dwellUser3Loc1Time1First,
+      dwellUser3Loc1Time1Second, dwellUser3Loc1Time3))
+    val intervals = EdmCoreUtils.intervals(new DateTime(0), new DateTime(1800000), 10)
+
+    val userVisitMetricsUser1Loc1Time1 =
+      UserVisitMetrics(
+        user = user1,
+        location = location1.name,
+        interval = intervals(0),
+        frequency = 1,
+        durationInBetweenVisits = List(),
+        visitDurations = List(new Duration(1000, 540000)),
+        geomPrecisions = List(100))
+    val userVisitMetricsUser2Loc2Time1 =
+      UserVisitMetrics(
+        user = user2,
+        location = location2.name,
+        interval = intervals(0),
+        frequency = 1,
+        durationInBetweenVisits = List(),
+        visitDurations = List(new Duration(550000, 1200000)),
+        geomPrecisions = List(64))
+    val userVisitMetricsUser2Loc2Time2 =
+      UserVisitMetrics(
+        user = user2,
+        location = location2.name,
+        interval = intervals(1),
+        frequency = 1,
+        durationInBetweenVisits = List(),
+        visitDurations = List(new Duration(550000, 1200000)),
+        geomPrecisions = List(64))
+    val userVisitMetricsUser3Loc1Time1 =
+      UserVisitMetrics(
+        user = user3,
+        location = location1.name,
+        interval = intervals(0),
+        frequency = 2,
+        durationInBetweenVisits = List(new Duration(420000, 480000)),
+        visitDurations = List(new Duration(300000, 420000), new Duration(480000, 580000)),
+        geomPrecisions = List(16, 16))
+
+    val userVisitMetrics = List(userVisitMetricsUser1Loc1Time1, userVisitMetricsUser2Loc2Time1,
+      userVisitMetricsUser2Loc2Time2, userVisitMetricsUser3Loc1Time1)
   }
 
   trait WithPoisForMatching {
@@ -476,12 +535,8 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     locations.matchDwell(dwells, intervals).collect should contain theSameElementsAs (locIntDwells)
   }
 
-  it should "compute footfall per location and time interval" in new WithDwellsForMatching {
-    locations.matchDwell(dwells, intervals).footfall.collect should contain theSameElementsAs (footfall)
-  }
-
-  it should "get users per location and time interval (profile)" in new WithDwellsForMatching {
-    locations.matchDwell(dwells, intervals).profile.collect should contain theSameElementsAs (profile)
+  it should "compute user visit metrics per location and time interval" in new WithDwellsForUserVisitMetrics {
+    locations.userVisitMetrics(dwells, intervals).collect should contain theSameElementsAs (userVisitMetrics)
   }
 
   it should "get PoIs per location" in new WithPoisForMatching {

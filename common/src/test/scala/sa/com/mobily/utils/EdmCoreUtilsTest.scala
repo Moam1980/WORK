@@ -505,4 +505,15 @@ class EdmCoreUtilsTest extends FlatSpec with ShouldMatchers {
     EdmCoreUtils.tryToParseTheDate(dateString).get should be (dt)
     EdmCoreUtils.tryToParseTheDate(wrongDate).getOrElse(None) should be (None)
   }
+
+  it should "return the header for an interval" in {
+    EdmCoreUtils.IntervalHeader should be (Array("startTime", "endTime"))
+  }
+
+  it should "return the fields of an interval" in {
+    val interval = new Interval(
+      new DateTime(0, EdmCoreUtils.TimeZoneSaudiArabia),
+      new DateTime(1800000, EdmCoreUtils.TimeZoneSaudiArabia))
+    EdmCoreUtils.intervalFields(interval) should be (Array("1970-01-01 03:00:00", "1970-01-01 03:30:00"))
+  }
 }

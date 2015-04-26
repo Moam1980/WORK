@@ -34,6 +34,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
   val Separator = "|"
   val IntraSequenceSeparator = ";"
   val UnknownKeyword = "Unknown"
+  val IntervalHeader: Array[String] = Array("startTime", "endTime")
   private val FirstDayOfWeekIndex = 1
   private val LastDayOfWeekIndex = 7
 
@@ -215,4 +216,7 @@ object EdmCoreUtils { // scalastyle:ignore number.of.methods
         (correctedDate.getYear, correctedDate.getWeekOfWeekyear)
       }
     ).distinct.size
+
+  def intervalFields(interval: Interval): Array[String] =
+    Array(EdmCoreUtils.ViewFmt.print(interval.getStart), EdmCoreUtils.ViewFmt.print(interval.getEnd))
 }
