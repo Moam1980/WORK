@@ -16,6 +16,8 @@ import org.apache.commons.math3.util.Precision
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 
+import sa.com.mobily.utils.Stats
+
 object GeomUtils {
 
   val DefaultNumPoints = 50
@@ -206,4 +208,14 @@ object GeomUtils {
 
   def safeUnion(geom1: Geometry, geom2: Geometry, buffer: Double = DefaultGeomBufferForIntersections): Geometry =
     Try { geom1.union(geom2) }.toOption.getOrElse(geom1.buffer(buffer).union(geom2.buffer(buffer)))
+
+  def distanceSubpolygons(poiGeom: Geometry): Stats = {
+    val geoms = GeomUtils.geomAsSimpleGeometries(poiGeom).toArray
+
+    val cartesianProduct = { for (i <- 0 until geoms.size; j <- (i + 1) until geoms.size) yield (geoms(i), geoms(j)) }
+
+    val distances = cartesianProduct.map(c => c._1.distance(c._2)).toArray
+
+    Stats(distances)
+  }
 }

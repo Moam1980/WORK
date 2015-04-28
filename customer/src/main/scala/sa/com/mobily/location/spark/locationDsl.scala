@@ -18,11 +18,12 @@ import sa.com.mobily.location._
 import sa.com.mobily.mobility.MobilityMatrixItem
 import sa.com.mobily.parsing.{ParsedItem, ParsingError}
 import sa.com.mobily.parsing.spark.{ParsedItemsDsl, SparkParser}
-import sa.com.mobily.poi.{LocationPoiMetrics, Poi}
+import sa.com.mobily.poi.{Poi, PoiType, PoiMetrics}
 import sa.com.mobily.poi.spark.PoiDsl
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
-import sa.com.mobily.utils.EdmCoreUtils
+import sa.com.mobily.utils.{Stats, EdmCoreUtils}
+import sa.com.mobily.utils.spark.StatsDsl
 import sa.com.mobily.visit.UserVisitMetrics
 
 class LocationReader(self: RDD[String]) {
@@ -98,16 +99,32 @@ class LocationFunctions(self: RDD[Location]) {
       })
   }
 
-  def poiMetrics(
-      pois: RDD[Poi],
-      isMatch: (Geometry, Location) => Boolean = Location.isMatch,
-      bestMatch: (Geometry, Seq[Location]) => Location = Location.bestMatch): Map[Location, LocationPoiMetrics] = {
-    val matchedPoisLocations = matchPoi(pois, isMatch, bestMatch)
-    val locations = self.collect.toList
-    locations.map(location => {
-      val pois = matchedPoisLocations.filter(_._1 == location).values
-      (location, pois.locationPoiMetrics(location.geom))
-    }).toMap
+  def poiMetrics(matchedPoisLocations: RDD[(Location, Poi)]): RDD[(Location, LocationPoiMetrics)] = {
+    self.sparkContext.parallelize(self.collect.map(l => (l, poiMetrics(l, matchedPoisLocations))))
+  }
+
+
+  def poiMetrics(location: Location, matchedPoisLocations: RDD[(Location, Poi)]): LocationPoiMetrics = {
+
+    val matchedPoisLocationsFiltered = matchedPoisLocations.filter(_._1 == location)
+
+    if (matchedPoisLocationsFiltered.count > 0) {
+      val pois = matchedPoisLocationsFiltered.values
+      val intersectionRatio = pois.map(p => GeomUtils.intersectionRatio(p.geometry, location.geom))
+
+      LocationPoiMetrics(
+        intersectionRatioStats = StatsDsl.statsHelper.toStats(intersectionRatio),
+        poiMetrics = pois.poiMetrics)
+    } else {
+      LocationPoiMetrics(
+        intersectionRatioStats = Stats(Array[Double]()),
+        poiMetrics = PoiMetrics(
+          numUsers = 0L,
+          numPois = 0L,
+          numUsersPerTypeCombination = Map[Seq[PoiType], Long](),
+          distancePoisPerTypeCombination = Map[Seq[PoiType], Stats](),
+          distancePoisSubPolygonsStats = Map[PoiType, Stats]()))
+    }
   }
 
   def toMobilityMatrix(

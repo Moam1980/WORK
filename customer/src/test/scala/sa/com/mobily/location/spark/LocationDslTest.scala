@@ -16,7 +16,7 @@ import sa.com.mobily.roaming.CountryCode
 import sa.com.mobily.user.User
 import sa.com.mobily.usercentric.Dwell
 import sa.com.mobily.usercentric.spark.UserModelDsl
-import sa.com.mobily.utils.{EdmCoreUtils, EdmCustomMatchers, LocalSparkContext}
+import sa.com.mobily.utils._
 import sa.com.mobily.visit.UserVisitMetrics
 
 class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContext with EdmCustomMatchers {
@@ -407,12 +407,67 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
         (location1, poi2User2),
         (location2, poi2User1),
         (location2, poi1User3))
-    val poiByLocation1 = LocationPoiMetrics(
-        0.8541666666666666, 0.20623947784607635, 1.0, 0.5625, 2, 3, Map(Seq(Home, Work) -> 1, Seq(Home) -> 1))
-    val poiByLocation2 = LocationPoiMetrics(0.6953125, 0.3046875, 1.0, 0.390625, 2, 2, Map(Seq(Work) -> 2))
+    val locationPoiMetrics1 =
+      LocationPoiMetrics(
+        intersectionRatioStats = Stats(
+          count = 3,
+          max = 1.0,
+          min = 0.5625,
+          mean = 0.8541666666666666,
+          variance = 0.04253472222222223,
+          stDev = 0.20623947784607638,
+          percentile99 = 1.0D,
+          percentile95 = 1.0D,
+          percentile90 = 1.0D,
+          percentile75 = 1.0D,
+          percentile50 = 1.0D,
+          percentile25 = 0.5625D,
+          percentile10 = 0.5625D,
+          percentile5 = 0.5625D),
+        poiMetrics = PoiMetrics(
+          numUsers = 2,
+          numPois = 3,
+          numUsersPerTypeCombination = Map(List(Home, Work) -> 1, List(Home) -> 1),
+          distancePoisPerTypeCombination = Map(List(Home, Work) -> Stats(Array(5.656854249492381D))),
+          distancePoisSubPolygonsStats = Map[PoiType, Stats]()))
+    val locationPoiMetrics2 =
+      LocationPoiMetrics(
+        intersectionRatioStats = Stats(
+          count = 2,
+          max = 1.0,
+          min = 0.390625,
+          mean = 0.6953125,
+          variance = 0.09283447265625,
+          stDev = 0.3046875,
+          percentile99 = 1.0D,
+          percentile95 = 1.0D,
+          percentile90 = 1.0D,
+          percentile75 = 1.0D,
+          percentile50 = 0.6953125D,
+          percentile25 = 0.390625D,
+          percentile10 = 0.390625D,
+          percentile5 = 0.390625D),
+        poiMetrics = PoiMetrics(
+          numUsers = 2,
+          numPois = 2,
+          numUsersPerTypeCombination = Map(Seq(Work) -> 2),
+          distancePoisPerTypeCombination = Map[Seq[PoiType], Stats](),
+          distancePoisSubPolygonsStats = Map[PoiType, Stats]()))
 
-    val location1Analysis = (location1, poiByLocation1)
-    val location2Analysis = (location2, poiByLocation2)
+    val locationsPoiMetrics =
+      Array((location1, locationPoiMetrics1), (location2, locationPoiMetrics2))
+
+    val emptyMetrics = LocationPoiMetrics(
+      intersectionRatioStats = Stats(Array[Double]()),
+      poiMetrics = PoiMetrics(
+        numUsers = 0L,
+        numPois = 0L,
+        numUsersPerTypeCombination = Map[Seq[PoiType], Long](),
+        distancePoisPerTypeCombination = Map[Seq[PoiType], Stats](),
+        distancePoisSubPolygonsStats = Map[PoiType, Stats]()))
+
+    val locationsPoiMetricsEmpty =
+      Array((location1, emptyMetrics), (location2, emptyMetrics))
   }
 
   trait WithLocationPoiViews extends WithPoisForMatching {
@@ -543,11 +598,26 @@ class LocationDslTest extends FlatSpec with ShouldMatchers with LocalSparkContex
     locations.matchPoi(pois).collect should contain theSameElementsAs (locIntPois)
   }
 
-  it should "calculate the poi metrics for each location" in new WithPoisForMatching {
-    val analytics = locations.poiMetrics(pois)
+  it should "calculate the poi metrics for each location without POI" in new WithPoisForMatching {
+    val matchedPoisLocations = sc.parallelize(Array[(Location, Poi)]())
+    locations.poiMetrics(location1, matchedPoisLocations) should be (emptyMetrics)
+    locations.poiMetrics(location2, matchedPoisLocations) should be (emptyMetrics)
+  }
 
-    analytics should contain (location1Analysis)
-    analytics should contain (location2Analysis)
+  it should "calculate the poi metrics for each location" in new WithPoisForMatching {
+    val matchedPoisLocations = sc.parallelize(locIntPois)
+    locations.poiMetrics(location1, matchedPoisLocations) should be (locationPoiMetrics1)
+    locations.poiMetrics(location2, matchedPoisLocations) should be (locationPoiMetrics2)
+  }
+
+  it should "calculate the poi metrics for all locations without POI" in new WithPoisForMatching {
+    val matchedPoisLocations = sc.parallelize(Array[(Location, Poi)]())
+    locations.poiMetrics(matchedPoisLocations).collect should contain theSameElementsAs (locationsPoiMetricsEmpty)
+  }
+
+  it should "calculate the poi metrics for all location" in new WithPoisForMatching {
+    val matchedPoisLocations = sc.parallelize(locIntPois)
+    locations.poiMetrics(matchedPoisLocations).collect should contain theSameElementsAs (locationsPoiMetrics)
   }
 
   it should "compute the mobility matrix" in new WithItemsForMobilityMatrix {
