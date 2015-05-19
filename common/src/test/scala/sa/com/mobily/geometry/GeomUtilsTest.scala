@@ -9,7 +9,7 @@ import org.scalatest.{FlatSpec, ShouldMatchers}
 
 import sa.com.mobily.cell.{TwoG, EgBts}
 import sa.com.mobily.poi.UserActivity
-import sa.com.mobily.utils.EdmCustomMatchers
+import sa.com.mobily.utils.{EdmCustomMatchers, Stats}
 
 class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers {
 
@@ -319,6 +319,24 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
     val geoms = Seq(geom1, geom2, geom3, geom4)
   }
 
+  trait WithDistanceSubpolygons {
+
+    val sridPlanar = 32638
+    val geomFactory = GeomUtils.geomFactory(sridPlanar)
+
+    val polygonWkt = "POLYGON (( 0 0, 1 0, 1 1, 0 1, 0 0 ))"
+    val simplePolygon = GeomUtils.parseWkt(polygonWkt, Coordinates.SaudiArabiaUtmSrid, Coordinates.UtmPrecisionModel)
+    val emptyStats = Stats(0L, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D)
+
+    val complexPolygonWkt = "MULTIPOLYGON ((( 0 0, 1 0, 1 1, 0 1, 0 0 )), (( 10 10, 11 10, 11 11, 10 11, 10 10 )))"
+    val complexPolygon =
+      GeomUtils.parseWkt(complexPolygonWkt, Coordinates.SaudiArabiaUtmSrid, Coordinates.UtmPrecisionModel)
+    val complexStats =
+      Stats(1L, 12.727922061357855D, 12.727922061357855D, 12.727922061357855D, 0D, 0D, 12.727922061357855D,
+        12.727922061357855D, 12.727922061357855D, 12.727922061357855D, 12.727922061357855D, 12.727922061357855D,
+        12.727922061357855D, 12.727922061357855D)
+  }
+
   "GeomUtils" should "parse WKT text and assign SRID" in new WithShapes {
     GeomUtils.parseWkt(polygonWkt, sridPlanar) should equalGeometry (poly)
   }
@@ -500,5 +518,13 @@ class GeomUtilsTest extends FlatSpec with ShouldMatchers with EdmCustomMatchers 
   it should "return correct scale as Int for precision model" in new WithShapes {
     utm38NPolygon.getPrecisionModel.getMaximumSignificantDigits should be (2)
     expectedWgs84Polygon.getPrecisionModel.getMaximumSignificantDigits should be (8)
+  }
+
+  it should "calculate stats for simple geometry" in new WithDistanceSubpolygons {
+    GeomUtils.distanceSubpolygons(simplePolygon) should be (emptyStats)
+  }
+
+  it should "calculate stats for geometry with polygons" in new WithDistanceSubpolygons {
+    GeomUtils.distanceSubpolygons(complexPolygon) should be (complexStats)
   }
 }
